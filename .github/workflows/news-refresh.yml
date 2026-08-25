@@ -1,0 +1,17 @@
+name: News Refresh
+
+on:
+  schedule:
+    # 每日 UTC 06:00 与 18:00 自动抓取新闻
+    - cron: '0 6,18 * * *'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger news refresh endpoint
+        run: curl -sSf "$SITE_URL/api/news-refresh?key=$TOKEN_SECRET"
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
