@@ -1,124 +1,520 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>登录 / 注册 — NexAmuse</title>
+  <title>Member Login — NexAmuse Global</title>
+  <meta name="description" content="Login to your NexAmuse Global member account to access exclusive industry resources, supplier directories, and trade show information."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../assets/css/style.css"/>
   <style>
-    .auth-wrap{max-width:460px;margin:60px auto;padding:0 20px;}
-    .auth-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:36px;}
-    .auth-tabs{display:flex;gap:8px;margin-bottom:24px;}
-    .auth-tab{flex:1;padding:12px;text-align:center;cursor:pointer;border-radius:8px;color:var(--text-secondary);font-weight:600;border:1px solid transparent;}
-    .auth-tab.active{background:var(--tag-bg);color:var(--accent);border-color:var(--border);}
-    .auth-form{display:none;}
-    .auth-form.active{display:block;}
-    .auth-form h2{color:#fff;margin-bottom:6px;font-size:1.5rem;}
-    .auth-form p.sub{color:var(--text-secondary);font-size:.85rem;margin-bottom:20px;}
-    .auth-msg{font-size:.85rem;margin-top:12px;min-height:18px;}
-    .auth-msg.err{color:#ff6b6b;}
-    .auth-msg.ok{color:var(--success);}
-    .role-pick{display:flex;gap:12px;margin-bottom:16px;}
-    .role-pick label{flex:1;background:#1a2035;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;color:var(--text-secondary);font-size:.9rem;}
-    .role-pick input{display:none;}
-    .role-pick input:checked + span{color:var(--accent);font-weight:600;}
-    .role-pick label:has(input:checked){border-color:var(--accent);background:var(--tag-bg);}
+    .auth-page {
+      min-height: 100vh;
+      background: #0a0e1a;
+      display: flex;
+      flex-direction: column;
+    }
+    .auth-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-body::before {
+      content: '';
+      position: absolute;
+      top: -200px; left: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(201,162,39,0.08) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .auth-body::after {
+      content: '';
+      position: absolute;
+      bottom: -150px; right: -150px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(79,130,254,0.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .auth-container {
+      display: grid;
+      grid-template-columns: 1fr 460px;
+      gap: 60px;
+      max-width: 960px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+    .auth-brand {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 28px;
+    }
+    .auth-brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .auth-brand-logo .logo-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #c9a227, #f5d06e);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; font-weight: 900; color: #0a0e1a;
+      font-family: 'Playfair Display', serif;
+    }
+    .auth-brand-logo .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .auth-brand-logo .brand-name span { color: #c9a227; }
+    .auth-brand-logo .brand-sub {
+      font-size: 0.75rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .auth-brand h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: #fff;
+      line-height: 1.3;
+    }
+    .auth-brand h2 span { color: #c9a227; }
+    .auth-brand p {
+      color: #9aa0b4;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .auth-perks {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .auth-perk {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #9aa0b4;
+      font-size: 0.88rem;
+    }
+    .auth-perk-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: rgba(201,162,39,0.12);
+      border: 1px solid rgba(201,162,39,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .auth-card {
+      background: #111827;
+      border: 1px solid rgba(201,162,39,0.15);
+      border-radius: 20px;
+      padding: 40px 36px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    }
+    .auth-card-header {
+      margin-bottom: 28px;
+      text-align: center;
+    }
+    .auth-card-header h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .auth-card-header p {
+      color: #9aa0b4;
+      font-size: 0.85rem;
+    }
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+      gap: 4px;
+    }
+    .auth-tab {
+      padding: 9px;
+      text-align: center;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      color: #9aa0b4;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .auth-tab.active {
+      background: linear-gradient(135deg, #c9a227, #f5d06e);
+      color: #0a0e1a;
+      font-weight: 600;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: #9aa0b4;
+      margin-bottom: 7px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    .form-input-wrap {
+      position: relative;
+    }
+    .form-input-wrap .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+    .form-input-wrap input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 12px 14px 12px 40px;
+      color: #e8eaf0;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.25s;
+      font-family: 'Inter', sans-serif;
+    }
+    .form-input-wrap input:focus {
+      border-color: #c9a227;
+      background: rgba(201,162,39,0.04);
+    }
+    .form-input-wrap .toggle-pw {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #4b5563;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0;
+      transition: color 0.2s;
+    }
+    .form-input-wrap .toggle-pw:hover { color: #c9a227; }
+    .form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: #9aa0b4;
+      cursor: pointer;
+    }
+    .remember-me input[type="checkbox"] {
+      accent-color: #c9a227;
+      width: 14px; height: 14px;
+    }
+    .forgot-link {
+      font-size: 0.82rem;
+      color: #c9a227;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .forgot-link:hover { opacity: 0.75; }
+    .btn-auth {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #c9a227, #f5d06e);
+      border: none;
+      border-radius: 10px;
+      color: #0a0e1a;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.3px;
+    }
+    .btn-auth:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(201,162,39,0.35);
+    }
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 22px 0;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+    }
+    .auth-divider span {
+      font-size: 0.78rem;
+      color: #4b5563;
+      white-space: nowrap;
+    }
+    .social-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .btn-social {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      color: #9aa0b4;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      text-decoration: none;
+    }
+    .btn-social:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.15);
+      color: #e2e8f0;
+    }
+    .auth-footer-text {
+      text-align: center;
+      margin-top: 22px;
+      font-size: 0.83rem;
+      color: #9aa0b4;
+    }
+    .auth-footer-text a {
+      color: #c9a227;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .auth-footer-text a:hover { text-decoration: underline; }
+    .auth-msg {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+    .auth-msg.success { background: rgba(86,171,47,0.12); border: 1px solid rgba(86,171,47,0.25); color: #86efac; }
+    .auth-msg.error   { background: rgba(238,9,121,0.10); border: 1px solid rgba(238,9,121,0.25); color: #fca5a5; }
+
+    @media (max-width: 768px) {
+      .auth-container { grid-template-columns: 1fr; }
+      .auth-brand { display: none; }
+      .auth-card { padding: 32px 24px; }
+    }
   </style>
 </head>
-<body>
-  <div id="na-header"></div>
+<body class="auth-page">
 
-  <div class="auth-wrap">
-    <div class="auth-card">
-      <div class="auth-tabs">
-        <div class="auth-tab active" data-tab="login">登录</div>
-        <div class="auth-tab" data-tab="register">注册</div>
-      </div>
-
-      <!-- 登录 -->
-      <form class="auth-form active" id="formLogin" novalidate>
-        <h2>欢迎回来</h2>
-        <p class="sub">登录你的 NexAmuse 账号</p>
-        <div class="form-group"><label>邮箱</label><input type="email" name="email" required placeholder="you@example.com"/></div>
-        <div class="form-group"><label>密码</label><input type="password" name="password" required placeholder="******"/></div>
-        <button type="submit" class="btn-primary" style="width:100%;padding:12px;margin-top:8px;">登录</button>
-        <div class="auth-msg" id="msgLogin"></div>
-      </form>
-
-      <!-- 注册 -->
-      <form class="auth-form" id="formRegister" novalidate>
-        <h2>创建账号</h2>
-        <p class="sub">普通用户可发布二手设备、参与论坛；企业账号可创建专属主页</p>
-        <div class="role-pick">
-          <label><input type="radio" name="role" value="user" checked/><span>普通用户</span></label>
-          <label><input type="radio" name="role" value="company"/><span>企业账号</span></label>
-        </div>
-        <div class="form-group"><label>用户名</label><input type="text" name="username" required placeholder="显示名称"/></div>
-        <div class="form-group"><label>邮箱</label><input type="email" name="email" required placeholder="you@example.com"/></div>
-        <div class="form-group"><label>密码（至少 6 位）</label><input type="password" name="password" required placeholder="******"/></div>
-        <div class="form-group"><label>确认密码</label><input type="password" name="confirm" required placeholder="******"/></div>
-        <button type="submit" class="btn-primary" style="width:100%;padding:12px;margin-top:8px;">注册</button>
-        <div class="auth-msg" id="msgRegister"></div>
-      </form>
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="container">
+    <div class="top-bar-left">
+      <span>🌐 Global Amusement Industry Portal</span>
+    </div>
+    <div class="top-bar-right">
+      <a href="../pages/contact.html">Contact</a>
+      <a href="register.html">Create Account</a>
     </div>
   </div>
+</div>
 
-  <div id="na-footer"></div>
+<div class="auth-body">
+  <div class="auth-container">
 
-  <script src="../assets/js/api.js"></script>
-  <script src="../assets/js/auth.js"></script>
-  <script src="../assets/js/layout.js"></script>
-  <script>
-    // Tab 切换
-    document.querySelectorAll('.auth-tab').forEach(t => {
-      t.onclick = () => {
-        document.querySelectorAll('.auth-tab').forEach(x => x.classList.remove('active'));
-        document.querySelectorAll('.auth-form').forEach(x => x.classList.remove('active'));
-        t.classList.add('active');
-        document.getElementById('form' + t.dataset.tab.charAt(0).toUpperCase() + t.dataset.tab.slice(1)).classList.add('active');
+    <!-- Left: Brand -->
+    <div class="auth-brand">
+      <div class="auth-brand-logo">
+        <div class="logo-icon">N</div>
+        <div>
+          <div class="brand-name">Nex<span>Amuse</span></div>
+          <div class="brand-sub">Global Portal</div>
+        </div>
+      </div>
+      <div>
+        <h2>Welcome back to the <span>world's premier</span> amusement industry portal</h2>
+        <p>Access verified suppliers, exclusive industry reports, exhibition pre-registration, and direct B2B connections with leading amusement brands worldwide.</p>
+      </div>
+      <div class="auth-perks">
+        <div class="auth-perk">
+          <div class="auth-perk-icon">🎮</div>
+          <span>Browse 10,000+ verified amusement products & equipment</span>
+        </div>
+        <div class="auth-perk">
+          <div class="auth-perk-icon">🏭</div>
+          <span>Connect with 2,500+ certified global suppliers</span>
+        </div>
+        <div class="auth-perk">
+          <div class="auth-perk-icon">📊</div>
+          <span>Access exclusive industry research & market reports</span>
+        </div>
+        <div class="auth-perk">
+          <div class="auth-perk-icon">🎪</div>
+          <span>Priority registration for major trade shows & exhibitions</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Login Form -->
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <h3>Member Login</h3>
+        <p>Sign in to your NexAmuse Global account</p>
+      </div>
+
+      <div class="auth-tabs">
+        <a href="login.html" class="auth-tab active">Login</a>
+        <a href="register.html" class="auth-tab">Register</a>
+      </div>
+
+      <div class="auth-msg" id="authMsg"></div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="form-input-wrap">
+            <span class="input-icon">✉️</span>
+            <input type="email" id="loginEmail" placeholder="your@company.com" required autocomplete="email"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="form-input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password"/>
+            <button type="button" class="toggle-pw" onclick="togglePassword('loginPassword',this)">👁</button>
+          </div>
+        </div>
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" id="rememberMe"/> Remember me
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-auth">Sign In →</button>
+      </form>
+
+      <div class="auth-divider"><span>or continue with</span></div>
+      <div class="social-btns">
+        <a href="#" class="btn-social" onclick="socialLogin('Google')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Google
+        </a>
+        <a href="#" class="btn-social" onclick="socialLogin('LinkedIn')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn
+        </a>
+      </div>
+
+      <div class="auth-footer-text">
+        Don't have an account? <a href="register.html">Register free →</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Footer minimal -->
+<div style="text-align:center;padding:20px;color:#374151;font-size:0.8rem;border-top:1px solid rgba(255,255,255,0.05)">
+  © 2026 NexAmuse Global · <a href="#" style="color:#c9a227">Privacy Policy</a> · <a href="#" style="color:#c9a227">Terms of Service</a>
+</div>
+
+<script>
+function handleLogin(e) {
+  e.preventDefault();
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const msg      = document.getElementById('authMsg');
+
+  if (!email || !password) {
+    showMsg('error', 'Please enter your email and password.');
+    return;
+  }
+
+  // Demo: simulate login
+  const btn = e.target.querySelector('.btn-auth');
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    // Demo accounts
+    const DEMO_ACCOUNTS = [
+      { email: 'demo@nexamuse.com',  password: 'demo123', name: 'Demo User',  avatar: 'D', role: 'member' },
+      { email: 'admin@nexamuse.com', password: 'demo123', name: 'Admin User', avatar: 'A', role: 'admin'  },
+      { email: 'test@nexamuse.com',  password: 'demo123', name: 'Test User',  avatar: 'T', role: 'member' },
+    ];
+
+    const account = DEMO_ACCOUNTS.find(a => a.email === email && a.password === password);
+
+    if (account) {
+      const session = {
+        name: account.name,
+        email: account.email,
+        avatar: account.avatar,
+        role: account.role,
+        loginTime: Date.now()
       };
-    });
+      localStorage.setItem('nexamuse_user', JSON.stringify(session));
+      showMsg('success', '✅ Login successful! Redirecting…');
+      // Admins → admin dashboard; members → homepage
+      const defaultRedirect = account.role === 'admin' ? '../admin/index.html' : '../index.html';
+      const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || defaultRedirect;
+      setTimeout(() => { window.location.href = redirectUrl; }, 1200);
+    } else {
+      showMsg('error', '✗ Invalid email or password. Try admin@nexamuse.com / demo123');
+      btn.textContent = 'Sign In →';
+      btn.disabled = false;
+    }
+  }, 900);
+}
 
-    const msg = (id, text, ok) => {
-      const el = document.getElementById(id);
-      el.textContent = text; el.className = 'auth-msg ' + (ok ? 'ok' : 'err');
-    };
+function showMsg(type, text) {
+  const el = document.getElementById('authMsg');
+  el.className = 'auth-msg ' + type;
+  el.textContent = text;
+  el.style.display = 'block';
+}
 
-    document.getElementById('formLogin').onsubmit = async (e) => {
-      e.preventDefault();
-      const f = e.target;
-      try {
-        const r = await window.Api.login({ email: f.email.value, password: f.password.value });
-        if (r.ok) {
-          window.Auth.set(r.token, r.user);
-          msg('msgLogin', '登录成功，跳转中…', true);
-          setTimeout(() => location.href = 'dashboard.html', 700);
-        }
-      } catch (err) { msg('msgLogin', err.message); }
-    };
+function togglePassword(id, btn) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
 
-    document.getElementById('formRegister').onsubmit = async (e) => {
-      e.preventDefault();
-      const f = e.target;
-      if (f.password.value !== f.confirm.value) { msg('msgRegister', '两次密码不一致'); return; }
-      try {
-        const r = await window.Api.register({
-          email: f.email.value, username: f.username.value,
-          password: f.password.value, role: f.role.value,
-        });
-        if (r.ok) {
-          // 自动登录
-          const lg = await window.Api.login({ email: f.email.value, password: f.password.value });
-          if (lg.ok) {
-            window.Auth.set(lg.token, lg.user);
-            msg('msgRegister', '注册成功！跳转中…', true);
-            setTimeout(() => location.href = 'dashboard.html', 700);
-          }
-        }
-      } catch (err) { msg('msgRegister', err.message); }
-    };
-  </script>
+function socialLogin(provider) {
+  showMsg('success', provider + ' login coming soon. Use email login for now.');
+}
+</script>
 </body>
 </html>

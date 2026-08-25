@@ -1,100 +1,642 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>论坛 — NexAmuse</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="../assets/css/style.css"/>
-  <style>
-    .fwrap{max-width:900px;margin:40px auto;padding:0 20px;}
-    .fwrap h1{color:#fff;font-size:2.2rem;}
-    .fwrap .lead{color:var(--text-secondary);margin:8px 0 20px;}
-    .filters{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
-    .chip{padding:7px 15px;border-radius:18px;background:var(--card-bg);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;font-size:.85rem;}
-    .chip.active{background:var(--accent-gradient);color:#1a1e2e;font-weight:600;border:none;}
-    .post-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;cursor:pointer;transition:var(--transition);}
-    .post-box:hover{border-color:var(--accent);}
-    .post-box .ttl{color:#fff;font-weight:700;font-size:1.15rem;}
-    .post-box .ex{color:var(--text-secondary);margin-top:8px;font-size:.9rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-    .post-box .meta{color:var(--text-secondary);font-size:.8rem;margin-top:10px;}
-    .post-box .meta .tag{background:var(--tag-bg);color:var(--accent);padding:2px 9px;border-radius:12px;margin-right:8px;}
-    .composer{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:22px;display:none;}
-    .composer.active{display:block;}
-    .composer h3{color:#fff;margin-bottom:12px;}
-    .empty{color:var(--text-secondary);text-align:center;padding:50px 0;}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Industry Forum — NexAmuse Global</title>
+<meta name="description" content="Join the NexAmuse Global industry forum. Discuss amusement equipment, share venue experiences and connect with operators worldwide."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<style>
+.forum-hero{background:linear-gradient(135deg,#0a0e1a 0%,#111827 100%);border-bottom:1px solid rgba(201,162,39,.15);padding:48px 0 36px}
+.forum-hero h1{font-family:'Playfair Display',serif;font-size:2.2rem;color:#fff;margin-bottom:10px}
+.forum-hero p{color:#9aa0b4;font-size:1rem;max-width:600px}
+.forum-stats{display:flex;gap:32px;margin-top:20px}
+.fstat{text-align:center}
+.fstat-num{font-size:1.5rem;font-weight:700;color:#c9a227}
+.fstat-lab{font-size:12px;color:#6b7280;margin-top:2px}
+
+.forum-layout{display:grid;grid-template-columns:1fr 300px;gap:28px;padding:36px 0 60px}
+@media(max-width:900px){.forum-layout{grid-template-columns:1fr}}
+
+/* Level badge */
+.lvl-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.lvl-regular{background:rgba(99,102,241,.15);color:#818cf8}
+.lvl-premium{background:rgba(201,162,39,.15);color:#c9a227}
+.lvl-vip{background:linear-gradient(90deg,rgba(201,162,39,.2),rgba(245,208,110,.1));color:#f5d06e;border:1px solid rgba(201,162,39,.3)}
+
+/* Section cards */
+.forum-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:20px;transition:.2s}
+.forum-section:hover{border-color:rgba(201,162,39,.3)}
+.section-head{display:flex;align-items:center;gap:16px;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.06)}
+.section-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.section-meta{flex:1}
+.section-title{font-size:16px;font-weight:600;color:#e2e8f0;margin-bottom:2px}
+.section-desc{font-size:12px;color:#6b7280}
+.section-counts{display:flex;gap:16px;font-size:12px;color:#6b7280}
+.section-counts span{display:flex;align-items:center;gap:4px}
+
+/* Thread rows */
+.thread-row{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid rgba(255,255,255,.04);transition:.15s;cursor:pointer}
+.thread-row:last-child{border-bottom:none}
+.thread-row:hover{background:rgba(255,255,255,.03)}
+.thread-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#c9a227,#f5d06e);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#0a0e1a;flex-shrink:0}
+.thread-body{flex:1;min-width:0}
+.thread-title{font-size:14px;font-weight:500;color:#e2e8f0;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thread-title.hot::before{content:'🔥 ';font-size:12px}
+.thread-title.new::before{content:'🆕 ';font-size:12px}
+.thread-info{display:flex;gap:10px;font-size:11px;color:#6b7280;flex-wrap:wrap}
+.thread-counts{display:flex;gap:12px;font-size:12px;color:#6b7280;flex-shrink:0;text-align:right}
+.thread-counts span{display:flex;align-items:center;gap:3px}
+.pinned{background:rgba(201,162,39,.04)}
+
+/* Post form */
+.post-form-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:22px;margin-bottom:24px}
+.post-form-card h3{font-size:15px;color:#e2e8f0;margin-bottom:16px}
+.post-form-card.locked{opacity:.7;pointer-events:none}
+.form-input-dark{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;color:#e2e8f0;font-size:14px;font-family:inherit;outline:none;transition:.2s;box-sizing:border-box}
+.form-input-dark:focus{border-color:#c9a227}
+.form-textarea-dark{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;color:#e2e8f0;font-size:13px;font-family:inherit;outline:none;min-height:100px;resize:vertical;transition:.2s;box-sizing:border-box;margin-top:10px}
+.form-textarea-dark:focus{border-color:#c9a227}
+.btn-gold-sm{background:linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a;border:none;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:.2s}
+.btn-gold-sm:hover{opacity:.9;transform:translateY(-1px)}
+.btn-outline-sm{background:transparent;border:1px solid rgba(255,255,255,.15);color:#9aa0b4;padding:9px 16px;border-radius:8px;font-size:13px;cursor:pointer;transition:.2s}
+.btn-outline-sm:hover{border-color:#c9a227;color:#c9a227}
+
+/* Sidebar */
+.sidebar-widget{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px;margin-bottom:20px}
+.widget-title{font-size:13px;font-weight:700;color:#c9a227;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.level-card{border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid transparent}
+.level-card.regular{background:rgba(99,102,241,.07);border-color:rgba(99,102,241,.2)}
+.level-card.premium{background:rgba(201,162,39,.07);border-color:rgba(201,162,39,.2)}
+.level-card.vip{background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(245,208,110,.05));border-color:rgba(201,162,39,.3)}
+.level-name{font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:4px}
+.level-pts{font-size:12px;color:#9aa0b4;margin-bottom:8px}
+.level-perms{list-style:none;padding:0;margin:0}
+.level-perms li{font-size:12px;color:#9aa0b4;padding:2px 0;display:flex;align-items:flex-start;gap:6px}
+.level-perms li::before{content:'✓';color:#56ab2f;flex-shrink:0;font-size:11px;margin-top:1px}
+.rule-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;color:#9aa0b4}
+.rule-row:last-child{border-bottom:none}
+.rule-icon{font-size:16px;width:24px;text-align:center;flex-shrink:0}
+.rule-pts{font-weight:700;color:#c9a227;margin-left:auto;white-space:nowrap}
+
+/* Points notice */
+.pts-notice{background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(201,162,39,.04));border:1px solid rgba(201,162,39,.25);border-radius:10px;padding:14px 16px;font-size:13px;color:#c9a227;margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+
+/* Tab bar */
+.tab-bar{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:5px}
+.tab-btn{flex:1;padding:8px;border:none;background:transparent;color:#6b7280;font-size:13px;font-weight:500;cursor:pointer;border-radius:7px;transition:.2s}
+.tab-btn.active{background:rgba(201,162,39,.12);color:#c9a227;font-weight:600}
+</style>
 </head>
 <body>
-  <div id="na-header"></div>
-  <div class="fwrap">
-    <h1>论坛</h1>
-    <p class="lead">行业交流、转让信息、经验分享 —— 所有注册用户均可发帖。</p>
 
-    <button class="btn-primary" id="toggleComposer" style="padding:10px 22px;margin-bottom:18px;">+ 我要发帖</button>
-
-    <div class="composer" id="composer">
-      <h3>发布新帖</h3>
-      <div class="form-group"><label>标题</label><input id="t_title" placeholder="一句话说清主题"/></div>
-      <div class="form-group"><label>分类</label>
-        <select id="t_cat"><option value="综合">综合</option><option value="交易">交易</option><option value="求助">求助</option><option value="晒图">晒图</option></select>
-      </div>
-      <div class="form-group"><label>内容</label><textarea id="t_content" placeholder="详细说说…"></textarea></div>
-      <button class="btn-primary" id="t_submit" style="padding:10px 22px;">发布</button>
-      <span id="t_msg" style="margin-left:12px;font-size:.85rem;"></span>
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="container">
+    <div class="top-bar-left">
+      <span><span class="live-badge"><span class="live-dot"></span>LIVE</span> &nbsp;GTI Asia Pacific 2026 — March 28–30, Guangzhou</span>
     </div>
-
-    <div class="filters">
-      <div class="chip active" data-cat="">全部</div>
-      <div class="chip" data-cat="综合">综合</div>
-      <div class="chip" data-cat="交易">交易</div>
-      <div class="chip" data-cat="求助">求助</div>
-      <div class="chip" data-cat="晒图">晒图</div>
+    <div class="top-bar-right">
+      <a href="contact.html">Contact</a>
+      <a href="#">Advertise</a>
     </div>
-
-    <div id="list"></div>
   </div>
-  <div id="na-footer"></div>
+</div>
 
-  <script src="../assets/js/api.js"></script>
-  <script src="../assets/js/auth.js"></script>
-  <script src="../assets/js/layout.js"></script>
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const list = $('list');
-    let curCat = '';
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">N</div>
+      <div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li>
+        <a href="products.html">Products ▾</a>
+        <div class="dropdown-menu">
+          <a href="products.html?cat=arcade">Arcade Machines</a>
+          <a href="products.html?cat=vr">VR / XR Attractions</a>
+          <a href="products.html?cat=kids">Kids &amp; Family Rides</a>
+          <a href="products.html?cat=redemption">Redemption &amp; Prize</a>
+          <a href="products.html?cat=simulation">Simulation Rides</a>
+          <a href="products.html?cat=outdoor">Outdoor Attractions</a>
+          <a href="products.html?cat=waterpark">Water Park Equipment</a>
+          <a href="products.html?cat=accessories">Accessories &amp; Parts</a>
+        </div>
+      </li>
+      <li>
+        <a href="news.html">News ▾</a>
+        <div class="dropdown-menu">
+          <a href="news.html?cat=industry">Industry Dynamics</a>
+          <a href="news.html?cat=companies">Company News</a>
+          <a href="news.html?cat=interviews">Executive Interviews</a>
+          <a href="news.html?cat=newproducts">New Product Releases</a>
+          <a href="news.html?cat=regulations">Regulations &amp; Compliance</a>
+        </div>
+      </li>
+      <li><a href="suppliers.html">Suppliers</a></li>
+      <li>
+        <a href="exhibitions.html">Exhibitions ▾</a>
+        <div class="dropdown-menu">
+          <a href="exhibitions.html#calendar">Exhibition Calendar</a>
+          <a href="exhibitions.html#reports">Show Reports</a>
+          <a href="exhibitions.html#register">Pre-Register</a>
+        </div>
+      </li>
+      <li><a href="news.html">Articles</a></li>
+      <li><a href="forum.html" class="active">Forum</a></li>
+      <li><a href="member-points.html">Points</a></li>
+      <li><a href="magazine.html">Videos</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="search-btn js-open-search">🔍 Search</button>
+      <!-- Auth buttons injected dynamically by main.js renderAuthNav() -->
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
 
-    $('toggleComposer').onclick = () => $('composer').classList.toggle('active');
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-menu-close" id="mobileClose">✕</button>
+  <ul class="mobile-nav-links"><li><a href="../index.html">🏠 Home</a></li><li><a href="products.html">🎮 Products</a></li><li><a href="news.html">📰 News &amp; Articles</a></li><li><a href="suppliers.html">🏭 Suppliers</a></li><li><a href="exhibitions.html">🎪 Exhibitions</a></li><li><a href="forum.html">💬 Forum</a></li><li><a href="member-points.html">⭐ Points</a></li><li><a href="magazine.html">🎬 Videos</a></li><li><a href="contact.html">📩 Contact</a></li></ul>
+  <div class="mobile-auth-wrap" style="margin-top:32px;display:flex;flex-direction:column;gap:12px;"></div>
+</div>
 
-    $('t_submit').onclick = async () => {
-      if (!window.Auth.isLogin()) { $('t_msg').textContent = '请先登录'; $('t_msg').style.color = '#ff6b6b'; return; }
-      const title = $('t_title').value.trim(), content = $('t_content').value.trim();
-      if (!title || !content) { $('t_msg').textContent = '标题和内容必填'; $('t_msg').style.color = '#ff6b6b'; return; }
-      try {
-        const r = await window.Api.createPost({ title, content, category: $('t_cat').value });
-        if (r.ok) { location.href = 'post.html?id=' + r.id; }
-      } catch (e) { $('t_msg').textContent = e.message; $('t_msg').style.color = '#ff6b6b'; }
-    };
+<!-- Search Overlay -->
+<div class="search-overlay" id="searchOverlay">
+  <button class="search-close" id="searchClose">✕</button>
+  <div class="search-box">
+    <h2>Search NexAmuse Global</h2>
+    <div class="search-input-wrap">
+      <input type="text" placeholder="Search forum topics, members..."/>
+      <button>Search</button>
+    </div>
+  </div>
+</div>
 
-    document.querySelectorAll('.chip').forEach(c => {
-      c.onclick = () => { document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); curCat = c.dataset.cat; load(); };
-    });
+<!-- Hero -->
+<div class="forum-hero">
+  <div class="container">
+    <h1>💬 Industry Forum</h1>
+    <p>Connect with amusement industry professionals worldwide. Share insights, ask questions, and grow your business network.</p>
+    <div class="forum-stats">
+      <div class="fstat"><div class="fstat-num">12,480</div><div class="fstat-lab">Members</div></div>
+      <div class="fstat"><div class="fstat-num">3,826</div><div class="fstat-lab">Threads</div></div>
+      <div class="fstat"><div class="fstat-num">28,541</div><div class="fstat-lab">Replies</div></div>
+      <div class="fstat"><div class="fstat-num" id="onlineCount">247</div><div class="fstat-lab">Online Now</div></div>
+    </div>
+  </div>
+</div>
 
-    async function load() {
-      list.innerHTML = '<div class="empty">加载中…</div>';
-      try {
-        const r = await window.Api.forum(curCat ? ('?category=' + encodeURIComponent(curCat)) : '');
-        list.innerHTML = (r.posts && r.posts.length) ? r.posts.map(p => `
-          <div class="post-box" onclick="location.href='post.html?id=${p.id}'">
-            <div class="ttl">${window.Auth.escapeHtml(p.title)}</div>
-            <div class="ex">${window.Auth.escapeHtml(p.content)}</div>
-            <div class="meta"><span class="tag">${window.Auth.escapeHtml(p.category||'综合')}</span>👤 ${window.Auth.escapeHtml(p.author||'匿名')} · 🕒 ${new Date(p.created_at*1000).toLocaleDateString()}</div>
-          </div>`).join('')
-          : '<div class="empty">还没有帖子，来发第一帖吧！</div>';
-      } catch (e) { list.innerHTML = '<div class="empty">加载失败：' + e.message + '</div>'; }
-    }
-    load();
-  </script>
+<div class="container">
+  <div class="forum-layout">
+
+    <!-- LEFT MAIN -->
+    <div>
+
+      <!-- New Post Form -->
+      <div class="post-form-card" id="postFormCard">
+        <h3>✍️ Start a New Discussion</h3>
+        <div id="postFormInner">
+          <select class="form-input-dark" id="postSection" style="margin-bottom:10px">
+            <option value="">Select forum section…</option>
+            <option>🏗️ Venue Design & Planning</option>
+            <option>🎮 Equipment Reviews & Recommendations</option>
+            <option>📊 Business & Revenue Strategy</option>
+            <option>🎪 Exhibition Reports & Networking</option>
+            <option>🔧 Technical Support & Maintenance</option>
+            <option>🛒 Buy / Sell / Trade Equipment</option>
+            <option>🎡 Amusement Park Operations</option>
+          </select>
+          <input type="text" class="form-input-dark" id="postTitle" placeholder="Thread title (5–100 characters)…">
+          <textarea class="form-textarea-dark" id="postContent" placeholder="Share your thoughts, questions or insights… (min 20 characters)"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+            <div style="font-size:12px;color:#6b7280" id="postLimitInfo">💡 Regular members: 1 post per day · Comments: 1 per thread</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-outline-sm" onclick="clearPost()">Clear</button>
+              <button class="btn-gold-sm" onclick="submitPost()">Post Thread 🚀</button>
+            </div>
+          </div>
+        </div>
+        <div id="postLoginPrompt" style="display:none;text-align:center;padding:20px">
+          <div style="font-size:32px;margin-bottom:10px">🔐</div>
+          <div style="color:#9aa0b4;margin-bottom:14px">Please log in to post or reply in the forum.</div>
+          <a href="login.html" class="btn-gold-sm" style="text-decoration:none;display:inline-block">Sign In</a>
+          <a href="register.html" class="btn-outline-sm" style="text-decoration:none;display:inline-block;margin-left:8px">Register Free</a>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this,'latest')">🕐 Latest</button>
+        <button class="tab-btn" onclick="switchTab(this,'hot')">🔥 Hot Topics</button>
+        <button class="tab-btn" onclick="switchTab(this,'unanswered')">❓ Unanswered</button>
+        <button class="tab-btn" onclick="switchTab(this,'my')">👤 My Posts</button>
+      </div>
+
+      <!-- Section: Venue Design -->
+      <div class="forum-section">
+        <div class="section-head">
+          <div class="section-icon" style="background:rgba(139,92,246,.12)">🏗️</div>
+          <div class="section-meta">
+            <div class="section-title">Venue Design & Planning</div>
+            <div class="section-desc">FEC layout, theme concepts, capacity planning and construction tips</div>
+          </div>
+          <div class="section-counts">
+            <span>🧵 842 threads</span>
+            <span>💬 6,240 replies</span>
+          </div>
+        </div>
+        <!-- Threads -->
+        <div class="thread-row pinned" onclick="openThread(this)">
+          <div class="thread-avatar">JL</div>
+          <div class="thread-body">
+            <div class="thread-title">📌 [GUIDE] Complete FEC Floor Plan Guide 2026 — Download Template</div>
+            <div class="thread-info">
+              <span>James Liu</span>
+              <span class="lvl-badge lvl-vip">👑 VIP</span>
+              <span>Mar 12, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 4,821</span><span>💬 67</span></div>
+        </div>
+        <div class="thread-row" onclick="openThread(this)">
+          <div class="thread-avatar" style="background:linear-gradient(135deg,#667eea,#764ba2)">SK</div>
+          <div class="thread-body">
+            <div class="thread-title hot">How much space per VR station? Getting conflicting advice from suppliers</div>
+            <div class="thread-info">
+              <span>Sarah Kim</span>
+              <span class="lvl-badge lvl-premium">⭐ Premium</span>
+              <span>Mar 20, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 1,204</span><span>💬 23</span></div>
+        </div>
+        <div class="thread-row" onclick="openThread(this)">
+          <div class="thread-avatar" style="background:linear-gradient(135deg,#11998e,#38ef7d)">MT</div>
+          <div class="thread-body">
+            <div class="thread-title new">Opening a 2,000 sqm indoor park — any advice on anchor attractions?</div>
+            <div class="thread-info">
+              <span>Marco Tran</span>
+              <span class="lvl-badge lvl-regular">🔵 Regular</span>
+              <span>Mar 24, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 387</span><span>💬 8</span></div>
+        </div>
+        <div class="thread-row" onclick="openThread(this)">
+          <div class="thread-avatar" style="background:linear-gradient(135deg,#ee0979,#ff6a00)">AP</div>
+          <div class="thread-body">
+            <div class="thread-title">Best practices for lighting design in laser tag arenas</div>
+            <div class="thread-info">
+              <span>Alex Park</span>
+              <span class="lvl-badge lvl-premium">⭐ Premium</span>
+              <span>Mar 21, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 692</span><span>💬 14</span></div>
+        </div>
+      </div>
+
+      <!-- Section: Equipment Reviews -->
+      <div class="forum-section">
+        <div class="section-head">
+          <div class="section-icon" style="background:rgba(201,162,39,.12)">🎮</div>
+          <div class="section-meta">
+            <div class="section-title">Equipment Reviews & Recommendations</div>
+            <div class="section-desc">Honest reviews, comparisons and buying advice from operators</div>
+          </div>
+          <div class="section-counts">
+            <span>🧵 1,204 threads</span>
+            <span>💬 9,870 replies</span>
+          </div>
+        </div>
+        <div class="thread-row pinned" onclick="openThread(this)">
+          <div class="thread-avatar">RW</div>
+          <div class="thread-body">
+            <div class="thread-title">📌 Mega Thread: VR Headset Reliability Report 2025–2026 (47 operators surveyed)</div>
+            <div class="thread-info">
+              <span>Ryan Walsh</span>
+              <span class="lvl-badge lvl-vip">👑 VIP</span>
+              <span>Jan 5, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 12,450</span><span>💬 189</span></div>
+        </div>
+        <div class="thread-row" onclick="openThread(this)">
+          <div class="thread-avatar" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">LN</div>
+          <div class="thread-body">
+            <div class="thread-title hot">Comparing redemption machine ROI: Top 3 brands side by side</div>
+            <div class="thread-info">
+              <span>Lisa Ng</span>
+              <span class="lvl-badge lvl-vip">👑 VIP</span>
+              <span>Mar 18, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 3,840</span><span>💬 56</span></div>
+        </div>
+        <div class="thread-row" onclick="openThread(this)">
+          <div class="thread-avatar" style="background:linear-gradient(135deg,#f093fb,#f5576c)">DM</div>
+          <div class="thread-body">
+            <div class="thread-title new">Anyone tried the new outdoor trackless rides from Sinorides?</div>
+            <div class="thread-info">
+              <span>David Müller</span>
+              <span class="lvl-badge lvl-regular">🔵 Regular</span>
+              <span>Mar 25, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 214</span><span>💬 3</span></div>
+        </div>
+      </div>
+
+      <!-- Section: Business Strategy -->
+      <div class="forum-section">
+        <div class="section-head">
+          <div class="section-icon" style="background:rgba(86,171,47,.1)">📊</div>
+          <div class="section-meta">
+            <div class="section-title">Business & Revenue Strategy</div>
+            <div class="section-desc">Pricing, marketing, membership programs, F&B integration</div>
+          </div>
+          <div class="section-counts">
+            <span>🧵 670 threads</span>
+            <span>💬 5,120 replies</span>
+          </div>
+        </div>
+        <div class="thread-row" onclick="openThread(this)">
+          <div class="thread-avatar">CH</div>
+          <div class="thread-body">
+            <div class="thread-title hot">Our membership program drove 40% revenue increase — here's what we did</div>
+            <div class="thread-info">
+              <span>Chen Hua</span>
+              <span class="lvl-badge lvl-vip">👑 VIP</span>
+              <span>Mar 10, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 5,630</span><span>💬 94</span></div>
+        </div>
+        <div class="thread-row" onclick="openThread(this)">
+          <div class="thread-avatar" style="background:linear-gradient(135deg,#667eea,#764ba2)">PK</div>
+          <div class="thread-body">
+            <div class="thread-title">Dynamic pricing strategies for weekend vs. weekday traffic</div>
+            <div class="thread-info">
+              <span>Priya Kumar</span>
+              <span class="lvl-badge lvl-premium">⭐ Premium</span>
+              <span>Mar 15, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 1,820</span><span>💬 31</span></div>
+        </div>
+      </div>
+
+      <!-- Section: Amusement Parks -->
+      <div class="forum-section">
+        <div class="section-head">
+          <div class="section-icon" style="background:rgba(251,191,36,.12)">🎡</div>
+          <div class="section-meta">
+            <div class="section-title">Amusement Park Operations</div>
+            <div class="section-desc">Theme parks, fairgrounds, outdoor attractions and park management</div>
+          </div>
+          <div class="section-counts">
+            <span>🧵 520 threads</span>
+            <span>💬 4,310 replies</span>
+          </div>
+        </div>
+        <div class="thread-row" onclick="openThread(this)">
+          <div class="thread-avatar" style="background:linear-gradient(135deg,#f7971e,#ffd200)">BJ</div>
+          <div class="thread-body">
+            <div class="thread-title hot">Managing queue systems during peak seasons — tips from a 15-year veteran</div>
+            <div class="thread-info">
+              <span>Ben Jackson</span>
+              <span class="lvl-badge lvl-vip">👑 VIP</span>
+              <span>Mar 8, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 4,210</span><span>💬 78</span></div>
+        </div>
+        <div class="thread-row" onclick="openThread(this)">
+          <div class="thread-avatar" style="background:linear-gradient(135deg,#11998e,#38ef7d)">YZ</div>
+          <div class="thread-body">
+            <div class="thread-title new">New playground zone in our park — safety audit checklist inside</div>
+            <div class="thread-info">
+              <span>Yang Zhen</span>
+              <span class="lvl-badge lvl-premium">⭐ Premium</span>
+              <span>Mar 23, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 540</span><span>💬 12</span></div>
+        </div>
+      </div>
+
+      <!-- Section: Buy/Sell -->
+      <div class="forum-section">
+        <div class="section-head">
+          <div class="section-icon" style="background:rgba(248,113,113,.1)">🛒</div>
+          <div class="section-meta">
+            <div class="section-title">Buy / Sell / Trade Equipment</div>
+            <div class="section-desc">Second-hand machines, surplus stock, trade offers — VIP members only to post</div>
+          </div>
+          <div class="section-counts">
+            <span>🧵 230 threads</span>
+            <span>💬 1,680 replies</span>
+          </div>
+        </div>
+        <div class="thread-row" onclick="openThread(this)">
+          <div class="thread-avatar" style="background:linear-gradient(135deg,#ee0979,#ff6a00)">TL</div>
+          <div class="thread-body">
+            <div class="thread-title">🔴 SELLING: 12x VR stations, lightly used (200h each), asking $18k/unit</div>
+            <div class="thread-info">
+              <span>Tom Lee</span>
+              <span class="lvl-badge lvl-vip">👑 VIP</span>
+              <span>Mar 22, 2026</span>
+            </div>
+          </div>
+          <div class="thread-counts"><span>👁 890</span><span>💬 18</span></div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+
+    <!-- RIGHT SIDEBAR -->
+    <div>
+
+      <!-- My Level Widget -->
+      <div class="sidebar-widget" id="memberLevelWidget">
+        <div class="widget-title">⭐ Member Levels</div>
+
+        <div class="level-card regular">
+          <div class="level-name">🔵 Regular Member</div>
+          <div class="level-pts">7+ points required</div>
+          <ul class="level-perms">
+            <li>Post 1 thread per day</li>
+            <li>1 reply per thread</li>
+            <li>Browse all sections</li>
+            <li>Daily login = +1 point</li>
+          </ul>
+        </div>
+
+        <div class="level-card premium">
+          <div class="level-name">⭐ Premium Member</div>
+          <div class="level-pts">30+ points required</div>
+          <ul class="level-perms">
+            <li>Unlimited posts & replies</li>
+            <li>Upload products to catalog</li>
+            <li>Publish articles on site</li>
+            <li>Priority support</li>
+          </ul>
+        </div>
+
+        <div class="level-card vip">
+          <div class="level-name">👑 VIP Member</div>
+          <div class="level-pts">100+ points required</div>
+          <ul class="level-perms">
+            <li>Create company profile</li>
+            <li>Top placement in search</li>
+            <li>Post in Buy/Sell section</li>
+            <li>Exclusive VIP directory listing</li>
+            <li>Dedicated account manager</li>
+          </ul>
+        </div>
+
+        <a href="register.html" style="display:block;text-align:center;margin-top:14px;padding:10px;background:linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">Join Free — Earn Points Now</a>
+      </div>
+
+      <!-- Points Rules -->
+      <div class="sidebar-widget">
+        <div class="widget-title">💎 How to Earn Points</div>
+        <div class="rule-row"><span class="rule-icon">✅</span><span>Register account</span><span class="rule-pts">+1 pt</span></div>
+        <div class="rule-row"><span class="rule-icon">📅</span><span>Daily login</span><span class="rule-pts">+1 pt/day</span></div>
+        <div class="rule-row"><span class="rule-icon">📝</span><span>Post a thread</span><span class="rule-pts">+1 pt</span></div>
+        <div class="rule-row"><span class="rule-icon">💬</span><span>Reply to thread</span><span class="rule-pts">+1 pt</span></div>
+        <div class="rule-row" style="color:#f87171"><span class="rule-icon">⚠️</span><span>Regular: 1 post/day, 1 reply/thread</span><span class="rule-pts" style="color:#f87171">limit</span></div>
+      </div>
+
+      <!-- Active Members -->
+      <div class="sidebar-widget">
+        <div class="widget-title">🔥 Most Active</div>
+        <div id="activeMembers"></div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="sidebar-widget">
+        <div class="widget-title">🕐 Recent Posts</div>
+        <div id="recentActivity"></div>
+      </div>
+
+    </div><!-- /sidebar -->
+
+  </div><!-- /forum-layout -->
+</div><!-- /container -->
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo"><div class="logo-icon" style="width:36px;height:36px;font-size:1rem;">N</div><span>NexAmuse Global</span></div>
+        <p style="color:var(--text-secondary);font-size:.85rem;max-width:280px;margin-top:12px;">The world's premier B2B portal for the amusement and entertainment industry.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="suppliers.html">Suppliers</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="forum.html">Forum</a></li>
+      <li><a href="member-points.html">Points</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <ul>
+          <li><a href="register.html">Join Free</a></li>
+          <li><a href="login.html">Sign In</a></li>
+          <li><a href="forum.html">Discussions</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 NexAmuse Global. All rights reserved.</div>
+    </div>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+<script>
+// Active members
+const ACTIVE = [
+  {name:'James Liu',pts:842,lvl:'vip',ini:'JL',color:'#c9a227'},
+  {name:'Ryan Walsh',pts:631,lvl:'vip',ini:'RW',color:'#f5d06e'},
+  {name:'Lisa Ng',pts:524,lvl:'vip',ini:'LN',color:'#4facfe'},
+  {name:'Chen Hua',pts:488,lvl:'vip',ini:'CH',color:'#56ab2f'},
+  {name:'Sarah Kim',pts:124,lvl:'premium',ini:'SK',color:'#667eea'},
+];
+document.getElementById('activeMembers').innerHTML = ACTIVE.map(m => `
+  <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+    <div style="width:30px;height:30px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0a0e1a;flex-shrink:0">${m.ini}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.name}</div>
+      <div style="font-size:11px;color:#6b7280">${m.pts} pts</div>
+    </div>
+    <span class="lvl-badge lvl-${m.lvl}" style="font-size:10px">${m.lvl==='vip'?'👑 VIP':m.lvl==='premium'?'⭐':''}</span>
+  </div>`).join('');
+
+const RECENT = [
+  {title:'New FEC layout template posted',section:'Venue Design',time:'5m ago'},
+  {title:'VR headset comparison updated',section:'Equipment',time:'12m ago'},
+  {title:'Revenue strategy Q&A live',section:'Business',time:'28m ago'},
+  {title:'Buy/Sell: Selling 4x cranes',section:'Buy/Sell',time:'1h ago'},
+];
+document.getElementById('recentActivity').innerHTML = RECENT.map(r => `
+  <div style="padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+    <div style="font-size:12px;color:#e2e8f0;margin-bottom:2px;line-height:1.4">${r.title}</div>
+    <div style="font-size:11px;color:#6b7280">${r.section} · ${r.time}</div>
+  </div>`).join('');
+
+// Tabs
+function switchTab(btn, tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Could filter threads here
+}
+
+// Post form auth check
+function checkPostAuth() {
+  const s = JSON.parse(localStorage.getItem('nexamuse_user') || 'null');
+  if (!s) {
+    document.getElementById('postFormInner').style.display = 'none';
+    document.getElementById('postLoginPrompt').style.display = 'block';
+  }
+}
+checkPostAuth();
+
+function submitPost() {
+  const title = document.getElementById('postTitle').value.trim();
+  const content = document.getElementById('postContent').value.trim();
+  const section = document.getElementById('postSection').value;
+  if (!section) { alert('Please select a section.'); return; }
+  if (title.length < 5) { alert('Title too short (min 5 chars).'); return; }
+  if (content.length < 20) { alert('Content too short (min 20 chars).'); return; }
+  // Simulate post success
+  document.getElementById('postTitle').value = '';
+  document.getElementById('postContent').value = '';
+  document.getElementById('postSection').value = '';
+  // Show toast if main.js loaded
+  if (typeof showToast === 'function') showToast('Thread posted! +1 point earned 🎉', 'success');
+  else alert('Thread posted successfully! You earned +1 point.');
+}
+function clearPost() {
+  document.getElementById('postTitle').value = '';
+  document.getElementById('postContent').value = '';
+}
+function openThread(row) {
+  const title = row.querySelector('.thread-title').textContent.replace(/^[🔥🆕📌]+\s*/,'');
+  // Simulate opening
+  if (typeof showToast === 'function') showToast(`Opening: "${title.slice(0,40)}…"`, 'info');
+}
+</script>
 </body>
 </html>

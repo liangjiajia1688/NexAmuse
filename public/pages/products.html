@@ -1,113 +1,408 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>二手设备市场 — NexAmuse</title>
+  <title>Amusement Equipment Catalog — NexAmuse Global</title>
+  <meta name="description" content="Browse 12,400+ premium arcade machines, VR attractions, kids rides, redemption games and amusement equipment from verified global manufacturers."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../assets/css/style.css"/>
   <style>
-    .market{max-width:1200px;margin:40px auto;padding:0 20px;}
-    .market h1{color:#fff;font-size:2.2rem;}
-    .market .lead{color:var(--text-secondary);margin:8px 0 24px;}
-    .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:24px;}
-    .chip{padding:8px 16px;border-radius:20px;background:var(--card-bg);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;font-size:.88rem;}
-    .chip.active{background:var(--accent-gradient);color:#1a1e2e;font-weight:600;border:none;}
-    .search-inline{flex:1;min-width:200px;}
-    .search-inline input{width:100%;background:#1a2035;border:1px solid var(--border);border-radius:20px;padding:9px 16px;color:#e8eaf0;outline:none;}
-    .search-inline input:focus{border-color:var(--accent);}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
-    .pcard{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:var(--transition);cursor:pointer;}
-    .pcard:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:var(--shadow-hover);}
-    .pcard .thumb{aspect-ratio:4/3;background:linear-gradient(135deg,#1c2540,#0d1530);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--accent);overflow:hidden;}
-    .pcard .thumb img{width:100%;height:100%;object-fit:cover;}
-    .pcard .body{padding:16px;}
-    .pcard .ttl{color:#fff;font-weight:600;font-size:1rem;margin-bottom:6px;}
-    .pcard .meta{color:var(--text-secondary);font-size:.82rem;display:flex;justify-content:space-between;}
-    .pcard .price{color:var(--accent);font-weight:700;font-size:1.05rem;}
-    .tag{display:inline-block;background:var(--tag-bg);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:.75rem;margin-right:6px;}
-    .empty{color:var(--text-secondary);text-align:center;padding:60px 0;grid-column:1/-1;}
+    .sidebar{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;position:sticky;top:88px;}
+    .sidebar h4{color:#fff;font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border);}
+    .sidebar h4:first-child{margin-top:0;padding-top:0;border-top:none;}
+    .sidebar-check{display:flex;flex-direction:column;gap:10px;}
+    .sidebar-check label{display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--text-secondary);font-size:.88rem;transition:var(--transition);}
+    .sidebar-check label:hover{color:var(--text-primary);}
+    .sidebar-check input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;}
+    .range-row{display:flex;gap:8px;align-items:center;}
+    .range-row input{background:var(--secondary);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--white);font-size:.82rem;width:100%;outline:none;}
+    .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+    .page-layout{display:grid;grid-template-columns:260px 1fr;gap:28px;align-items:start;}
+    .sort-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+    .sort-bar select{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text-secondary);font-size:.85rem;cursor:pointer;outline:none;}
+    .result-count{color:var(--text-secondary);font-size:.88rem;}
+    .result-count strong{color:var(--accent);}
+    .pagination{display:flex;gap:8px;justify-content:center;margin-top:32px;}
+    .page-btn{width:38px;height:38px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);color:var(--text-secondary);cursor:pointer;font-size:.9rem;transition:var(--transition);display:flex;align-items:center;justify-content:center;}
+    .page-btn:hover,.page-btn.active{background:var(--accent);color:var(--primary);border-color:var(--accent);}
+    .inquiry-modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:24px;}
+    .inquiry-modal.open{display:flex;}
+    .inquiry-box{background:#131929;border:1px solid rgba(201,162,39,0.2);border-radius:16px;padding:36px;max-width:520px;width:100%;position:relative;max-height:90vh;overflow-y:auto;}
+    .inquiry-box h3{color:#fff;margin-bottom:6px;}
+    .inquiry-box p{color:#9aa0b4;font-size:.88rem;margin-bottom:24px;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+    .form-group{margin-bottom:16px;}
+    .form-group label{display:block;font-size:.8rem;color:#9aa0b4;margin-bottom:6px;font-weight:500;}
+    .form-group input,.form-group textarea,.form-group select{width:100%;background:#1a2035;border:1px solid rgba(201,162,39,0.2);border-radius:8px;padding:10px 14px;color:#e8eaf0;font-size:.9rem;outline:none;transition:all .3s;font-family:inherit;}
+    .form-group input:focus,.form-group textarea:focus{border-color:#c9a227;}
+    .form-group textarea{resize:vertical;min-height:90px;}
+    .form-group select option{background:#1a2035;}
+    .modal-close-btn{position:absolute;top:16px;right:16px;background:none;border:none;color:#9aa0b4;font-size:1.3rem;cursor:pointer;}
+    .modal-close-btn:hover{color:#fff;}
+    @media(max-width:900px){.page-layout{grid-template-columns:1fr}.sidebar{position:static}.product-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.product-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <div id="na-header"></div>
+<!-- Top Bar -->
+<div class="top-bar"><div class="container"><div class="top-bar-left"><span><span class="live-badge"><span class="live-dot"></span>LIVE</span> &nbsp;GTI Asia Pacific 2026 — March 28–30, Guangzhou</span></div><div class="top-bar-right"><a href="#">Industry Report 2026</a><a href="contact.html">Contact</a></div></div></div>
+<!-- Nav -->
+<nav class="navbar"><div class="container">
+  <a href="../index.html" class="logo"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li>
+      <a href="products.html" class="active">Products ▾</a>
+      <div class="dropdown-menu">
+        <a href="products.html?cat=arcade">Arcade Machines</a>
+        <a href="products.html?cat=vr">VR / XR Attractions</a>
+        <a href="products.html?cat=kids">Kids &amp; Family Rides</a>
+        <a href="products.html?cat=redemption">Redemption &amp; Prize</a>
+        <a href="products.html?cat=simulation">Simulation Rides</a>
+        <a href="products.html?cat=outdoor">Outdoor Attractions</a>
+        <a href="products.html?cat=waterpark">Water Park Equipment</a>
+        <a href="products.html?cat=accessories">Accessories &amp; Parts</a>
+      </div>
+    </li>
+    <li>
+      <a href="news.html">News ▾</a>
+      <div class="dropdown-menu">
+        <a href="news.html?cat=industry">Industry Dynamics</a>
+        <a href="news.html?cat=companies">Company News</a>
+        <a href="news.html?cat=interviews">Executive Interviews</a>
+        <a href="news.html?cat=newproducts">New Product Releases</a>
+        <a href="news.html?cat=regulations">Regulations &amp; Compliance</a>
+      </div>
+    </li>
+    <li><a href="suppliers.html">Suppliers</a></li>
+    <li>
+      <a href="exhibitions.html">Exhibitions ▾</a>
+      <div class="dropdown-menu">
+        <a href="exhibitions.html#calendar">Exhibition Calendar</a>
+        <a href="exhibitions.html#reports">Show Reports</a>
+        <a href="exhibitions.html#register">Pre-Register</a>
+      </div>
+    </li>
+    <li><a href="news.html">Articles</a></li>
+    <li><a href="forum.html">Forum</a></li>
+      <li><a href="member-points.html">Points</a></li>
+    <li><a href="magazine.html">Videos</a></li>
+  </ul>
+  <div class="nav-actions">
+      <button class="search-btn js-open-search">🔍 Search</button>
+      <!-- Auth buttons injected dynamically by main.js renderAuthNav() -->
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button></div>
+</div></nav>
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu"><button class="mobile-menu-close" id="mobileClose">✕</button><ul class="mobile-nav-links"><li><a href="../index.html">🏠 Home</a></li><li><a href="products.html">🎮 Products</a></li><li><a href="news.html">📰 News &amp; Articles</a></li><li><a href="suppliers.html">🏭 Suppliers</a></li><li><a href="exhibitions.html">🎪 Exhibitions</a></li><li><a href="forum.html">💬 Forum</a></li><li><a href="member-points.html">⭐ Points</a></li><li><a href="magazine.html">🎬 Videos</a></li><li><a href="contact.html">📩 Contact</a></li></ul><div class="mobile-auth-wrap" style="margin-top:32px;display:flex;flex-direction:column;gap:12px;"><!-- Auth buttons injected dynamically by main.js renderAuthNav() --></div></div>
+<!-- Search Overlay -->
+<div class="search-overlay" id="searchOverlay"><button class="search-close" id="searchClose">✕</button><div class="search-box"><h2>Search NexAmuse Global</h2><div class="search-input-wrap"><input type="text" placeholder="Search products, suppliers, news..." autofocus/><button>Search</button></div><div class="search-suggestions"><p>Popular:</p><div class="suggestion-tags"><span class="suggestion-tag">VR Simulator</span><span class="suggestion-tag">Claw Machine</span><span class="suggestion-tag">Trampoline Park</span><span class="suggestion-tag">Motion Ride</span></div></div></div></div>
 
-  <div class="market">
-    <h1>二手设备市场</h1>
-    <p class="lead">游戏厅、游乐场转型或结业？在这里发布你的二手设备，让全国的买家看到。</p>
+<!-- Page Hero -->
+<div class="page-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="../index.html">Home</a><span>/</span><span class="current">Products</span></div>
+    <h1 style="color:#fff;font-size:clamp(1.8rem,4vw,3rem);">Amusement Equipment <em style="color:var(--accent);font-style:normal;">Catalog</em></h1>
+    <p style="color:var(--text-secondary);max-width:540px;margin-top:12px;">Browse 12,400+ premium machines from 2,800+ verified manufacturers in 60+ countries.</p>
+    <div style="display:flex;gap:16px;margin-top:20px;flex-wrap:wrap;">
+      <span class="badge badge-gold">✅ Verified Suppliers Only</span>
+      <span class="badge badge-blue">🌐 180+ Countries</span>
+      <span class="badge badge-green">📦 12,400+ Products</span>
+    </div>
+  </div>
+</div>
 
-    <div class="filters">
-      <div class="chip active" data-cat="">全部</div>
-      <div class="chip" data-cat="arcade">游戏机 / 街机</div>
-      <div class="chip" data-cat="amusement">游乐设备</div>
-      <div class="chip" data-cat="anime">动漫周边</div>
-      <div class="chip" data-cat="other">其他</div>
-      <div class="search-inline"><input id="search" placeholder="搜索设备名称…"/></div>
-      <a href="dashboard.html" class="btn-primary" style="padding:9px 20px;">+ 发布二手</a>
+<!-- Main Content -->
+<section class="section">
+  <div class="container">
+    <!-- Category Quick Filter -->
+    <div class="filter-bar" style="margin-bottom:28px;">
+      <button class="filter-btn active" data-group="cat" data-filter="all">All Categories</button>
+      <button class="filter-btn" data-group="cat" data-filter="arcade">🕹 Arcade</button>
+      <button class="filter-btn" data-group="cat" data-filter="vr">🥽 VR / XR</button>
+      <button class="filter-btn" data-group="cat" data-filter="kids">🎠 Kids & Family</button>
+      <button class="filter-btn" data-group="cat" data-filter="redemption">🎁 Redemption</button>
+      <button class="filter-btn" data-group="cat" data-filter="simulation">🎢 Simulation</button>
+      <button class="filter-btn" data-group="cat" data-filter="outdoor">🌳 Outdoor</button>
+      <button class="filter-btn" data-group="cat" data-filter="waterpark">🏊 Water Park</button>
     </div>
 
-    <div class="grid" id="grid"></div>
+    <div class="page-layout">
+      <!-- Sidebar Filters -->
+      <aside class="sidebar">
+        <h4>🔍 Refine Results</h4>
+        <h4>Region</h4>
+        <div class="sidebar-check">
+          <label><input type="checkbox" checked/> China (4,820)</label>
+          <label><input type="checkbox"/> USA (1,240)</label>
+          <label><input type="checkbox"/> Europe (980)</label>
+          <label><input type="checkbox"/> Japan (650)</label>
+          <label><input type="checkbox"/> South Korea (420)</label>
+          <label><input type="checkbox"/> Other (4,290)</label>
+        </div>
+        <h4>Price Range (USD)</h4>
+        <div class="range-row">
+          <input type="number" placeholder="Min $"/>
+          <span style="color:var(--text-secondary);">—</span>
+          <input type="number" placeholder="Max $"/>
+        </div>
+        <h4>Certifications</h4>
+        <div class="sidebar-check">
+          <label><input type="checkbox"/> CE Certified</label>
+          <label><input type="checkbox"/> TUV Approved</label>
+          <label><input type="checkbox"/> SGS Tested</label>
+          <label><input type="checkbox"/> ASTM F24</label>
+          <label><input type="checkbox"/> ISO 9001</label>
+        </div>
+        <h4>Players</h4>
+        <div class="sidebar-check">
+          <label><input type="checkbox"/> 1 Player</label>
+          <label><input type="checkbox"/> 2 Players</label>
+          <label><input type="checkbox"/> 4 Players</label>
+          <label><input type="checkbox"/> 6+ Players / Group</label>
+        </div>
+        <h4>Technology</h4>
+        <div class="sidebar-check">
+          <label><input type="checkbox"/> VR / XR</label>
+          <label><input type="checkbox"/> Motion Platform</label>
+          <label><input type="checkbox"/> RFID / Cashless</label>
+          <label><input type="checkbox"/> AI / Smart System</label>
+          <label><input type="checkbox"/> Touchscreen</label>
+        </div>
+        <div style="margin-top:20px;">
+          <button class="btn btn-primary" style="width:100%;justify-content:center;">Apply Filters</button>
+          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:8px;">Reset All</button>
+        </div>
+      </aside>
+
+      <!-- Product Grid -->
+      <div>
+        <div class="sort-bar">
+          <div class="result-count">Showing <strong>12,400+</strong> products</div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <select><option>Sort by: Featured</option><option>Newest First</option><option>Price: Low to High</option><option>Price: High to Low</option><option>Most Inquired</option></select>
+          </div>
+        </div>
+
+        <div class="product-grid filterable-grid">
+          <!-- Products -->
+          <div class="card product-card filterable-item" data-category="vr" style="position:relative;">
+            <span class="product-badge">HOT</span>
+            <div class="card-image" style="background:linear-gradient(135deg,#1e3a5f,#0d1f3c);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🥽</div>
+            <div class="card-body">
+              <span class="card-tag">VR / XR</span>
+              <div class="card-title">Ultra HD VR Racing Simulator Pro 4D</div>
+              <div class="card-meta"><span>🏭 TechPlay Co.</span><span>🇨🇳 China</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">4-Player</span><span class="tag">CE</span><span class="tag">Motion</span></div>
+              <div class="card-price">Price on Request</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="redemption" style="position:relative;">
+            <span class="product-badge">NEW</span>
+            <div class="card-image" style="background:linear-gradient(135deg,#3b1f5f,#1a0d3c);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🎁</div>
+            <div class="card-body">
+              <span class="card-tag">Redemption</span>
+              <div class="card-title">AI Smart Claw Machine with RFID Ticket System</div>
+              <div class="card-meta"><span>🏭 ArcadeMax Ltd</span><span>🇨🇳 China</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">AI</span><span class="tag">RFID</span><span class="tag">CE</span></div>
+              <div class="card-price">From $2,800 USD</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="kids" style="position:relative;">
+            <div class="card-image" style="background:linear-gradient(135deg,#1f3b1e,#0d2010);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🎠</div>
+            <div class="card-body">
+              <span class="card-tag">Kids & Family</span>
+              <div class="card-title">Luxury Carousel 24-Seat LED Edition</div>
+              <div class="card-meta"><span>🏭 DreamRide Group</span><span>🇨🇳 China</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">24-Seat</span><span class="tag">LED</span><span class="tag">TUV</span></div>
+              <div class="card-price">From $18,000 USD</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="simulation" style="position:relative;">
+            <span class="product-badge">NEW</span>
+            <div class="card-image" style="background:linear-gradient(135deg,#3b2b1e,#1a1208);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🎢</div>
+            <div class="card-body">
+              <span class="card-tag">Simulation</span>
+              <div class="card-title">360° Dynamic Motion Flight Simulator</div>
+              <div class="card-meta"><span>🏭 SimWorld Tech</span><span>🇩🇪 Germany</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">360°</span><span class="tag">TUV</span><span class="tag">6-DOF</span></div>
+              <div class="card-price">Price on Request</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="arcade" style="position:relative;">
+            <div class="card-image" style="background:linear-gradient(135deg,#1e2e3b,#0d1825);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🕹</div>
+            <div class="card-body">
+              <span class="card-tag">Arcade</span>
+              <div class="card-title">8K Ultra HD Street Fighter Cabinet X</div>
+              <div class="card-meta"><span>🏭 Capcom Licensed</span><span>🇯🇵 Japan</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">8K</span><span class="tag">2P</span><span class="tag">Licensed</span></div>
+              <div class="card-price">From $5,500 USD</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="vr" style="position:relative;">
+            <span class="product-badge">HOT</span>
+            <div class="card-image" style="background:linear-gradient(135deg,#3b1e2e,#1a0d18);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🌐</div>
+            <div class="card-body">
+              <span class="card-tag">VR / XR</span>
+              <div class="card-title">Free-Roam VR Arena System (4-Player)</div>
+              <div class="card-meta"><span>🏭 VRNation Corp</span><span>🇨🇳 China</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">Free-Roam</span><span class="tag">4P</span><span class="tag">CE</span></div>
+              <div class="card-price">From $45,000 USD</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="kids" style="position:relative;">
+            <div class="card-image" style="background:linear-gradient(135deg,#2b3b1e,#141a0d);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🤸</div>
+            <div class="card-body">
+              <span class="card-tag">Kids & Family</span>
+              <div class="card-title">Indoor Trampoline Park Module Set (500 sqm)</div>
+              <div class="card-meta"><span>🏭 JumpZone Inc</span><span>🇺🇸 USA</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">Modular</span><span class="tag">ASTM</span><span class="tag">Custom</span></div>
+              <div class="card-price">From $80,000 USD</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="redemption" style="position:relative;">
+            <div class="card-image" style="background:linear-gradient(135deg,#3b3b1e,#1a1a0d);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🎰</div>
+            <div class="card-body">
+              <span class="card-tag">Redemption</span>
+              <div class="card-title">Touchscreen Prize Merchandiser 2.0</div>
+              <div class="card-meta"><span>🏭 Elaut NV</span><span>🇧🇪 Belgium</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">Touchscreen</span><span class="tag">CE</span></div>
+              <div class="card-price">From $3,200 USD</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="outdoor" style="position:relative;">
+            <div class="card-image" style="background:linear-gradient(135deg,#1e3b2e,#0d2018);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🎡</div>
+            <div class="card-body">
+              <span class="card-tag">Outdoor Attractions</span>
+              <div class="card-title">Giant Observation Ferris Wheel 42m</div>
+              <div class="card-meta"><span>🏭 SkyRide Global</span><span>🇨🇳 China</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">42m</span><span class="tag">TUV</span><span class="tag">LED</span></div>
+              <div class="card-price">Price on Request</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="waterpark">
+            <div class="card-image" style="background:linear-gradient(135deg,#1e2a3b,#0d1520);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🏊</div>
+            <div class="card-body">
+              <span class="card-tag">Water Park</span>
+              <div class="card-title">Tornado Wave Slide Tower 18m</div>
+              <div class="card-meta"><span>🏭 AquaWorld Pro</span><span>🇩🇪 Germany</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">18m</span><span class="tag">ISO</span><span class="tag">FRP</span></div>
+              <div class="card-price">From $120,000 USD</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="simulation">
+            <div class="card-image" style="background:linear-gradient(135deg,#2e1e3b,#180d20);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🚀</div>
+            <div class="card-body">
+              <span class="card-tag">Simulation</span>
+              <div class="card-title">Space Mission 5D Cinema Pod (8-Seat)</div>
+              <div class="card-meta"><span>🏭 CineStar Tech</span><span>🇨🇳 China</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">5D</span><span class="tag">8-Seat</span><span class="tag">CE</span></div>
+              <div class="card-price">From $28,000 USD</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card product-card filterable-item" data-category="arcade">
+            <div class="card-image" style="background:linear-gradient(135deg,#3b1e1e,#200d0d);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🏎️</div>
+            <div class="card-body">
+              <span class="card-tag">Arcade</span>
+              <div class="card-title">Formula Racing Deluxe Sit-Down Cabinet</div>
+              <div class="card-meta"><span>🏭 Raw Thrills</span><span>🇺🇸 USA</span></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"><span class="tag">2P Link</span><span class="tag">Force Feedback</span></div>
+              <div class="card-price">From $7,800 USD</div>
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+                <button class="btn btn-ghost btn-sm">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">4</button>
+          <button class="page-btn">5</button>
+          <button class="page-btn">…</button>
+          <button class="page-btn">248</button>
+        </div>
+      </div>
+    </div>
   </div>
+</section>
 
-  <div id="na-footer"></div>
+<!-- CTA -->
+<section class="section-sm" style="background:var(--secondary);border-top:1px solid var(--border);">
+  <div class="container" style="text-align:center;">
+    <h3 style="color:#fff;margin-bottom:10px;">Can't find what you're looking for?</h3>
+    <p style="color:var(--text-secondary);margin-bottom:20px;">Submit a custom sourcing request and our team will find the right manufacturer for you.</p>
+    <button class="btn btn-primary js-inquiry">📩 Submit Custom Sourcing Request</button>
+  </div>
+</section>
 
-  <script src="../assets/js/api.js"></script>
-  <script src="../assets/js/auth.js"></script>
-  <script src="../assets/js/layout.js"></script>
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const grid = $('grid');
-    const params = new URLSearchParams(location.search);
-    let curCat = params.get('cat') || '';
+<!-- Footer -->
+<footer><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="../index.html" class="logo" style="margin-bottom:16px;"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a><p style="color:var(--text-secondary);font-size:.88rem;">The world's premier B2B intelligence platform for the global amusement industry.</p></div><div class="footer-col"><h4>Products</h4><ul class="footer-links"><li><a href="products.html">Arcade Machines</a></li><li><a href="products.html">VR / XR</a></li><li><a href="products.html">Kids Rides</a></li><li><a href="products.html">Redemption</a></li></ul></div><div class="footer-col"><h4>Resources</h4><ul class="footer-links"><li><a href="news.html">Industry News</a></li><li><a href="exhibitions.html">Exhibitions</a></li><li><a href="magazine.html">Videos</a></li><li><a href="suppliers.html">Suppliers</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul class="footer-links"><li><a href="#">About Us</a></li><li><a href="contact.html">Contact</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 NexAmuse Global. All rights reserved.</p><div class="footer-bottom-links"><a href="#">Privacy</a><a href="#">Terms</a></div></div></div></footer>
 
-    function highlight() {
-      document.querySelectorAll('.chip').forEach(c => {
-        c.classList.toggle('active', c.dataset.cat === curCat);
-      });
-    }
-
-    function card(p) {
-      const img = (p.images && p.images.length) ? `<img src="${p.images[0]}" alt=""/>` : '🎰';
-      const price = p.price ? '¥' + Number(p.price).toLocaleString() : '面议';
-      return `<div class="pcard" onclick="location.href='product.html?id=${p.id}'">
-        <div class="thumb">${img}</div>
-        <div class="body">
-          <div class="ttl">${window.Auth.escapeHtml(p.title)}</div>
-          <div style="margin:6px 0;"><span class="tag">${p.cond||'二手'}</span><span class="tag">${p.category||''}</span></div>
-          <div class="meta"><span class="price">${price}</span><span>${window.Auth.escapeHtml(p.location||'')}</span></div>
-        </div></div>`;
-    }
-
-    async function load() {
-      grid.innerHTML = '<div class="empty">加载中…</div>';
-      const q = curCat ? ('?cat=' + encodeURIComponent(curCat)) : '';
-      try {
-        const r = await window.Api.products(q);
-        grid.innerHTML = (r.products && r.products.length)
-          ? r.products.map(card).join('')
-          : '<div class="empty">暂无设备，快来发布第一条吧！</div>';
-      } catch (e) { grid.innerHTML = '<div class="empty">加载失败：' + e.message + '</div>'; }
-    }
-
-    document.querySelectorAll('.chip').forEach(c => {
-      c.onclick = () => { curCat = c.dataset.cat; highlight(); load(); };
-    });
-
-    let timer;
-    $('search').addEventListener('input', (e) => {
-      clearTimeout(timer);
-      const v = e.target.value.trim();
-      timer = setTimeout(async () => {
-        try {
-          const r = await window.Api.products(v ? ('?q=' + encodeURIComponent(v)) : '');
-          grid.innerHTML = (r.products && r.products.length) ? r.products.map(card).join('') : '<div class="empty">无匹配结果</div>';
-        } catch (e) { /* ignore */ }
-      }, 350);
-    });
-
-    highlight();
-    load();
-  </script>
+<!-- Inquiry Modal -->
+<div class="inquiry-modal" id="inquiryModal"><div class="inquiry-box"><button class="modal-close-btn" id="modalClose">✕</button><h3>Submit an Inquiry</h3><p>Our team will connect you with the right supplier within 24 hours.</p><form id="inquiryForm"><div class="form-row"><div class="form-group"><label>First Name *</label><input type="text" placeholder="John" required/></div><div class="form-group"><label>Last Name *</label><input type="text" placeholder="Smith" required/></div></div><div class="form-group"><label>Company Name *</label><input type="text" placeholder="Your Company Ltd." required/></div><div class="form-group"><label>Business Email *</label><input type="email" placeholder="john@company.com" required/></div><div class="form-group"><label>Product / Category</label><select><option>VR / XR Attractions</option><option>Arcade Machines</option><option>Kids & Family Rides</option><option>Redemption Games</option><option>Simulation Rides</option><option>Complete FEC Solution</option></select></div><div class="form-group"><label>Message</label><textarea placeholder="Tell us about your project, quantity, budget, timeline..."></textarea></div><button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Submit Inquiry →</button></form></div></div>
+<button class="scroll-top" id="scrollTop">↑</button>
+<script src="../assets/js/main.js"></script>
 </body>
 </html>

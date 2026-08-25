@@ -1,74 +1,315 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>行业新闻 — NexAmuse</title>
+  <title>Industry News & Insights — NexAmuse Global</title>
+  <meta name="description" content="Stay ahead with the latest amusement industry news, market reports, company announcements, regulatory updates and executive interviews."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../assets/css/style.css"/>
   <style>
-    .nwrap{max-width:1000px;margin:40px auto;padding:0 20px;}
-    .nwrap h1{color:#fff;font-size:2.2rem;}
-    .nwrap .lead{color:var(--text-secondary);margin:8px 0 20px;}
-    .filters{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
-    .chip{padding:7px 15px;border-radius:18px;background:var(--card-bg);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;font-size:.85rem;}
-    .chip.active{background:var(--accent-gradient);color:#1a1e2e;font-weight:600;border:none;}
-    .news-item{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;transition:var(--transition);}
-    .news-item:hover{border-color:var(--accent);}
-    .news-item .src{color:var(--accent);font-size:.8rem;font-weight:600;}
-    .news-item .cat{background:var(--tag-bg);color:var(--accent);padding:2px 9px;border-radius:12px;margin-left:8px;font-size:.75rem;}
-    .news-item a.ttl{color:#fff;font-weight:700;font-size:1.15rem;text-decoration:none;display:block;margin:8px 0;}
-    .news-item a.ttl:hover{color:var(--accent);}
-    .news-item .sum{color:var(--text-secondary);font-size:.9rem;line-height:1.7;}
-    .news-item .time{color:var(--text-secondary);font-size:.78rem;margin-top:10px;}
-    .empty{color:var(--text-secondary);text-align:center;padding:50px 0;}
+    .news-layout{display:grid;grid-template-columns:1fr 320px;gap:32px;align-items:start;}
+    .news-main{}
+    .news-sidebar-col{position:sticky;top:88px;}
+    .sidebar-widget{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;}
+    .widget-header{padding:16px 20px;border-bottom:1px solid var(--border);font-size:.85rem;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:1px;}
+    .widget-body{padding:16px 20px;}
+    .news-list-full{display:flex;flex-direction:column;gap:20px;}
+    .news-item-full{display:flex;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+    .news-item-full:last-child{border-bottom:none;padding-bottom:0;}
+    .news-item-full .thumb{width:130px;flex-shrink:0;aspect-ratio:4/3;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:2rem;}
+    .news-item-full .body{}
+    .news-item-full .title{font-size:.98rem;font-weight:600;color:#fff;line-height:1.45;margin-bottom:6px;}
+    .news-item-full .excerpt{font-size:.83rem;color:var(--text-secondary);line-height:1.6;margin-bottom:8px;}
+    .news-item-full .meta{font-size:.75rem;color:var(--text-secondary);display:flex;gap:12px;flex-wrap:wrap;}
+    .featured-news{border-radius:var(--radius);overflow:hidden;margin-bottom:28px;background:var(--card-bg);border:1px solid var(--border);}
+    .featured-news .cover{aspect-ratio:16/7;background:linear-gradient(135deg,#1a2540,#0d1530);display:flex;align-items:center;justify-content:center;font-size:5rem;}
+    .featured-news .body{padding:24px;}
+    @media(max-width:900px){.news-layout{grid-template-columns:1fr}.news-sidebar-col{position:static}.news-item-full .thumb{width:90px}}
   </style>
 </head>
 <body>
-  <div id="na-header"></div>
-  <div class="nwrap">
-    <h1>行业新闻</h1>
-    <p class="lead">聚合全球游戏 · 游艺 · 动漫热点资讯（摘要来自各媒体，点击跳转原文）。</p>
-    <div class="filters">
-      <div class="chip active" data-cat="">全部</div>
-      <div class="chip" data-cat="游戏">游戏</div>
-      <div class="chip" data-cat="动漫">动漫</div>
-    </div>
-    <div id="list"></div>
+<div class="top-bar"><div class="container"><div class="top-bar-left"><span><span class="live-badge"><span class="live-dot"></span>LIVE</span>&nbsp;GTI Asia Pacific 2026 — March 28–30, Guangzhou</span></div><div class="top-bar-right"><a href="#">Industry Report 2026</a><a href="contact.html">Contact</a></div></div></div>
+<nav class="navbar"><div class="container">
+  <a href="../index.html" class="logo"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li>
+      <a href="products.html">Products ▾</a>
+      <div class="dropdown-menu">
+        <a href="products.html?cat=arcade">Arcade Machines</a>
+        <a href="products.html?cat=vr">VR / XR Attractions</a>
+        <a href="products.html?cat=kids">Kids &amp; Family Rides</a>
+        <a href="products.html?cat=redemption">Redemption &amp; Prize</a>
+        <a href="products.html?cat=simulation">Simulation Rides</a>
+        <a href="products.html?cat=outdoor">Outdoor Attractions</a>
+        <a href="products.html?cat=waterpark">Water Park Equipment</a>
+        <a href="products.html?cat=accessories">Accessories &amp; Parts</a>
+      </div>
+    </li>
+    <li>
+      <a href="news.html" class="active">News ▾</a>
+      <div class="dropdown-menu">
+        <a href="news.html?cat=industry">Industry Dynamics</a>
+        <a href="news.html?cat=companies">Company News</a>
+        <a href="news.html?cat=interviews">Executive Interviews</a>
+        <a href="news.html?cat=newproducts">New Product Releases</a>
+        <a href="news.html?cat=regulations">Regulations &amp; Compliance</a>
+      </div>
+    </li>
+    <li><a href="suppliers.html">Suppliers</a></li>
+    <li>
+      <a href="exhibitions.html">Exhibitions ▾</a>
+      <div class="dropdown-menu">
+        <a href="exhibitions.html#calendar">Exhibition Calendar</a>
+        <a href="exhibitions.html#reports">Show Reports</a>
+        <a href="exhibitions.html#register">Pre-Register</a>
+      </div>
+    </li>
+    <li><a href="news.html">Articles</a></li>
+    <li><a href="forum.html">Forum</a></li>
+      <li><a href="member-points.html">Points</a></li>
+    <li><a href="magazine.html">Videos</a></li>
+  </ul>
+  <div class="nav-actions">
+      <button class="search-btn js-open-search">🔍 Search</button>
+      <!-- Auth buttons injected dynamically by main.js renderAuthNav() -->
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button></div>
+</div></nav>
+<div class="mobile-menu" id="mobileMenu"><button class="mobile-menu-close" id="mobileClose">✕</button><ul class="mobile-nav-links"><li><a href="../index.html">🏠 Home</a></li><li><a href="products.html">🎮 Products</a></li><li><a href="news.html">📰 News &amp; Articles</a></li><li><a href="suppliers.html">🏭 Suppliers</a></li><li><a href="exhibitions.html">🎪 Exhibitions</a></li><li><a href="forum.html">💬 Forum</a></li><li><a href="member-points.html">⭐ Points</a></li><li><a href="magazine.html">🎬 Videos</a></li><li><a href="contact.html">📩 Contact</a></li></ul><div class="mobile-auth-wrap" style="margin-top:32px;display:flex;flex-direction:column;gap:12px;"><!-- Auth buttons injected dynamically by main.js renderAuthNav() --></div></div>
+<div class="search-overlay" id="searchOverlay"><button class="search-close" id="searchClose">✕</button><div class="search-box"><h2>Search NexAmuse Global</h2><div class="search-input-wrap"><input type="text" placeholder="Search news, topics, companies..." autofocus/><button>Search</button></div><div class="search-suggestions"><p>Popular:</p><div class="suggestion-tags"><span class="suggestion-tag">IAAPA 2026</span><span class="suggestion-tag">VR Attractions</span><span class="suggestion-tag">FEC Market</span><span class="suggestion-tag">Safety Standards</span></div></div></div></div>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="../index.html">Home</a><span>/</span><span class="current">News & Insights</span></div>
+    <h1 style="color:#fff;">Industry <em style="color:var(--accent);font-style:normal;">News</em> & Insights</h1>
+    <p style="color:var(--text-secondary);max-width:540px;margin-top:12px;">Real-time intelligence for the global amusement, attractions & entertainment industry.</p>
   </div>
-  <div id="na-footer"></div>
+</div>
 
-  <script src="../assets/js/api.js"></script>
-  <script src="../assets/js/auth.js"></script>
-  <script src="../assets/js/layout.js"></script>
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const list = $('list');
-    let curCat = '';
+<section class="section">
+  <div class="container">
+    <div class="filter-bar" style="margin-bottom:28px;">
+      <button class="filter-btn active" data-group="news" data-filter="all">All News</button>
+      <button class="filter-btn" data-group="news" data-filter="industry">Industry Dynamics</button>
+      <button class="filter-btn" data-group="news" data-filter="companies">Company News</button>
+      <button class="filter-btn" data-group="news" data-filter="exhibitions">Exhibitions</button>
+      <button class="filter-btn" data-group="news" data-filter="technology">Technology</button>
+      <button class="filter-btn" data-group="news" data-filter="regulation">Regulations</button>
+      <button class="filter-btn" data-group="news" data-filter="interviews">Interviews</button>
+    </div>
 
-    document.querySelectorAll('.chip').forEach(c => {
-      c.onclick = () => { document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); curCat = c.dataset.cat; load(); };
-    });
+    <div class="news-layout">
+      <div class="news-main">
+        <!-- Featured Article -->
+        <div class="featured-news fade-in">
+          <div class="cover">🎪</div>
+          <div class="body">
+            <span class="badge badge-gold" style="margin-bottom:12px;">★ FEATURED STORY</span>
+            <h2 style="color:#fff;margin-bottom:12px;font-size:clamp(1.3rem,3vw,2rem);">GTI Asia Pacific 2026: Record 800+ Exhibitors Set to Transform Guangzhou This Week</h2>
+            <p style="color:var(--text-secondary);margin-bottom:16px;line-height:1.8;">The world's largest amusement equipment trade show opens March 28 at the Poly World Trade Center, with exhibitors spanning 45 countries and a record 60,000 sqm of show floor. NexAmuse Global brings you the complete preview, exhibitor highlights, and what to watch for...</p>
+            <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+              <div style="display:flex;gap:12px;font-size:.78rem;color:var(--text-secondary);"><span>📅 March 25, 2026</span><span>✍️ Editorial Team</span><span>👁 18,400 views</span><span>⏱ 8 min read</span></div>
+              <a href="#" class="btn btn-primary btn-sm">Read Full Story →</a>
+            </div>
+          </div>
+        </div>
 
-    async function load() {
-      list.innerHTML = '<div class="empty">加载中…</div>';
-      try {
-        const r = await window.Api.news(curCat ? ('?category=' + encodeURIComponent(curCat)) : '');
-        if (r.news && r.news.length) {
-          list.innerHTML = r.news.map(n => `
-            <div class="news-item">
-              <span class="src">${window.Auth.escapeHtml(n.source||'未知来源')}</span><span class="cat">${window.Auth.escapeHtml(n.category||'')}</span>
-              <a class="ttl" href="${n.source_url}" target="_blank" rel="noopener">${window.Auth.escapeHtml(n.title)} →</a>
-              <div class="sum">${window.Auth.escapeHtml(n.summary||'')}</div>
-              <div class="time">🕒 ${n.published_at ? new Date(n.published_at*1000).toLocaleDateString() : ''}</div>
-            </div>`).join('');
-        } else {
-          list.innerHTML = '<div class="empty">暂无新闻，请先在后台触发一次新闻抓取（/api/news-refresh?key=...）</div>';
-        }
-      } catch (e) { list.innerHTML = '<div class="empty">加载失败：' + e.message + '</div>'; }
-    }
-    load();
-  </script>
+        <!-- News List -->
+        <div class="news-list-full filterable-grid">
+          <div class="news-item-full fade-in filterable-item" data-category="technology">
+            <div class="thumb" style="background:linear-gradient(135deg,#1e3a5f,#0d1f3c);">🥽</div>
+            <div class="body">
+              <span class="card-tag">Technology</span>
+              <div class="title">Bandai Namco's 8K VR Arena: The Next Frontier for Location-Based Entertainment Venues</div>
+              <div class="excerpt">The Tokyo-based giant has unveiled a 200 sqm free-roam XR arena system featuring photorealistic 8K rendering at 120fps, full-body haptic suits, and a proprietary cloud content platform...</div>
+              <div class="meta"><span>📅 March 24, 2026</span><span>✍️ Tech Editor</span><span>👁 9,200</span><span>⏱ 4 min read</span></div>
+            </div>
+          </div>
+
+          <div class="news-item-full fade-in filterable-item" data-category="industry">
+            <div class="thumb" style="background:linear-gradient(135deg,#1e3b1e,#0d200d);">📊</div>
+            <div class="body">
+              <span class="card-tag">Market Report</span>
+              <div class="title">Global Family Entertainment Center Market Hits $28.3B in 2025, Eyes $38.4B by 2028</div>
+              <div class="excerpt">A new Global Attractions Research report reveals 11.4% compound annual growth driven by post-pandemic recovery, XR technology adoption, and booming Middle East & Southeast Asian investment in leisure...</div>
+              <div class="meta"><span>📅 March 23, 2026</span><span>✍️ Market Analyst</span><span>👁 7,600</span><span>⏱ 5 min read</span></div>
+            </div>
+          </div>
+
+          <div class="news-item-full fade-in filterable-item" data-category="regulation">
+            <div class="thumb" style="background:linear-gradient(135deg,#3b1e1e,#200d0d);">⚖️</div>
+            <div class="body">
+              <span class="card-tag">Regulations</span>
+              <div class="title">EU EN 13814:2026 Safety Standard Update: 7 Key Changes Every Operator Must Implement by Q3</div>
+              <div class="excerpt">The European Committee for Standardization has released the finalized text of EN 13814:2026, affecting all temporary and permanent amusement structures. Changes include revised load calculations, new digital inspection requirements...</div>
+              <div class="meta"><span>📅 March 22, 2026</span><span>✍️ Compliance Desk</span><span>👁 5,800</span><span>⏱ 6 min read</span></div>
+            </div>
+          </div>
+
+          <div class="news-item-full fade-in filterable-item" data-category="companies">
+            <div class="thumb" style="background:linear-gradient(135deg,#3b2b1e,#1a1208);">🏗️</div>
+            <div class="body">
+              <span class="card-tag">Company News</span>
+              <div class="title">Merlin Entertainments Confirms $1.2B Dubai Mega-FEC Project, 35 Attractions Across 28,000 sqm</div>
+              <div class="excerpt">The LEGOLAND and Madame Tussauds operator has formally announced its largest single-site investment, a sprawling indoor entertainment complex due to open in Dubai Mall expansion phase in early 2027...</div>
+              <div class="meta"><span>📅 March 21, 2026</span><span>✍️ Business Editor</span><span>👁 12,300</span><span>⏱ 4 min read</span></div>
+            </div>
+          </div>
+
+          <div class="news-item-full fade-in filterable-item" data-category="exhibitions">
+            <div class="thumb" style="background:linear-gradient(135deg,#2e1e3b,#180d20);">🌍</div>
+            <div class="body">
+              <span class="card-tag">Exhibitions</span>
+              <div class="title">IAAPA Expo Europe 2026 Moves to Barcelona, Expects 24,000 Attendees from 100+ Countries</div>
+              <div class="excerpt">Following record attendance in Rome, IAAPA has selected Barcelona's Fira de Barcelona Gran Via as the 2026 European host, with 500+ exhibitors already confirmed across a 40,000 sqm footprint...</div>
+              <div class="meta"><span>📅 March 20, 2026</span><span>✍️ Events Editor</span><span>👁 6,400</span><span>⏱ 3 min read</span></div>
+            </div>
+          </div>
+
+          <div class="news-item-full fade-in filterable-item" data-category="technology">
+            <div class="thumb" style="background:linear-gradient(135deg,#1e2e3b,#0d1825);">🤖</div>
+            <div class="body">
+              <span class="card-tag">Technology</span>
+              <div class="title">How AI Yield Management Software Is Boosting FEC Revenue by 23% — A Case Study</div>
+              <div class="excerpt">A leading 8-site FEC chain in the US shares data from a 12-month pilot of AI-driven dynamic pricing and capacity management, revealing significant gains in per-cap spending and off-peak utilization...</div>
+              <div class="meta"><span>📅 March 19, 2026</span><span>✍️ Tech Editor</span><span>👁 4,900</span><span>⏱ 7 min read</span></div>
+            </div>
+          </div>
+
+          <div class="news-item-full fade-in filterable-item" data-category="interviews">
+            <div class="thumb" style="background:linear-gradient(135deg,#2b3b1e,#141a0d);">🎙️</div>
+            <div class="body">
+              <span class="card-tag">Executive Interview</span>
+              <div class="title">"The Next 5 Years Will Be About Phygital Experiences" — Q&A with Embed Systems CEO</div>
+              <div class="excerpt">We sat down with Embed's Chief Executive to discuss cashless payment evolution, AI-powered loyalty programs, and why the industry's next competitive battleground is data analytics, not hardware...</div>
+              <div class="meta"><span>📅 March 18, 2026</span><span>✍️ Senior Editor</span><span>👁 8,100</span><span>⏱ 10 min read</span></div>
+            </div>
+          </div>
+
+          <div class="news-item-full fade-in filterable-item" data-category="industry">
+            <div class="thumb" style="background:linear-gradient(135deg,#3b1e2e,#1a0d18);">🌏</div>
+            <div class="body">
+              <span class="card-tag">Market Intelligence</span>
+              <div class="title">Southeast Asia Amusement Investment Surge: Vietnam, Indonesia Lead $4.2B Pipeline for 2026–2028</div>
+              <div class="excerpt">Investment tracker data reveals 84 confirmed entertainment complex projects across Vietnam, Indonesia, Thailand, and Philippines, as rising middle-class disposable income drives leisure spending growth...</div>
+              <div class="meta"><span>📅 March 17, 2026</span><span>✍️ Asia Correspondent</span><span>👁 5,600</span><span>⏱ 5 min read</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" style="margin-top:32px;">
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">4</button>
+          <button class="page-btn">5</button>
+          <button class="page-btn">→</button>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="news-sidebar-col">
+        <div class="sidebar-widget">
+          <div class="widget-header">🔥 Most Read This Week</div>
+          <div class="news-sidebar">
+            <div class="news-sidebar-item"><div class="title">How AI is Reshaping Prize Redemption Game ROI in 2026</div><div class="meta">Mar 24 · 8,200 views</div></div>
+            <div class="news-sidebar-item"><div class="title">Top 10 Amusement Equipment Trends to Watch in 2026</div><div class="meta">Mar 23 · 6,800 views</div></div>
+            <div class="news-sidebar-item"><div class="title">Trampoline Parks: Complete Investment Guide for New Operators</div><div class="meta">Mar 22 · 5,400 views</div></div>
+            <div class="news-sidebar-item"><div class="title">Why XR Dark Rides Are Replacing Traditional Themed Rides</div><div class="meta">Mar 21 · 4,100 views</div></div>
+            <div class="news-sidebar-item"><div class="title">ASTM F24 Committee Approves New VR Ride Safety Standard</div><div class="meta">Mar 20 · 3,700 views</div></div>
+          </div>
+        </div>
+
+        <div class="sidebar-widget">
+          <div class="widget-header">📅 Upcoming Shows</div>
+          <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="background:var(--accent-gradient);color:var(--primary);border-radius:8px;padding:6px 10px;text-align:center;font-size:.75rem;font-weight:700;flex-shrink:0;line-height:1.2;"><div style="font-size:1.1rem;font-weight:900;">28</div>MAR</div>
+              <div><div style="font-size:.88rem;font-weight:600;color:#fff;">GTI Asia Pacific 2026</div><div style="font-size:.75rem;color:var(--text-secondary);">Guangzhou, China</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="background:var(--secondary);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;font-size:.75rem;color:var(--accent);flex-shrink:0;line-height:1.2;"><div style="font-size:1.1rem;font-weight:900;">14</div>SEP</div>
+              <div><div style="font-size:.88rem;font-weight:600;color:#fff;">EAG International 2026</div><div style="font-size:.75rem;color:var(--text-secondary);">London, UK</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="background:var(--secondary);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center;font-size:.75rem;color:var(--accent);flex-shrink:0;line-height:1.2;"><div style="font-size:1.1rem;font-weight:900;">18</div>NOV</div>
+              <div><div style="font-size:.88rem;font-weight:600;color:#fff;">IAAPA Expo 2026</div><div style="font-size:.75rem;color:var(--text-secondary);">Orlando, USA</div></div>
+            </div>
+            <a href="exhibitions.html" class="btn btn-outline btn-sm" style="display:block;text-align:center;margin-top:4px;">Full Calendar →</a>
+          </div>
+        </div>
+
+        <div class="sidebar-widget">
+          <div class="widget-header">📧 Newsletter</div>
+          <div class="widget-body">
+            <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:14px;">Get the week's top stories in one email every Friday.</p>
+            <form class="newsletter-form" style="flex-direction:column;" onsubmit="return false;">
+              <input type="email" placeholder="your@email.com" style="margin-bottom:8px;"/>
+              <button type="submit" class="btn btn-primary btn-sm" style="justify-content:center;">Subscribe Free</button>
+            </form>
+          </div>
+        </div>
+
+        <div style="background:linear-gradient(135deg,#1a1505,#2a1c00);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;">
+          <div style="font-size:2rem;margin-bottom:10px;">📊</div>
+          <div style="font-size:.75rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Free Report</div>
+          <h4 style="color:#fff;margin-bottom:8px;">Global Amusement Industry Report 2026</h4>
+          <p style="color:var(--text-secondary);font-size:.8rem;margin-bottom:14px;">80-page in-depth analysis. Free download.</p>
+          <a href="magazine.html" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">Download →</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<footer><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="../index.html" class="logo" style="margin-bottom:16px;"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a><p style="color:var(--text-secondary);font-size:.88rem;">The world's premier B2B intelligence platform for the global amusement industry.</p></div><div class="footer-col"><h4>News</h4><ul class="footer-links"><li><a href="news.html">Industry Dynamics</a></li><li><a href="news.html">Company News</a></li><li><a href="news.html">Interviews</a></li><li><a href="news.html">Regulations</a></li></ul></div><div class="footer-col"><h4>Resources</h4><ul class="footer-links"><li><a href="products.html">Products</a></li><li><a href="exhibitions.html">Exhibitions</a></li><li><a href="magazine.html">Videos</a></li><li><a href="suppliers.html">Suppliers</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul class="footer-links"><li><a href="#">About Us</a></li><li><a href="contact.html">Contact</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 NexAmuse Global. All rights reserved.</p></div></div></footer>
+<button class="scroll-top" id="scrollTop">↑</button>
+<script src="../assets/js/main.js"></script>
+<script>
+// Load AI-generated published articles from server API
+(function loadAIPublishedArticles(){
+  const API_URL = '../api/articles.php';
+  
+  fetch(API_URL + '?limit=10')
+    .then(response => response.json())
+    .then(data => {
+      const articles = data.articles || [];
+      if (!articles.length) return;
+      
+      // Find the news list container
+      const newsList = document.querySelector('.news-list-full');
+      if (!newsList) return;
+      
+      // Create AI articles section
+      const aiSection = document.createElement('div');
+      aiSection.innerHTML = '<div style="margin:32px 0 20px;padding:16px;background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(0,201,255,.05));border:1px solid rgba(201,162,39,.25);border-radius:12px;"><h3 style="font-size:15px;color:#c9a227;margin:0 0 8px;">🤖 AI Generated Articles</h3><p style="font-size:12px;color:var(--text-secondary);margin:0;">Latest articles powered by NexAmuse AI Writer</p></div>';
+      
+      // Generate article HTML
+      const articlesHTML = articles.slice(0, 6).map(article => {
+        const category = (article.category || 'industry').toLowerCase();
+        const date = article.published_at ? new Date(article.published_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Recently';
+        const views = article.views || 0;
+        const readTime = Math.max(1, Math.ceil((article.word_count || 500) / 200));
+        
+        return `<div class="news-item-full fade-in filterable-item" data-category="${category}">
+          <div class="thumb" style="background:linear-gradient(135deg,rgba(201,162,39,.15),rgba(0,201,255,.1));">🤖</div>
+          <div class="body">
+            <span class="card-tag">${article.category || 'AI Article'}</span>
+            <div class="title">${article.title}</div>
+            <div class="excerpt">${article.excerpt}</div>
+            <div class="meta"><span>📅 ${date}</span><span>✍️ ${article.author || 'AI Writer'}</span><span>👁 ${views.toLocaleString()}</span><span>⏱ ${readTime} min read</span></div>
+          </div>
+        </div>`;
+      }).join('');
+      
+      aiSection.innerHTML += articlesHTML;
+      newsList.insertBefore(aiSection, newsList.firstChild);
+    })
+    .catch(e => console.log('Failed to load AI articles:', e));
+})();
+</script>
 </body>
 </html>
