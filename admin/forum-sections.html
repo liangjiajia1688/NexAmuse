@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Forum Sections — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.section-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;transition:.2s;display:flex;align-items:center;gap:16px;cursor:grab}
+.section-card:hover{border-color:rgba(201,162,39,.3);background:rgba(255,255,255,.05)}
+.section-card.dragging{opacity:.4}
+.section-icon-box{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,rgba(201,162,39,.2),rgba(0,201,255,.1));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.section-info{flex:1}
+.section-name{font-size:15px;font-weight:600;color:#e2e8f0;margin-bottom:3px}
+.section-desc{font-size:12px;color:var(--text-muted)}
+.section-stats{display:flex;gap:20px;align-items:center;flex-shrink:0}
+.stat-item{text-align:center}
+.stat-item .n{font-size:16px;font-weight:700;color:var(--gold)}
+.stat-item .l{font-size:11px;color:var(--text-muted)}
+.section-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-icon{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text-muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.btn-icon:hover{border-color:var(--gold);color:var(--gold)}
+.btn-icon.danger:hover{border-color:#f87171;color:#f87171}
+.drag-handle{color:var(--text-muted);cursor:grab;font-size:16px;padding:0 4px;flex-shrink:0}
+.add-section-form{background:rgba(255,255,255,.03);border:1px dashed rgba(201,162,39,.3);border-radius:12px;padding:24px;margin-top:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none;box-sizing:border-box}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:rgba(201,162,39,.5)}
+.perm-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.perm-tag{padding:5px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border);cursor:pointer;transition:.2s;color:var(--text-muted)}
+.perm-tag.selected{border-color:var(--gold);color:var(--gold);background:rgba(201,162,39,.1)}
+.badge-active{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2);padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600}
+.badge-hidden{background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.2);padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" onclick="toggleSidebar()">☰</button><div class="breadcrumb">Forum / <span>Forum Sections</span></div></div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;">
+            <div class="user-avatar">A</div><span style="color:var(--text-muted);font-size:13px;">Admin</span><span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info"><div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div><div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div></div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-header" style="margin-bottom:20px">
+        <div>
+          <h1 class="page-title">Forum Sections</h1>
+          <p class="page-subtitle">Organize forum categories and manage access permissions</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <a href="forum.html" class="btn btn-outline btn-sm">💬 All Posts</a>
+          <button class="btn btn-gold btn-sm" onclick="toggleAddForm()">+ New Section</button>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
+        <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:700;color:var(--gold)">6</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Total Sections</div></div>
+        <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:700;color:#34d399">1,248</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Total Posts</div></div>
+        <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:700;color:#818cf8">4,512</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Total Replies</div></div>
+        <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:700;color:#f59e0b">342</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Active Today</div></div>
+      </div>
+
+      <!-- Hint -->
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);margin-bottom:14px">
+        <span>⠿</span><span>Drag and drop to reorder sections. Changes are saved automatically.</span>
+      </div>
+
+      <!-- Section List -->
+      <div id="sectionList">
+        <!-- rendered by JS -->
+      </div>
+
+      <!-- Add Form -->
+      <div class="add-section-form" id="addForm" style="display:none">
+        <h3 style="margin:0 0 18px;font-size:16px;color:#e2e8f0">➕ New Forum Section</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Section Name *</label>
+            <input type="text" id="newName" placeholder="e.g. Product Reviews">
+          </div>
+          <div class="form-group">
+            <label>Icon (Emoji)</label>
+            <input type="text" id="newIcon" placeholder="e.g. ⭐" maxlength="4">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label>Description</label>
+          <textarea id="newDesc" rows="2" placeholder="Brief description of what this section covers..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status</label>
+            <select id="newStatus">
+              <option value="active">Active</option>
+              <option value="hidden">Hidden</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Post Permission</label>
+            <select id="newPerm">
+              <option value="all">All Members</option>
+              <option value="regular">Regular+ (7+ pts)</option>
+              <option value="premium">Premium+ (30+ pts)</option>
+              <option value="vip">VIP Only (100+ pts)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:18px">
+          <label>Visible To</label>
+          <div class="perm-tags" id="visibleTags">
+            <div class="perm-tag selected" onclick="this.classList.toggle('selected')">All Visitors</div>
+            <div class="perm-tag selected" onclick="this.classList.toggle('selected')">Regular Members</div>
+            <div class="perm-tag selected" onclick="this.classList.toggle('selected')">Premium Members</div>
+            <div class="perm-tag selected" onclick="this.classList.toggle('selected')">VIP Members</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-gold" onclick="addSection()">✓ Create Section</button>
+          <button class="btn btn-outline" onclick="toggleAddForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center" id="editModal">
+  <div style="background:#12182b;border:1px solid var(--border);border-radius:14px;padding:28px;width:560px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="margin:0;font-size:17px;color:#e2e8f0">Edit Section</h3>
+      <button onclick="closeEdit()" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer">×</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Section Name</label>
+        <input type="text" id="editName">
+      </div>
+      <div class="form-group">
+        <label>Icon</label>
+        <input type="text" id="editIcon" maxlength="4">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>Description</label>
+      <textarea id="editDesc" rows="2"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Status</label>
+        <select id="editStatus">
+          <option value="active">Active</option>
+          <option value="hidden">Hidden</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Post Permission</label>
+        <select id="editPerm">
+          <option value="all">All Members</option>
+          <option value="regular">Regular+ (7+ pts)</option>
+          <option value="premium">Premium+ (30+ pts)</option>
+          <option value="vip">VIP Only</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-gold" onclick="saveEdit()">Save Changes</button>
+      <button class="btn btn-outline" onclick="closeEdit()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+const sections = [
+  {id:1,icon:'💬',name:'General Discussion',desc:'Open conversations about the amusement industry',posts:412,replies:1840,today:87,status:'active',perm:'all'},
+  {id:2,icon:'⭐',name:'Product Reviews',desc:'In-depth reviews of rides, equipment, and attractions',posts:287,replies:1120,today:45,status:'active',perm:'regular'},
+  {id:3,icon:'📰',name:'Industry News',desc:'Latest news, trends, and announcements',posts:198,replies:623,today:34,status:'active',perm:'all'},
+  {id:4,icon:'🔧',name:'Technical Support',desc:'Get help with installation, maintenance, and troubleshooting',posts:176,replies:892,today:28,status:'active',perm:'regular'},
+  {id:5,icon:'🏪',name:'Supplier Showcase',desc:'Suppliers promote their products and services',posts:143,replies:234,today:18,status:'active',perm:'premium'},
+  {id:6,icon:'🔒',name:'VIP Lounge',desc:'Exclusive discussions for VIP members',posts:32,replies:89,today:5,status:'active',perm:'vip'},
+];
+
+let editingId = null;
+
+function renderSections(){
+  const list = document.getElementById('sectionList');
+  list.innerHTML = sections.map((s,i)=>`
+    <div class="section-card" draggable="true" data-id="${s.id}">
+      <span class="drag-handle">⠿</span>
+      <div class="section-icon-box">${s.icon}</div>
+      <div class="section-info">
+        <div class="section-name">${s.name} ${s.status==='hidden'?'<span class="badge-hidden">Hidden</span>':'<span class="badge-active">Active</span>'}</div>
+        <div class="section-desc">${s.desc}</div>
+        <div style="margin-top:6px;font-size:11px;color:var(--text-muted)">Post permission: <span style="color:var(--gold)">${permLabel(s.perm)}</span></div>
+      </div>
+      <div class="section-stats">
+        <div class="stat-item"><div class="n">${s.posts}</div><div class="l">Posts</div></div>
+        <div class="stat-item"><div class="n">${s.replies}</div><div class="l">Replies</div></div>
+        <div class="stat-item"><div class="n">${s.today}</div><div class="l">Today</div></div>
+      </div>
+      <div class="section-actions">
+        <button class="btn-icon" title="Edit" onclick="openEdit(${s.id})">✏️</button>
+        <button class="btn-icon" title="${s.status==='active'?'Hide':'Show'}" onclick="toggleStatus(${s.id})">${s.status==='active'?'🙈':'👁'}</button>
+        <button class="btn-icon danger" title="Delete" onclick="deleteSection(${s.id})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function permLabel(p){return{all:'All Members',regular:'Regular+ (7pts)',premium:'Premium+ (30pts)',vip:'VIP Only (100pts)'}[p]||p}
+
+function toggleAddForm(){
+  const f=document.getElementById('addForm');
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+
+function addSection(){
+  const name=document.getElementById('newName').value.trim();
+  if(!name){alert('Please enter a section name');return;}
+  sections.push({
+    id:Date.now(),
+    icon:document.getElementById('newIcon').value||'💬',
+    name,
+    desc:document.getElementById('newDesc').value,
+    posts:0,replies:0,today:0,
+    status:document.getElementById('newStatus').value,
+    perm:document.getElementById('newPerm').value
+  });
+  renderSections();
+  toggleAddForm();
+  showToast('Section created');
+  document.getElementById('newName').value='';
+  document.getElementById('newDesc').value='';
+  document.getElementById('newIcon').value='';
+}
+
+function openEdit(id){
+  const s=sections.find(x=>x.id===id);
+  if(!s)return;
+  editingId=id;
+  document.getElementById('editName').value=s.name;
+  document.getElementById('editIcon').value=s.icon;
+  document.getElementById('editDesc').value=s.desc;
+  document.getElementById('editStatus').value=s.status;
+  document.getElementById('editPerm').value=s.perm;
+  document.getElementById('editModal').style.display='flex';
+}
+function closeEdit(){document.getElementById('editModal').style.display='none';editingId=null;}
+function saveEdit(){
+  const s=sections.find(x=>x.id===editingId);
+  if(!s)return;
+  s.name=document.getElementById('editName').value;
+  s.icon=document.getElementById('editIcon').value||'💬';
+  s.desc=document.getElementById('editDesc').value;
+  s.status=document.getElementById('editStatus').value;
+  s.perm=document.getElementById('editPerm').value;
+  renderSections();
+  closeEdit();
+  showToast('Section updated');
+}
+function toggleStatus(id){
+  const s=sections.find(x=>x.id===id);
+  if(s){s.status=s.status==='active'?'hidden':'active';renderSections();showToast('Status updated');}
+}
+function deleteSection(id){
+  if(confirm('Delete this section? All posts within will be archived.')){
+    const i=sections.findIndex(x=>x.id===id);
+    if(i>-1){sections.splice(i,1);renderSections();showToast('Section deleted');}
+  }
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid var(--border);border-radius:8px;padding:10px 18px;color:#e2e8f0;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+document.addEventListener('DOMContentLoaded',renderSections);
+</script>
+</body>
+</html>

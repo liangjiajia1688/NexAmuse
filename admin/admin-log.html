@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Operation Logs — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.log-row{display:grid;grid-template-columns:160px 100px 140px 1fr 120px;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;transition:background .15s}
+.log-row:hover{background:rgba(255,255,255,.02)}
+.log-row.header{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;background:rgba(255,255,255,.02);border-radius:8px 8px 0 0;border:1px solid var(--border);margin-bottom:0}
+.action-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap}
+.a-create{background:rgba(86,171,47,.12);color:#56ab2f}
+.a-edit{background:rgba(59,130,246,.12);color:#60a5fa}
+.a-delete{background:rgba(248,113,113,.12);color:#f87171}
+.a-login{background:rgba(201,162,39,.12);color:var(--gold)}
+.a-publish{background:rgba(167,139,250,.12);color:#a78bfa}
+.a-ban{background:rgba(251,146,60,.12);color:#fb923c}
+.a-export{background:rgba(20,184,166,.12);color:#2dd4bf}
+.log-module{color:var(--text-muted);font-size:12px}
+.log-ip{font-family:monospace;font-size:11px;color:var(--text-muted)}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.filter-row select,.filter-row input{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font-size:13px;outline:none}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.stat-card .num{font-size:26px;font-weight:700;color:var(--gold)}
+.stat-card .lab{font-size:12px;color:var(--text-muted);margin-top:2px}
+.detail-btn{padding:3px 8px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .2s}
+.detail-btn:hover{border-color:var(--gold);color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" onclick="toggleSidebar()">☰</button><div class="breadcrumb">Administration / <span>Operation Logs</span></div></div>
+      <div class="header-right">
+        <span id="headerUser" style="font-size:13px;color:var(--text-muted)"></span>
+        <div class="user-avatar" id="headerAvatar" onclick="toggleUserMenu()" style="cursor:pointer">A</div>
+        <div class="user-dropdown" id="userDropdown" style="display:none;position:absolute;right:20px;top:60px;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:160px;z-index:999">
+          <a href="index.html" style="display:block;padding:8px 12px;color:var(--text);text-decoration:none;border-radius:6px;font-size:13px" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='transparent'">🏠 Dashboard</a>
+          <hr style="border-color:var(--border);margin:4px 0">
+          <a href="#" onclick="adminLogout()" style="display:block;padding:8px 12px;color:#f87171;text-decoration:none;border-radius:6px;font-size:13px" onmouseover="this.style.background='rgba(248,113,113,.08)'" onmouseout="this.style.background='transparent'">🚪 Sign Out</a>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+
+      <!-- Stats -->
+      <div class="stat-row">
+        <div class="stat-card"><div class="num">12,847</div><div class="lab">Total Log Entries</div></div>
+        <div class="stat-card"><div class="num">384</div><div class="lab">Today's Actions</div></div>
+        <div class="stat-card"><div class="num" style="color:#f87171">23</div><div class="lab">Delete Operations</div></div>
+        <div class="stat-card"><div class="num" style="color:#fb923c">7</div><div class="lab">Suspicious Activity</div></div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="card" style="margin-bottom:20px;padding:16px 20px">
+        <div class="filter-row">
+          <input type="date" id="dateFrom" value="2026-03-19" style="width:145px">
+          <span style="color:var(--text-muted);font-size:13px">to</span>
+          <input type="date" id="dateTo" value="2026-03-26" style="width:145px">
+          <select id="actionFilter" onchange="filterLogs()">
+            <option value="">All Actions</option>
+            <option value="Login">Login</option>
+            <option value="Create">Create</option>
+            <option value="Edit">Edit</option>
+            <option value="Delete">Delete</option>
+            <option value="Publish">Publish</option>
+            <option value="Ban">Ban</option>
+            <option value="Export">Export</option>
+          </select>
+          <select id="moduleFilter" onchange="filterLogs()">
+            <option value="">All Modules</option>
+            <option value="Members">Members</option>
+            <option value="Articles">Articles</option>
+            <option value="Products">Products</option>
+            <option value="Forum">Forum</option>
+            <option value="Ads">Advertising</option>
+            <option value="Settings">Settings</option>
+          </select>
+          <input type="text" id="adminSearch" placeholder="Search admin name / IP..." style="flex:1;min-width:180px" oninput="filterLogs()">
+          <button onclick="exportLogs()" style="padding:7px 16px;background:rgba(201,162,39,.15);color:var(--gold);border:1px solid rgba(201,162,39,.3);border-radius:8px;cursor:pointer;font-size:13px">📥 Export CSV</button>
+          <button onclick="clearFilters()" style="padding:7px 16px;background:rgba(255,255,255,.05);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px">✕ Clear</button>
+        </div>
+      </div>
+
+      <!-- Log Table -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <div style="font-weight:600">Activity Log <span style="font-size:13px;font-weight:400;color:var(--text-muted)" id="logCount">(showing 20 of 384)</span></div>
+          <div style="display:flex;gap:8px">
+            <button onclick="setPage(-1)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer">‹ Prev</button>
+            <button onclick="setPage(1)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer">Next ›</button>
+          </div>
+        </div>
+        <div class="log-row header">
+          <div>Timestamp</div>
+          <div>Action</div>
+          <div>Admin</div>
+          <div>Details</div>
+          <div>IP Address</div>
+        </div>
+        <div id="logList"></div>
+      </div>
+
+      <!-- Log Detail Modal -->
+      <div id="detailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:center;justify-content:center">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:28px;max-width:520px;width:90%;max-height:80vh;overflow-y:auto">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <h3 style="margin:0;font-size:16px">Log Entry Detail</h3>
+            <button onclick="closeDetail()" style="background:transparent;border:none;color:var(--text-muted);font-size:20px;cursor:pointer">✕</button>
+          </div>
+          <div id="detailContent"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+const LOGS = [
+  {ts:'2026-03-26 10:47:03',action:'Login',module:'System',admin:'superadmin',detail:'Successful login from Chrome/Windows',ip:'192.168.1.101',level:'info'},
+  {ts:'2026-03-26 10:42:18',action:'Edit',module:'Members',admin:'superadmin',detail:'Updated member profile: john.smith@trade.com — changed level to Premium',ip:'192.168.1.101',level:'info'},
+  {ts:'2026-03-26 10:38:55',action:'Publish',module:'Articles',admin:'editor01',detail:'Published article: "Asia Amusement Market 2026 Outlook"',ip:'10.0.0.52',level:'info'},
+  {ts:'2026-03-26 10:31:22',action:'Ban',module:'Forum',admin:'moderator',detail:'Banned user: spammer_bot99 — reason: repeated spam posts',ip:'10.0.0.55',level:'warning'},
+  {ts:'2026-03-26 10:28:10',action:'Delete',module:'Forum',admin:'moderator',detail:'Deleted 3 forum posts from user spammer_bot99',ip:'10.0.0.55',level:'danger'},
+  {ts:'2026-03-26 10:15:44',action:'Create',module:'Ads',admin:'superadmin',detail:'Created new ad: "IAAPA 2026 Banner" — zone: Homepage Hero, budget: $800',ip:'192.168.1.101',level:'info'},
+  {ts:'2026-03-26 09:58:31',action:'Edit',module:'Products',admin:'editor01',detail:'Updated product: VR Adventure Pod — added 3 new images, updated price',ip:'10.0.0.52',level:'info'},
+  {ts:'2026-03-26 09:45:12',action:'Create',module:'Members',admin:'superadmin',detail:'Manually added member: premium_corp@fec.com — group: Amusement Park Owners',ip:'192.168.1.101',level:'info'},
+  {ts:'2026-03-26 09:33:07',action:'Export',module:'Members',admin:'superadmin',detail:'Exported member list: 1,247 records to CSV',ip:'192.168.1.101',level:'info'},
+  {ts:'2026-03-26 09:20:44',action:'Edit',module:'Settings',admin:'superadmin',detail:'Changed site setting: registration_bonus_points = 1',ip:'192.168.1.101',level:'info'},
+  {ts:'2026-03-26 08:55:19',action:'Publish',module:'Articles',admin:'editor01',detail:'AI batch published 5 articles on topic: Smart Arcade Technology',ip:'10.0.0.52',level:'info'},
+  {ts:'2026-03-26 08:47:30',action:'Delete',module:'Products',admin:'editor01',detail:'Deleted product SKU-4421 — flagged as duplicate',ip:'10.0.0.52',level:'danger'},
+  {ts:'2026-03-25 23:14:02',action:'Login',module:'System',admin:'moderator',detail:'Successful login from Safari/macOS',ip:'203.115.22.8',level:'info'},
+  {ts:'2026-03-25 22:50:11',action:'Edit',module:'Ads',admin:'superadmin',detail:'Paused ad campaign: "Spring Expo 2026" — budget exhausted',ip:'192.168.1.101',level:'info'},
+  {ts:'2026-03-25 22:31:44',action:'Ban',module:'Members',admin:'moderator',detail:'Suspended member: troll_user88 — reason: harassment in forum',ip:'10.0.0.55',level:'warning'},
+  {ts:'2026-03-25 21:05:33',action:'Create',module:'Forum',admin:'editor01',detail:'Created new forum section: "Equipment Showcase" under Marketplace',ip:'10.0.0.52',level:'info'},
+  {ts:'2026-03-25 20:44:18',action:'Edit',module:'Members',admin:'superadmin',detail:'Adjusted points: +50 for member vip_partner@amuse.com — manual reward',ip:'192.168.1.101',level:'info'},
+  {ts:'2026-03-25 18:22:07',action:'Publish',module:'Products',admin:'editor01',detail:'Bulk published 12 products from supplier: Guangzhou Fun Tech',ip:'10.0.0.52',level:'info'},
+  {ts:'2026-03-25 17:11:53',action:'Delete',module:'Ads',admin:'superadmin',detail:'Deleted expired ad: "Winter 2025 Promo" (ended 2025-12-31)',ip:'192.168.1.101',level:'danger'},
+  {ts:'2026-03-25 16:38:29',action:'Export',module:'Articles',admin:'editor01',detail:'Exported 24 AI-generated articles to JSON',ip:'10.0.0.52',level:'info'},
+];
+
+const ACTION_MAP = {
+  'Login':'a-login','Create':'a-create','Edit':'a-edit','Delete':'a-delete',
+  'Publish':'a-publish','Ban':'a-ban','Export':'a-export'
+};
+const ACTION_ICON = {
+  'Login':'🔑','Create':'➕','Edit':'✏️','Delete':'🗑️','Publish':'📢','Ban':'🚫','Export':'📥'
+};
+
+let filtered = [...LOGS];
+let page = 0;
+const PER_PAGE = 20;
+
+function filterLogs(){
+  const act = document.getElementById('actionFilter').value;
+  const mod = document.getElementById('moduleFilter').value;
+  const q = document.getElementById('adminSearch').value.toLowerCase();
+  filtered = LOGS.filter(l=>{
+    if(act && l.action!==act) return false;
+    if(mod && l.module!==mod) return false;
+    if(q && !l.admin.toLowerCase().includes(q) && !l.ip.includes(q) && !l.detail.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  page = 0;
+  renderLogs();
+}
+
+function setPage(dir){
+  const maxPage = Math.ceil(filtered.length/PER_PAGE)-1;
+  page = Math.max(0, Math.min(maxPage, page+dir));
+  renderLogs();
+}
+
+function clearFilters(){
+  document.getElementById('actionFilter').value='';
+  document.getElementById('moduleFilter').value='';
+  document.getElementById('adminSearch').value='';
+  filtered=[...LOGS]; page=0; renderLogs();
+}
+
+function renderLogs(){
+  const start = page*PER_PAGE;
+  const slice = filtered.slice(start, start+PER_PAGE);
+  document.getElementById('logCount').textContent = `(showing ${slice.length} of ${filtered.length})`;
+  document.getElementById('logList').innerHTML = slice.map((l,i)=>`
+    <div class="log-row ${l.level==='danger'?'':''}">
+      <div style="font-size:12px;color:var(--text-muted);font-family:monospace">${l.ts}</div>
+      <div><span class="action-badge ${ACTION_MAP[l.action]||'a-edit'}">${ACTION_ICON[l.action]||'⚡'} ${l.action}</span></div>
+      <div>
+        <div style="font-weight:500">${l.admin}</div>
+        <div class="log-module">${l.module}</div>
+      </div>
+      <div style="font-size:13px;color:${l.level==='danger'?'#f87171':l.level==='warning'?'#fb923c':'var(--text)'}">
+        ${l.detail.length>80?l.detail.slice(0,80)+'...':l.detail}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span class="log-ip">${l.ip}</span>
+        <button class="detail-btn" onclick="showDetail(${start+i})">View</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showDetail(idx){
+  const l = filtered[idx];
+  document.getElementById('detailContent').innerHTML = `
+    <div style="display:grid;gap:14px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="action-badge ${ACTION_MAP[l.action]||'a-edit'}" style="font-size:13px;padding:5px 14px">${ACTION_ICON[l.action]||'⚡'} ${l.action}</span>
+        <span style="font-size:12px;color:var(--text-muted)">${l.module}</span>
+      </div>
+      <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px;line-height:1.6">${l.detail}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+        <div><div style="color:var(--text-muted);font-size:11px;margin-bottom:4px">TIMESTAMP</div><div style="font-family:monospace">${l.ts}</div></div>
+        <div><div style="color:var(--text-muted);font-size:11px;margin-bottom:4px">IP ADDRESS</div><div style="font-family:monospace">${l.ip}</div></div>
+        <div><div style="color:var(--text-muted);font-size:11px;margin-bottom:4px">ADMIN</div><div style="font-weight:500">${l.admin}</div></div>
+        <div><div style="color:var(--text-muted);font-size:11px;margin-bottom:4px">SEVERITY</div><div style="text-transform:uppercase;font-size:11px;font-weight:600;color:${l.level==='danger'?'#f87171':l.level==='warning'?'#fb923c':'#56ab2f'}">${l.level}</div></div>
+      </div>
+    </div>
+  `;
+  document.getElementById('detailModal').style.display='flex';
+}
+function closeDetail(){document.getElementById('detailModal').style.display='none';}
+
+function exportLogs(){
+  const headers = ['Timestamp','Action','Module','Admin','Detail','IP'];
+  const rows = filtered.map(l=>[l.ts,l.action,l.module,l.admin,`"${l.detail}"`,l.ip].join(','));
+  const csv = [headers.join(','),...rows].join('\n');
+  const a = document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='nexamuse_admin_logs.csv'; a.click();
+}
+
+renderLogs();
+document.getElementById('detailModal').addEventListener('click',e=>{if(e.target===document.getElementById('detailModal'))closeDetail();});
+</script>
+</body>
+</html>

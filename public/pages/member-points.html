@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Member Points &amp; Levels — NexAmuse Global</title>
+<meta name="description" content="View your membership level, points balance, activity history and unlock premium privileges on NexAmuse Global."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<style>
+/* ── Page-specific styles ─────────────────────────────────── */
+.points-hero{background:linear-gradient(135deg,#0a0e1a 0%,#12192e 60%,#1a1208 100%);border-bottom:1px solid rgba(201,162,39,.2);padding:52px 0 40px;position:relative;overflow:hidden}
+.points-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(201,162,39,.07),transparent);pointer-events:none}
+.points-hero h1{font-family:'Playfair Display',serif;font-size:2.4rem;color:#fff;margin-bottom:10px}
+.points-hero p{color:#9aa0b4;font-size:1rem;max-width:560px}
+
+/* Level cards */
+.level-card{border-radius:16px;padding:24px 28px;position:relative;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.level-card:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.4)}
+.level-card.regular{background:linear-gradient(135deg,#1e1b4b,#312e81);border:1px solid rgba(99,102,241,.3)}
+.level-card.premium{background:linear-gradient(135deg,#1c1100,#2e1f00);border:1px solid rgba(201,162,39,.4)}
+.level-card.vip{background:linear-gradient(135deg,#1a0a00,#2d1500);border:2px solid rgba(245,208,110,.5);box-shadow:0 0 30px rgba(201,162,39,.1)}
+.level-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:12px}
+.badge-regular{background:rgba(99,102,241,.2);color:#a5b4fc}
+.badge-premium{background:rgba(201,162,39,.2);color:#f5d06e}
+.badge-vip{background:linear-gradient(90deg,rgba(201,162,39,.25),rgba(245,208,110,.15));color:#fde68a;border:1px solid rgba(201,162,39,.4)}
+.level-pts{font-size:3rem;font-weight:800;line-height:1;margin-bottom:6px}
+.level-regular .level-pts{color:#818cf8}
+.level-card.premium .level-pts{color:#c9a227}
+.level-card.vip .level-pts{background:linear-gradient(135deg,#c9a227,#f5d06e);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.level-perks{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+.level-perks li{display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db}
+.level-perks li .icon{font-size:15px;flex-shrink:0}
+.perk-lock{opacity:.45}
+
+/* Points progress bar */
+.progress-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.prog-bar-bg{height:14px;background:rgba(255,255,255,.06);border-radius:7px;overflow:hidden;margin:12px 0 8px;position:relative}
+.prog-bar-fill{height:100%;border-radius:7px;background:linear-gradient(90deg,#c9a227,#f5d06e);transition:width 1.2s ease;position:relative}
+.prog-bar-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:4px;background:rgba(255,255,255,.6);border-radius:0 4px 4px 0}
+.prog-marker{position:absolute;top:-20px;transform:translateX(-50%);font-size:10px;color:#c9a227;white-space:nowrap}
+
+/* Activity log */
+.activity-row{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.activity-row:last-child{border-bottom:none}
+.activity-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ai-login{background:rgba(99,102,241,.15)}
+.ai-post{background:rgba(201,162,39,.15)}
+.ai-comment{background:rgba(56,189,248,.12)}
+.ai-register{background:rgba(52,211,153,.15)}
+.ai-admin{background:rgba(167,139,250,.15)}
+.ai-level{background:rgba(245,208,110,.15)}
+.pts-plus{color:#34d399;font-weight:700;font-size:14px}
+.pts-minus{color:#f87171;font-weight:700;font-size:14px}
+
+/* Leaderboard */
+.lb-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;transition:.2s}
+.lb-row:hover{background:rgba(255,255,255,.03)}
+.lb-rank{width:28px;text-align:center;font-size:14px;font-weight:700;color:#6b7280}
+.lb-rank.top3{color:#c9a227}
+.lb-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#c9a227,#f5d06e);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#0a0e1a;flex-shrink:0}
+.lb-pts{font-size:15px;font-weight:700;color:#c9a227;margin-left:auto}
+.lb-divider{height:1px;background:rgba(255,255,255,.05);margin:4px 0}
+
+/* CTA card */
+.cta-card{background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(201,162,39,.03));border:1px solid rgba(201,162,39,.25);border-radius:14px;padding:28px;text-align:center;margin-top:24px}
+
+/* Earn cards */
+.earn-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:18px;text-align:center;transition:.2s}
+.earn-card:hover{border-color:rgba(201,162,39,.3);background:rgba(201,162,39,.04)}
+.earn-pts-label{font-size:24px;font-weight:800;color:#c9a227;margin:8px 0 4px}
+
+/* Tabs */
+.tab-row{display:flex;gap:6px;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:0}
+.tab-btn{padding:9px 20px;border:none;background:transparent;color:#6b7280;cursor:pointer;font-size:13px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.2s}
+.tab-btn.active{color:#c9a227;border-bottom-color:#c9a227}
+.tab-content{display:none}
+.tab-content.active{display:block}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────────────────────── -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">N</div>
+      <div>
+        <div class="logo-text">Nex<span>Amuse</span></div>
+        <div class="logo-sub">Global Portal</div>
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li>
+        <a href="products.html">Products ▾</a>
+        <div class="dropdown-menu">
+          <a href="products.html?cat=arcade">Arcade Machines</a>
+          <a href="products.html?cat=vr">VR / XR Attractions</a>
+          <a href="products.html?cat=kids">Kids & Family Rides</a>
+          <a href="products.html?cat=redemption">Redemption & Prize</a>
+          <a href="products.html?cat=simulation">Simulation Rides</a>
+          <a href="products.html?cat=outdoor">Outdoor Attractions</a>
+          <a href="products.html?cat=waterpark">Water Park Equipment</a>
+          <a href="products.html?cat=accessories">Accessories & Parts</a>
+        </div>
+      </li>
+      <li>
+        <a href="news.html">News ▾</a>
+        <div class="dropdown-menu">
+          <a href="news.html?cat=industry">Industry Dynamics</a>
+          <a href="news.html?cat=companies">Company News</a>
+          <a href="news.html?cat=interviews">Executive Interviews</a>
+          <a href="news.html?cat=newproducts">New Product Releases</a>
+          <a href="news.html?cat=regulations">Regulations & Compliance</a>
+        </div>
+      </li>
+      <li><a href="suppliers.html">Suppliers</a></li>
+      <li>
+        <a href="exhibitions.html">Exhibitions ▾</a>
+        <div class="dropdown-menu">
+          <a href="exhibitions.html#calendar">Exhibition Calendar</a>
+          <a href="exhibitions.html#reports">Show Reports</a>
+          <a href="exhibitions.html#register">Pre-Register</a>
+        </div>
+      </li>
+      <li><a href="news.html">Articles</a></li>
+      <li><a href="forum.html">Forum</a></li>
+      <li><a href="member-points.html">Points</a></li>
+      <li><a href="magazine.html">Videos</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="search-btn js-open-search">🔍 Search</button>
+      <!-- Auth injected by main.js -->
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-menu-close" id="mobileClose">✕</button>
+  <ul class="mobile-nav-links">
+    <li><a href="../index.html">🏠 Home</a></li>
+    <li><a href="products.html">🎮 Products</a></li>
+    <li><a href="news.html">📰 News & Articles</a></li>
+    <li><a href="suppliers.html">🏭 Suppliers</a></li>
+    <li><a href="exhibitions.html">🎪 Exhibitions</a></li>
+    <li><a href="forum.html">💬 Forum</a></li><li><a href="member-points.html">⭐ Points</a></li>
+    <li><a href="magazine.html">🎬 Videos</a></li>
+    <li><a href="contact.html">📩 Contact</a></li>
+  </ul>
+  <div class="mobile-auth-wrap" style="margin-top:32px;display:flex;flex-direction:column;gap:12px">
+    <!-- Filled by main.js -->
+  </div>
+</div>
+
+<!-- Search Overlay -->
+<div class="search-overlay" id="searchOverlay">
+  <button class="search-close" id="searchClose">✕</button>
+  <div class="search-box">
+    <h2>Search NexAmuse Global</h2>
+    <div class="search-input-wrap">
+      <input type="text" placeholder="Search products, suppliers, news…" autofocus/>
+      <button>Search</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── HERO ─────────────────────────────────────────────────── -->
+<section class="points-hero">
+  <div class="container">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:24px">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.2);border-radius:20px;padding:5px 14px;font-size:12px;color:#c9a227;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">⭐ Member Points System</div>
+        <h1>Your Membership Hub</h1>
+        <p>Earn points by engaging with the community. Level up to unlock exclusive privileges — from product listings to VIP company profiles.</p>
+        <div style="display:flex;gap:28px;margin-top:22px;flex-wrap:wrap">
+          <div class="fstat" style="text-align:left"><div style="font-size:1.8rem;font-weight:800;color:#c9a227" id="heroPoints">24</div><div style="font-size:12px;color:#6b7280;margin-top:2px">My Points</div></div>
+          <div class="fstat" style="text-align:left"><div style="font-size:1.8rem;font-weight:800;color:#818cf8">Regular</div><div style="font-size:12px;color:#6b7280;margin-top:2px">Current Level</div></div>
+          <div class="fstat" style="text-align:left"><div style="font-size:1.8rem;font-weight:800;color:#34d399">6</div><div style="font-size:12px;color:#6b7280;margin-top:2px">Points to Premium</div></div>
+          <div class="fstat" style="text-align:left"><div style="font-size:1.8rem;font-weight:800;color:#f5d06e">18d</div><div style="font-size:12px;color:#6b7280;margin-top:2px">Login Streak</div></div>
+        </div>
+      </div>
+      <!-- Mini rank badge -->
+      <div id="rankBadge" style="background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(99,102,241,.05));border:1px solid rgba(99,102,241,.3);border-radius:16px;padding:24px 28px;min-width:180px;text-align:center;flex-shrink:0">
+        <div style="font-size:40px;margin-bottom:8px">🎖️</div>
+        <div style="font-size:18px;font-weight:700;color:#a5b4fc">Regular</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px">24 / 30 pts to Premium</div>
+        <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;margin-top:12px;overflow:hidden">
+          <div style="height:100%;width:80%;background:linear-gradient(90deg,#818cf8,#a5b4fc);border-radius:3px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MAIN CONTENT ─────────────────────────────────────────── -->
+<div class="container" style="padding:40px 0 70px">
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start">
+
+    <!-- LEFT: Main content -->
+    <div>
+
+      <!-- Progress section -->
+      <div class="progress-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <h3 style="margin:0;font-size:16px;color:#e2e8f0">📈 Level Progress</h3>
+          <span style="font-size:13px;color:#6b7280">24 pts · 6 more to Premium</span>
+        </div>
+        <!-- Multi-level progress bar -->
+        <div style="position:relative;margin:20px 0 10px">
+          <div class="prog-bar-bg">
+            <div class="prog-bar-fill" id="mainProgress" style="width:24%"></div>
+            <!-- Milestone markers -->
+            <div style="position:absolute;top:0;bottom:0;left:7%;width:1px;background:rgba(255,255,255,.15)"></div>
+            <div style="position:absolute;top:0;bottom:0;left:30%;width:1px;background:rgba(201,162,39,.4)"></div>
+            <div style="position:absolute;top:0;bottom:0;left:100%;width:1px;background:rgba(245,208,110,.5)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-top:6px">
+            <span>0</span>
+            <span style="position:relative;left:-2%">7 · Regular</span>
+            <span style="color:#c9a227">30 · Premium</span>
+            <span style="color:#f5d06e">100 · VIP</span>
+          </div>
+        </div>
+        <!-- Current position indicator -->
+        <div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.15);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-top:8px">
+          <div style="font-size:22px">🎯</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#e2e8f0">You're at 24 pts — Regular Member</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:2px">Earn <strong style="color:#c9a227">6 more points</strong> to reach <strong style="color:#c9a227">Premium</strong> and unlock product upload + article publishing.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs: Activity / Earn / Leaderboard -->
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="showTab('activity',this)">📋 My Activity</button>
+        <button class="tab-btn" onclick="showTab('earn',this)">💰 How to Earn</button>
+        <button class="tab-btn" onclick="showTab('leaderboard',this)">🏆 Leaderboard</button>
+        <button class="tab-btn" onclick="showTab('perks',this)">🎁 My Perks</button>
+      </div>
+
+      <!-- Tab: Activity log -->
+      <div id="tab-activity" class="tab-content active">
+        <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:6px 20px">
+          <div class="activity-row">
+            <div class="activity-icon ai-login">🔑</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500;color:#e2e8f0">Daily Login Bonus</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:2px">Today · Day 18 streak 🔥</div>
+            </div>
+            <div class="pts-plus">+1 pt</div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-icon ai-comment">💬</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500;color:#e2e8f0">Comment on Article</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:2px">Mar 25 · "IAAPA 2026 Preview: What to Expect"</div>
+            </div>
+            <div class="pts-plus">+1 pt</div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-icon ai-post">📝</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500;color:#e2e8f0">Forum Post Created</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:2px">Mar 24 · "Best VR equipment for small FEC venues?"</div>
+            </div>
+            <div class="pts-plus">+1 pt</div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-icon ai-login">🔑</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500;color:#e2e8f0">Daily Login Bonus</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:2px">Mar 24</div>
+            </div>
+            <div class="pts-plus">+1 pt</div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-icon ai-login">🔑</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500;color:#e2e8f0">Daily Login Bonus</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:2px">Mar 23</div>
+            </div>
+            <div class="pts-plus">+1 pt</div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-icon ai-comment">💬</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500;color:#e2e8f0">Forum Reply</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:2px">Mar 22 · Replied to thread: "Suppliers for trampoline parks"</div>
+            </div>
+            <div class="pts-plus">+1 pt</div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-icon ai-register">🎉</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500;color:#e2e8f0">Registration Bonus</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:2px">Mar 8 · Welcome to NexAmuse Global!</div>
+            </div>
+            <div class="pts-plus">+1 pt</div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:16px">
+          <button onclick="showToast('Loading more activity…','info')" style="padding:9px 24px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#9aa0b4;cursor:pointer;font-size:13px">Load More</button>
+        </div>
+      </div>
+
+      <!-- Tab: How to earn -->
+      <div id="tab-earn" class="tab-content">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+          <div class="earn-card">
+            <div style="font-size:32px">🔑</div>
+            <div class="earn-pts-label">+1 pt</div>
+            <div style="font-size:13px;font-weight:600;color:#e2e8f0">Daily Login</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:5px">Log in once per day to earn 1 point. Streak bonuses coming soon!</div>
+            <div style="margin-top:10px;font-size:11px;background:rgba(34,211,153,.1);color:#34d399;padding:3px 10px;border-radius:8px;display:inline-block">Daily · No limit</div>
+          </div>
+          <div class="earn-card">
+            <div style="font-size:32px">🎉</div>
+            <div class="earn-pts-label">+1 pt</div>
+            <div style="font-size:13px;font-weight:600;color:#e2e8f0">Registration</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:5px">One-time welcome bonus when you create your account.</div>
+            <div style="margin-top:10px;font-size:11px;background:rgba(99,102,241,.12);color:#818cf8;padding:3px 10px;border-radius:8px;display:inline-block">One-time only</div>
+          </div>
+          <div class="earn-card">
+            <div style="font-size:32px">📝</div>
+            <div class="earn-pts-label">+1 pt</div>
+            <div style="font-size:13px;font-weight:600;color:#e2e8f0">Post in Forum</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:5px">Create a new forum thread. Limited to 1 post per day for Regular members.</div>
+            <div style="margin-top:10px;font-size:11px;background:rgba(201,162,39,.1);color:#c9a227;padding:3px 10px;border-radius:8px;display:inline-block">1x per day (Regular)</div>
+          </div>
+          <div class="earn-card">
+            <div style="font-size:32px">💬</div>
+            <div class="earn-pts-label">+1 pt</div>
+            <div style="font-size:13px;font-weight:600;color:#e2e8f0">Comment / Reply</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:5px">Reply to a forum thread or comment on an article. 1 per day limit for Regular.</div>
+            <div style="margin-top:10px;font-size:11px;background:rgba(201,162,39,.1);color:#c9a227;padding:3px 10px;border-radius:8px;display:inline-block">1x per day (Regular)</div>
+          </div>
+          <div class="earn-card" style="opacity:.5">
+            <div style="font-size:32px">⭐</div>
+            <div class="earn-pts-label">+5 pts</div>
+            <div style="font-size:13px;font-weight:600;color:#e2e8f0">Featured Article <span style="font-size:11px;color:#f59e0b">Premium+</span></div>
+            <div style="font-size:12px;color:#6b7280;margin-top:5px">When your article gets featured on the homepage by editors.</div>
+            <div style="margin-top:10px;font-size:11px;background:rgba(251,191,36,.1);color:#fbbf24;padding:3px 10px;border-radius:8px;display:inline-block">Premium members only</div>
+          </div>
+          <div class="earn-card" style="opacity:.5">
+            <div style="font-size:32px">🏆</div>
+            <div class="earn-pts-label">+10 pts</div>
+            <div style="font-size:13px;font-weight:600;color:#e2e8f0">Verified Supplier <span style="font-size:11px;color:#f59e0b">Premium+</span></div>
+            <div style="font-size:12px;color:#6b7280;margin-top:5px">Get your company profile verified by the NexAmuse team.</div>
+            <div style="margin-top:10px;font-size:11px;background:rgba(251,191,36,.1);color:#fbbf24;padding:3px 10px;border-radius:8px;display:inline-block">Premium members only</div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px 20px;margin-top:20px;font-size:13px;color:#6b7280;line-height:1.7">
+          ⚠️ <strong style="color:#e2e8f0">Regular members</strong> are limited to <strong style="color:#c9a227">1 forum post</strong> and <strong style="color:#c9a227">1 comment</strong> per day, per account ID, to maintain community quality. Reach <strong style="color:#c9a227">Premium (30 pts)</strong> to remove these limits and unlock product publishing and article creation.
+        </div>
+      </div>
+
+      <!-- Tab: Leaderboard -->
+      <div id="tab-leaderboard" class="tab-content">
+        <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:8px 8px">
+          <!-- Top 3 highlight -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px 8px 20px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:8px">
+            <!-- 2nd place -->
+            <div style="text-align:center;margin-top:16px">
+              <div style="font-size:28px;margin-bottom:6px">🥈</div>
+              <div style="width:50px;height:50px;background:linear-gradient(135deg,#94a3b8,#64748b);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;margin:0 auto 8px">T</div>
+              <div style="font-size:13px;font-weight:600;color:#e2e8f0">TinaW</div>
+              <div style="font-size:11px;color:#6b7280;margin-top:2px">Amusement Park Owner</div>
+              <div style="font-size:18px;font-weight:800;color:#94a3b8;margin-top:6px">218 pts</div>
+            </div>
+            <!-- 1st place (center, elevated) -->
+            <div style="text-align:center;background:rgba(201,162,39,.06);border-radius:12px;padding:14px 8px;border:1px solid rgba(201,162,39,.2)">
+              <div style="font-size:34px;margin-bottom:6px">🥇</div>
+              <div style="width:58px;height:58px;background:linear-gradient(135deg,#c9a227,#f5d06e);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#0a0e1a;margin:0 auto 8px">J</div>
+              <div style="font-size:14px;font-weight:700;color:#f5d06e">James_K</div>
+              <div style="font-size:11px;color:#9aa0b4;margin-top:2px">VIP · Supplier</div>
+              <div style="font-size:22px;font-weight:800;color:#c9a227;margin-top:6px">542 pts</div>
+            </div>
+            <!-- 3rd place -->
+            <div style="text-align:center;margin-top:16px">
+              <div style="font-size:28px;margin-bottom:6px">🥉</div>
+              <div style="width:50px;height:50px;background:linear-gradient(135deg,#c2410c,#ea580c);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;margin:0 auto 8px">A</div>
+              <div style="font-size:13px;font-weight:600;color:#e2e8f0">AlisonM</div>
+              <div style="font-size:11px;color:#6b7280;margin-top:2px">Premium · Buyer</div>
+              <div style="font-size:18px;font-weight:800;color:#c2410c;margin-top:6px">195 pts</div>
+            </div>
+          </div>
+          <!-- 4–10 list -->
+          <div style="padding:4px 8px">
+            <div id="lbList"></div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:16px;font-size:12px;color:#6b7280">
+          Rankings updated daily · Based on total lifetime points
+        </div>
+      </div>
+
+      <!-- Tab: My Perks -->
+      <div id="tab-perks" class="tab-content">
+        <div style="display:grid;gap:14px">
+          <!-- Unlocked perks (Regular) -->
+          <div style="background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.2);border-radius:12px;padding:18px 22px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+              <span style="font-size:18px">✅</span>
+              <span style="font-size:14px;font-weight:600;color:#34d399">Unlocked — Regular Member (7+ pts)</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🔐</span> Access to all public content</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>💬</span> Forum posting (1/day)</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📩</span> Direct inquiry to suppliers</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📰</span> Newsletter subscription</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🎪</span> Exhibition pre-registration</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🔖</span> Save favorite suppliers</div>
+            </div>
+          </div>
+          <!-- Locked perks (Premium) -->
+          <div style="background:rgba(201,162,39,.04);border:1px solid rgba(201,162,39,.2);border-radius:12px;padding:18px 22px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:18px">🔒</span>
+                <span style="font-size:14px;font-weight:600;color:#c9a227">Premium Member (30 pts required) — <span style="color:#e2e8f0;font-weight:400">6 pts to go!</span></span>
+              </div>
+              <div style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600">24/30 pts</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;opacity:.6">
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📦</span> Upload & manage products</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>✍️</span> Publish articles & news</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>💬</span> Unlimited daily posts</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📊</span> Access analytics reports</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🎯</span> Priority supplier listing</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📬</span> Receive buyer inquiries</div>
+            </div>
+          </div>
+          <!-- Locked perks (VIP) -->
+          <div style="background:rgba(245,208,110,.03);border:1px solid rgba(245,208,110,.15);border-radius:12px;padding:18px 22px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+              <span style="font-size:18px">👑</span>
+              <span style="font-size:14px;font-weight:600;color:#f5d06e">VIP Member (100 pts required)</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;opacity:.45">
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🏢</span> Create company profile</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🔝</span> Priority ranking in search</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🌟</span> Featured supplier badge</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📣</span> Custom ad campaign access</span></div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🤝</span> Dedicated account manager</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📅</span> Exhibition booth booking priority</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end left col -->
+
+    <!-- RIGHT sidebar -->
+    <div>
+
+      <!-- Quick action card -->
+      <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px;margin-bottom:20px">
+        <h4 style="margin:0 0 14px;font-size:14px;color:#e2e8f0">⚡ Quick Actions</h4>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="forum.html" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.2);border-radius:8px;text-decoration:none;color:#e2e8f0;font-size:13px;font-weight:500;transition:.2s" onmouseover="this.style.background='rgba(201,162,39,.15)'" onmouseout="this.style.background='rgba(201,162,39,.08)'">
+            <span style="font-size:18px">💬</span>
+            <div><div style="font-weight:600">Post in Forum</div><div style="font-size:11px;color:#c9a227;margin-top:1px">Earn +1 pt today</div></div>
+          </a>
+          <a href="news.html" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:8px;text-decoration:none;color:#e2e8f0;font-size:13px;font-weight:500;transition:.2s" onmouseover="this.style.background='rgba(56,189,248,.12)'" onmouseout="this.style.background='rgba(56,189,248,.06)'">
+            <span style="font-size:18px">📰</span>
+            <div><div style="font-weight:600">Comment on Article</div><div style="font-size:11px;color:#38bdf8;margin-top:1px">Earn +1 pt today</div></div>
+          </a>
+          <a href="../index.html" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.12);border-radius:8px;text-decoration:none;color:#e2e8f0;font-size:13px;font-weight:500;transition:.2s" onmouseover="this.style.background='rgba(52,211,153,.1)'" onmouseout="this.style.background='rgba(52,211,153,.05)'">
+            <span style="font-size:18px">🔑</span>
+            <div><div style="font-weight:600">Login Streak</div><div style="font-size:11px;color:#34d399;margin-top:1px">✅ Today's login done</div></div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Level overview (mini cards) -->
+      <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px;margin-bottom:20px">
+        <h4 style="margin:0 0 14px;font-size:14px;color:#e2e8f0">🎖️ Level Overview</h4>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <!-- Regular -->
+          <div style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:12px 14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:13px;font-weight:700;color:#818cf8">⚪ Regular</span>
+              <span style="font-size:11px;background:rgba(52,211,153,.12);color:#34d399;padding:2px 8px;border-radius:6px">You are here</span>
+            </div>
+            <div style="font-size:12px;color:#6b7280">7 pts required · Forum 1/day · Basic access</div>
+          </div>
+          <!-- Premium -->
+          <div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.2);border-radius:10px;padding:12px 14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:13px;font-weight:700;color:#c9a227">⭐ Premium</span>
+              <span style="font-size:11px;color:#f59e0b;background:rgba(245,158,11,.08);padding:2px 8px;border-radius:6px">6 pts away</span>
+            </div>
+            <div style="font-size:12px;color:#6b7280">30 pts · Products + Articles</div>
+          </div>
+          <!-- VIP -->
+          <div style="background:rgba(245,208,110,.04);border:1px solid rgba(245,208,110,.15);border-radius:10px;padding:12px 14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:13px;font-weight:700;color:#f5d06e">👑 VIP</span>
+              <span style="font-size:11px;color:#6b7280">76 pts away</span>
+            </div>
+            <div style="font-size:12px;color:#6b7280">100 pts · Company + Priority listing</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Streak calendar -->
+      <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px">
+        <h4 style="margin:0 0 14px;font-size:14px;color:#e2e8f0">🔥 Login Streak — March 2026</h4>
+        <div id="streakCal" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+        <div style="display:flex;gap:10px;margin-top:10px;font-size:11px;color:#6b7280">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#c9a227;border-radius:2px;display:inline-block"></span>Logged in</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:2px;display:inline-block"></span>Missed</span>
+        </div>
+        <div style="margin-top:12px;background:rgba(201,162,39,.08);border-radius:8px;padding:8px 12px;text-align:center;font-size:12px;color:#c9a227">
+          🔥 <strong>18-day streak!</strong> Keep it up → +1 pt/day
+        </div>
+      </div>
+
+    </div><!-- end right sidebar -->
+  </div><!-- end grid -->
+</div>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;margin-bottom:40px;display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <h4 style="margin:0 0 6px;font-size:1rem;color:var(--text-primary)">Stay Updated</h4>
+        <p style="color:var(--text-secondary);font-size:.85rem;margin:0">Top industry news & new product releases every week.</p>
+      </div>
+      <form class="newsletter-form" style="flex:1;min-width:280px" onsubmit="return false">
+        <input type="email" placeholder="your@email.com"/>
+        <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>
+      </form>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 NexAmuse Global. All rights reserved.</p>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy</a><a href="#">Terms</a><a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+<script>
+// ── Streak calendar ─────────────────────────────────────────
+(function(){
+  const cal = document.getElementById('streakCal');
+  const days = 31;
+  const loginDays = new Set([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,24,25,26]);
+  const today = 26;
+  for(let d=1;d<=days;d++){
+    const cell = document.createElement('div');
+    cell.title = 'Mar '+d;
+    if(d > today){
+      cell.style.cssText='height:22px;border-radius:3px;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.06)';
+    } else if(loginDays.has(d)){
+      cell.style.cssText='height:22px;border-radius:3px;background:linear-gradient(135deg,#c9a227,#f5d06e);position:relative';
+      if(d===today){cell.style.outline='2px solid #fff';cell.style.outlineOffset='1px';}
+    } else {
+      cell.style.cssText='height:22px;border-radius:3px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.15)';
+    }
+    cal.appendChild(cell);
+  }
+})();
+
+// ── Leaderboard list ────────────────────────────────────────
+const LB = [
+  {rank:4,name:'BobChen',pts:181,level:'Premium',group:'Supplier'},
+  {rank:5,name:'MarcusFEC',pts:164,level:'VIP',group:'Park Owner'},
+  {rank:6,name:'YunaK',pts:152,level:'Premium',group:'Buyer'},
+  {rank:7,name:'You (Me)',pts:24,level:'Regular',group:'Member',isMe:true},
+  {rank:8,name:'Chris_D',pts:19,level:'Regular',group:'Supplier'},
+  {rank:9,name:'SaraP',pts:15,level:'Regular',group:'Buyer'},
+  {rank:10,name:'NeilVR',pts:11,level:'Regular',group:'Media'},
+];
+document.getElementById('lbList').innerHTML = LB.map(u=>`
+  <div class="lb-row" style="${u.isMe?'background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.2);border-radius:8px;':''}">
+    <div class="lb-rank ${u.rank<=3?'top3':''}">${u.rank}</div>
+    <div class="lb-avatar" style="${u.isMe?'background:linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a':'background:rgba(99,102,241,.3);color:#a5b4fc'}">${u.name[0]}</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:${u.isMe?'700':'500'};color:${u.isMe?'#f5d06e':'#e2e8f0'}">${u.name}${u.isMe?' (You)':''}</div>
+      <div style="font-size:11px;color:#6b7280">${u.level} · ${u.group}</div>
+    </div>
+    <div class="lb-pts">${u.pts}</div>
+  </div>
+`).join('<div class="lb-divider"></div>');
+
+// ── Tab switching ────────────────────────────────────────────
+function showTab(id, btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Animate progress bar ────────────────────────────────────
+setTimeout(()=>{
+  const bar = document.getElementById('mainProgress');
+  if(bar) bar.style.width = '24%'; // 24/100
+}, 300);
+</script>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Administrators — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);border-bottom:1px solid var(--border);font-weight:600}
+.admin-table td{padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;vertical-align:middle}
+.admin-table tr:hover td{background:rgba(255,255,255,.02)}
+.role-badge{padding:4px 10px;border-radius:10px;font-size:11px;font-weight:600}
+.role-super{background:linear-gradient(135deg,rgba(201,162,39,.2),rgba(245,208,110,.1));color:var(--gold);border:1px solid rgba(201,162,39,.3)}
+.role-admin{background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.25)}
+.role-moderator{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+.role-editor{background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.2)}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.dot-online{background:#34d399;box-shadow:0 0 6px rgba(52,211,153,.5)}
+.dot-offline{background:#4b5563}
+.dot-banned{background:#f87171}
+.avatar-md{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#0a0e1a;flex-shrink:0}
+.perm-list{display:flex;gap:4px;flex-wrap:wrap}
+.perm-chip{padding:2px 7px;border-radius:6px;font-size:10px;background:rgba(255,255,255,.05);color:#94a3b8;border:1px solid var(--border)}
+.btn-icon{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text-muted);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.btn-icon:hover{border-color:var(--gold);color:var(--gold)}
+.btn-icon.danger:hover{border-color:#f87171;color:#f87171}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center}
+.stat-card .num{font-size:26px;font-weight:700;color:var(--gold)}
+.stat-card .lab{font-size:12px;color:var(--text-muted);margin-top:3px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:#12182b;border:1px solid var(--border);border-radius:14px;padding:28px;width:580px;max-height:85vh;overflow-y:auto}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+.form-group input,.form-group select{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none;box-sizing:border-box}
+.form-group input:focus,.form-group select:focus{border-color:rgba(201,162,39,.5)}
+.perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.perm-checkbox{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:.2s;background:rgba(255,255,255,.02)}
+.perm-checkbox:hover{border-color:rgba(201,162,39,.3)}
+.perm-checkbox input{accent-color:var(--gold)}
+.perm-checkbox span{font-size:12px;color:#cbd5e1}
+.section-title-sm{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);font-weight:600;margin:14px 0 8px}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" onclick="toggleSidebar()">☰</button><div class="breadcrumb">Administration / <span>Administrators</span></div></div>
+      <div class="header-right">
+        <button class="btn btn-gold btn-sm" onclick="openAddModal()">+ Invite Admin</button>
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;">
+            <div class="user-avatar">A</div><span style="color:var(--text-muted);font-size:13px;">Admin</span><span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info"><div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div><div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div></div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-header" style="margin-bottom:20px">
+        <div>
+          <h1 class="page-title">Administrator Management</h1>
+          <p class="page-subtitle">Manage admin accounts, roles, and access permissions</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <a href="admin-log.html" class="btn btn-outline btn-sm">📋 Audit Log</a>
+          <button class="btn btn-gold btn-sm" onclick="openAddModal()">+ Invite Admin</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-row">
+        <div class="stat-card"><div class="num">7</div><div class="lab">Total Admins</div></div>
+        <div class="stat-card"><div class="num" style="color:#34d399">4</div><div class="lab">Online Now</div></div>
+        <div class="stat-card"><div class="num" style="color:#818cf8">1</div><div class="lab">Super Admin</div></div>
+        <div class="stat-card"><div class="num" style="color:#f59e0b">2</div><div class="lab">Pending Invite</div></div>
+      </div>
+
+      <!-- Filter -->
+      <div style="display:flex;gap:10px;margin-bottom:18px;align-items:center">
+        <input type="text" id="adminSearch" placeholder="🔍  Search administrators..." oninput="filterAdmins()" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none;width:240px">
+        <select id="roleFilter" onchange="filterAdmins()" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none">
+          <option value="">All Roles</option>
+          <option>Super Admin</option>
+          <option>Admin</option>
+          <option>Moderator</option>
+          <option>Editor</option>
+        </select>
+        <select id="statusFilter" onchange="filterAdmins()" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none">
+          <option value="">All Status</option>
+          <option>Online</option>
+          <option>Offline</option>
+        </select>
+      </div>
+
+      <!-- Table -->
+      <div class="card" style="overflow-x:auto">
+        <table class="admin-table" id="adminTable">
+          <thead>
+            <tr>
+              <th>Administrator</th>
+              <th>Role</th>
+              <th>Permissions</th>
+              <th>Status</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Pending Invites -->
+      <h3 style="font-size:14px;font-weight:600;color:#e2e8f0;margin:24px 0 12px">📨 Pending Invitations</h3>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#e2e8f0">james.wilson@nexamuse.com</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Role: Moderator · Invited 2026-03-24 · Expires in 5 days</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="resendInvite('james')">↺ Resend</button>
+            <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.25)" onclick="cancelInvite('james')">✕ Cancel</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#e2e8f0">marketing.team@nexamuse.com</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Role: Editor · Invited 2026-03-23 · Expires in 4 days</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="resendInvite('marketing')">↺ Resend</button>
+            <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.25)" onclick="cancelInvite('marketing')">✕ Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <h3 style="margin:0;font-size:17px;color:#e2e8f0" id="modalTitle">Invite New Administrator</h3>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer">×</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="fName" placeholder="e.g. John Smith">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="fEmail" placeholder="admin@company.com">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Role</label>
+        <select id="fRole" onchange="updatePermPreset()">
+          <option value="Admin">Admin</option>
+          <option value="Moderator">Moderator</option>
+          <option value="Editor">Editor</option>
+          <option value="Super Admin">Super Admin</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Department</label>
+        <input type="text" id="fDept" placeholder="e.g. Content, Support">
+      </div>
+    </div>
+    <div class="section-title-sm">Access Permissions</div>
+    <div class="perm-grid" id="permGrid">
+      <label class="perm-checkbox"><input type="checkbox" id="pDashboard" checked><span>📊 Dashboard</span></label>
+      <label class="perm-checkbox"><input type="checkbox" id="pMembers" checked><span>👥 Members</span></label>
+      <label class="perm-checkbox"><input type="checkbox" id="pProducts"><span>🎡 Products</span></label>
+      <label class="perm-checkbox"><input type="checkbox" id="pNews"><span>📰 News & Articles</span></label>
+      <label class="perm-checkbox"><input type="checkbox" id="pForum" checked><span>💬 Forum</span></label>
+      <label class="perm-checkbox"><input type="checkbox" id="pExhibitions"><span>🎪 Exhibitions</span></label>
+      <label class="perm-checkbox"><input type="checkbox" id="pSuppliers"><span>🏪 Suppliers</span></label>
+      <label class="perm-checkbox"><input type="checkbox" id="pAds"><span>📢 Advertising</span></label>
+      <label class="perm-checkbox"><input type="checkbox" id="pSettings"><span>⚙️ Settings</span></label>
+      <label class="perm-checkbox"><input type="checkbox" id="pAdmins"><span>🔑 Admin Management</span></label>
+    </div>
+    <div style="margin-top:18px;padding:12px 14px;background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.15);border-radius:8px;font-size:12px;color:var(--text-muted)">
+      📧 An invitation email will be sent to the specified address with a secure setup link (expires in 7 days).
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="sendInvite()">Send Invitation ›</button>
+    </div>
+  </div>
+</div>
+
+<!-- View/Edit Admin Modal -->
+<div class="modal-overlay" id="viewModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <h3 style="margin:0;font-size:17px;color:#e2e8f0">Edit Administrator</h3>
+      <button onclick="closeViewModal()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer">×</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px;background:rgba(255,255,255,.03);border-radius:10px">
+      <div class="avatar-md" id="vAvatar" style="background:linear-gradient(135deg,var(--gold),#f5d06e);width:48px;height:48px;font-size:18px"></div>
+      <div>
+        <div id="vName" style="font-size:15px;font-weight:600;color:#e2e8f0"></div>
+        <div id="vEmail" style="font-size:13px;color:var(--text-muted);margin-top:2px"></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Role</label>
+        <select id="vRole">
+          <option>Super Admin</option>
+          <option>Admin</option>
+          <option>Moderator</option>
+          <option>Editor</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="vStatus">
+          <option>Active</option>
+          <option>Suspended</option>
+        </select>
+      </div>
+    </div>
+    <div class="section-title-sm">Recent Activity</div>
+    <div id="vActivity" style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px;font-size:12px;color:#94a3b8;line-height:1.8"></div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeViewModal()">Cancel</button>
+      <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.25)" onclick="suspendAdmin()">🚫 Suspend</button>
+      <button class="btn btn-gold" onclick="saveAdminEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+const admins = [
+  {id:1,name:'Sarah Chen',email:'sarah@nexamuse.com',role:'Super Admin',dept:'Management',status:'online',lastLogin:'Just now',perms:['Dashboard','Members','Products','News','Forum','Exhibitions','Suppliers','Advertising','Settings','Admin Management'],avatar:'S',color:'linear-gradient(135deg,#c9a227,#f5d06e)'},
+  {id:2,name:'Michael Park',email:'michael@nexamuse.com',role:'Admin',dept:'Operations',status:'online',lastLogin:'5 min ago',perms:['Dashboard','Members','Products','News','Forum','Exhibitions','Suppliers'],avatar:'M',color:'linear-gradient(135deg,#6366f1,#818cf8)'},
+  {id:3,name:'Lisa Wang',email:'lisa@nexamuse.com',role:'Admin',dept:'Content',status:'online',lastLogin:'12 min ago',perms:['Dashboard','News','Products','Forum'],avatar:'L',color:'linear-gradient(135deg,#34d399,#6ee7b7)'},
+  {id:4,name:'James Rodriguez',email:'james@nexamuse.com',role:'Moderator',dept:'Community',status:'online',lastLogin:'1 hour ago',perms:['Dashboard','Forum','Members'],avatar:'J',color:'linear-gradient(135deg,#f59e0b,#fcd34d)'},
+  {id:5,name:'Emily Foster',email:'emily@nexamuse.com',role:'Editor',dept:'Marketing',status:'offline',lastLogin:'Yesterday',perms:['Dashboard','News','Products'],avatar:'E',color:'linear-gradient(135deg,#ec4899,#f9a8d4)'},
+  {id:6,name:'David Kim',email:'david@nexamuse.com',role:'Moderator',dept:'Support',status:'offline',lastLogin:'2 days ago',perms:['Dashboard','Forum','Members','Suppliers'],avatar:'D',color:'linear-gradient(135deg,#14b8a6,#5eead4)'},
+  {id:7,name:'Anna Thompson',email:'anna@nexamuse.com',role:'Editor',dept:'Content',status:'offline',lastLogin:'3 days ago',perms:['Dashboard','News'],avatar:'A',color:'linear-gradient(135deg,#8b5cf6,#c4b5fd)'},
+];
+
+let filteredAdmins = [...admins];
+let editingAdminId = null;
+
+function getRoleClass(role){
+  return {
+    'Super Admin':'role-super',
+    'Admin':'role-admin',
+    'Moderator':'role-moderator',
+    'Editor':'role-editor'
+  }[role]||'role-editor';
+}
+
+function renderAdmins(data){
+  const tb = document.getElementById('adminBody');
+  if(!data.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted)">No administrators found</td></tr>';return;}
+  tb.innerHTML = data.map(a=>`
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar-md" style="background:${a.color}">${a.avatar}</div>
+          <div>
+            <div style="font-weight:600;color:#e2e8f0">${a.name}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${a.email}</div>
+            ${a.dept?`<div style="font-size:11px;color:rgba(148,163,184,.6)">${a.dept}</div>`:''}
+          </div>
+        </div>
+      </td>
+      <td><span class="role-badge ${getRoleClass(a.role)}">${a.role}</span></td>
+      <td>
+        <div class="perm-list">
+          ${a.perms.slice(0,3).map(p=>`<span class="perm-chip">${p}</span>`).join('')}
+          ${a.perms.length>3?`<span class="perm-chip">+${a.perms.length-3}</span>`:''}
+        </div>
+      </td>
+      <td>
+        <span class="status-dot dot-${a.status}"></span>
+        <span style="font-size:12px;color:${a.status==='online'?'#34d399':'#94a3b8'}">${a.status==='online'?'Online':'Offline'}</span>
+      </td>
+      <td style="font-size:12px;color:var(--text-muted)">${a.lastLogin}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn-icon" title="Edit" onclick="openViewModal(${a.id})">✏️</button>
+          <button class="btn-icon" title="View Log" onclick="viewLog(${a.id})">📋</button>
+          ${a.role!=='Super Admin'?`<button class="btn-icon danger" title="Suspend" onclick="confirmSuspend(${a.id})">🚫</button>`:''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterAdmins(){
+  const q=document.getElementById('adminSearch').value.toLowerCase();
+  const role=document.getElementById('roleFilter').value;
+  const status=document.getElementById('statusFilter').value.toLowerCase();
+  filteredAdmins=admins.filter(a=>{
+    const matchQ=!q||a.name.toLowerCase().includes(q)||a.email.toLowerCase().includes(q);
+    const matchR=!role||a.role===role;
+    const matchS=!status||a.status===status;
+    return matchQ&&matchR&&matchS;
+  });
+  renderAdmins(filteredAdmins);
+}
+
+function openAddModal(){
+  document.getElementById('modalTitle').textContent='Invite New Administrator';
+  document.getElementById('fName').value='';
+  document.getElementById('fEmail').value='';
+  document.getElementById('fRole').value='Admin';
+  document.getElementById('fDept').value='';
+  document.getElementById('adminModal').classList.add('show');
+}
+
+function closeModal(){document.getElementById('adminModal').classList.remove('show');}
+
+function updatePermPreset(){
+  const role=document.getElementById('fRole').value;
+  const allPerms=['pDashboard','pMembers','pProducts','pNews','pForum','pExhibitions','pSuppliers','pAds','pSettings','pAdmins'];
+  const presets={
+    'Super Admin':allPerms,
+    'Admin':['pDashboard','pMembers','pProducts','pNews','pForum','pExhibitions','pSuppliers'],
+    'Moderator':['pDashboard','pMembers','pForum'],
+    'Editor':['pDashboard','pNews','pProducts']
+  };
+  allPerms.forEach(p=>{const el=document.getElementById(p);if(el)el.checked=(presets[role]||[]).includes(p)});
+}
+
+function sendInvite(){
+  const email=document.getElementById('fEmail').value.trim();
+  if(!email){alert('Please enter an email address');return;}
+  closeModal();
+  showToast('Invitation sent to '+email);
+}
+
+function openViewModal(id){
+  const a=admins.find(x=>x.id===id);
+  if(!a)return;
+  editingAdminId=id;
+  document.getElementById('vAvatar').textContent=a.avatar;
+  document.getElementById('vAvatar').style.background=a.color;
+  document.getElementById('vName').textContent=a.name;
+  document.getElementById('vEmail').textContent=a.email;
+  document.getElementById('vRole').value=a.role;
+  document.getElementById('vStatus').value='Active';
+  document.getElementById('vActivity').innerHTML=[
+    '• Logged in from 192.168.1.1 · '+a.lastLogin,
+    '• Updated 3 member records · Yesterday',
+    '• Reviewed 2 forum reports · 2 days ago',
+    '• Published 1 news article · 3 days ago',
+  ].join('<br>');
+  document.getElementById('viewModal').classList.add('show');
+}
+function closeViewModal(){document.getElementById('viewModal').classList.remove('show');editingAdminId=null;}
+function saveAdminEdit(){
+  const a=admins.find(x=>x.id===editingAdminId);
+  if(a){a.role=document.getElementById('vRole').value;}
+  renderAdmins(filteredAdmins);
+  closeViewModal();
+  showToast('Administrator updated');
+}
+function suspendAdmin(){
+  if(confirm('Suspend this administrator?')){closeViewModal();showToast('Account suspended');}}
+function confirmSuspend(id){
+  if(confirm('Suspend this administrator?')){showToast('Account suspended');}}
+function viewLog(id){window.location.href='admin-log.html'}
+function resendInvite(k){showToast('Invitation resent')}
+function cancelInvite(k){showToast('Invitation cancelled')}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid var(--border);border-radius:8px;padding:10px 18px;color:#e2e8f0;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>renderAdmins(filteredAdmins));
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Manage Articles — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="breadcrumb">Articles / <span>Manage Articles</span></div>
+      </div>
+      <div class="header-right">
+        <a href="articles-add.html" class="btn btn-gold">+ New Article</a>
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title">
+        <h1 class="title-h1">Manage Articles</h1>
+        <p class="title-sub">Create and manage industry news, insights and features</p>
+      </div>
+      <!-- Stats Row -->
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-value">156</div><div class="stat-label">Total Articles</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">132</div><div class="stat-label">Published</div></div>
+        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value">18</div><div class="stat-label">Drafts</div></div>
+        <div class="stat-card"><div class="stat-icon">👁</div><div class="stat-value">84.2K</div><div class="stat-label">Total Views</div></div>
+      </div>
+      <!-- Filters -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-body" style="padding:16px">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <input type="text" class="form-input" placeholder="🔍 Search articles..." style="width:240px">
+            <select class="form-select" style="width:160px">
+              <option>All Categories</option>
+              <option>Industry News</option>
+              <option>Product Release</option>
+              <option>Exhibition Report</option>
+              <option>Technology</option>
+              <option>Business</option>
+            </select>
+            <select class="form-select" style="width:140px">
+              <option>All Status</option>
+              <option>Published</option>
+              <option>Draft</option>
+              <option>Scheduled</option>
+            </select>
+            <select class="form-select" style="width:160px">
+              <option>Date: Newest First</option>
+              <option>Date: Oldest First</option>
+              <option>Views: High to Low</option>
+              <option>Title A-Z</option>
+            </select>
+            <button class="btn btn-gold">Filter</button>
+            <button class="btn btn-outline" onclick="window.location='articles-ai.html'">🤖 AI Batch Write</button>
+          </div>
+        </div>
+      </div>
+      <!-- Table -->
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width:30px"><input type="checkbox" id="selectAll" onchange="toggleAll(this)"></th>
+                <th>Title</th><th>Category</th><th>Author</th><th>Status</th><th>Views</th><th>Published</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="articleBody"></tbody>
+          </table>
+        </div>
+        <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--border)">
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="bulkAction('publish')">Publish Selected</button>
+            <button class="btn btn-outline btn-sm" onclick="bulkAction('draft')">Set to Draft</button>
+            <button class="btn btn-danger btn-sm" onclick="bulkAction('delete')">Delete Selected</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:13px">
+            <span>Showing 1–10 of 156</span>
+            <button class="btn btn-outline btn-sm">‹</button>
+            <button class="btn btn-gold btn-sm">1</button>
+            <button class="btn btn-outline btn-sm">2</button>
+            <button class="btn btn-outline btn-sm">3</button>
+            <button class="btn btn-outline btn-sm">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+const articles = [
+  {id:1,title:'IAAPA Expo Asia 2026: Record Attendance Expected',category:'Exhibition',author:'Editorial',status:'Published',views:4820,date:'2026-03-20'},
+  {id:2,title:'Top 10 VR Arcade Machines Reshaping Entertainment Centers',category:'Technology',author:'Staff Writer',status:'Published',views:3910,date:'2026-03-18'},
+  {id:3,title:'Global Amusement Market Report Q1 2026',category:'Business',author:'Research',status:'Published',views:2750,date:'2026-03-15'},
+  {id:4,title:'New Safety Standards for Outdoor Play Equipment 2026',category:'Industry News',author:'Editorial',status:'Published',views:1980,date:'2026-03-12'},
+  {id:5,title:'Interview: Leading Supplier Expands to European Market',category:'Business',author:'J. Thompson',status:'Draft',views:0,date:'—'},
+  {id:6,title:'Best Practices for FEC Layout Design',category:'Technology',author:'Design Team',status:'Scheduled',views:0,date:'2026-03-28'},
+  {id:7,title:'2026 Trends in Kids Entertainment Zones',category:'Industry News',author:'Editorial',status:'Published',views:3120,date:'2026-03-10'},
+  {id:8,title:'GTI China Expo Preview: What to Expect',category:'Exhibition',author:'Staff Writer',status:'Published',views:2400,date:'2026-03-08'},
+  {id:9,title:'Sustainable Materials in Modern Playground Equipment',category:'Industry News',author:'Editorial',status:'Draft',views:0,date:'—'},
+  {id:10,title:'Revenue Optimization for Redemption Arcades',category:'Business',author:'Analyst',status:'Published',views:1650,date:'2026-03-05'},
+];
+const statusBadge = {Published:'<span style="background:rgba(86,171,47,.15);color:#56ab2f;padding:3px 8px;border-radius:12px;font-size:11px">Published</span>',Draft:'<span style="background:rgba(255,255,255,.08);color:#aaa;padding:3px 8px;border-radius:12px;font-size:11px">Draft</span>',Scheduled:'<span style="background:rgba(0,201,255,.12);color:#00c9ff;padding:3px 8px;border-radius:12px;font-size:11px">Scheduled</span>'};
+document.getElementById('articleBody').innerHTML = articles.map(a=>`
+  <tr>
+    <td><input type="checkbox" class="row-check"></td>
+    <td style="max-width:280px"><a href="articles-add.html" style="color:var(--gold);font-weight:500">${a.title}</a></td>
+    <td><span style="background:rgba(212,175,55,.1);color:var(--gold);padding:2px 8px;border-radius:10px;font-size:11px">${a.category}</span></td>
+    <td>${a.author}</td>
+    <td>${statusBadge[a.status]||a.status}</td>
+    <td>${a.views>0?a.views.toLocaleString():'—'}</td>
+    <td style="color:var(--text-muted);font-size:12px">${a.date}</td>
+    <td>
+      <a href="articles-add.html" class="btn-sm btn-outline">Edit</a>
+      <button class="btn-sm btn-danger" onclick="deleteArticle(${a.id})">Del</button>
+    </td>
+  </tr>`).join('');
+function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked)}
+function bulkAction(act){const checked=document.querySelectorAll('.row-check:checked');showToast(`${act.charAt(0).toUpperCase()+act.slice(1)} applied to ${checked.length} items`,'success')}
+function deleteArticle(id){if(confirm('Delete this article?')){showToast('Article deleted','warning')}}
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

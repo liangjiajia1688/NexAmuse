@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unverified Members — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">Members › <span>Unverified Members</span></div></div>
+      <div class="header-right"><div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div></div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title"><h1>Unverified Members <span class="badge" style="font-size:16px">12</span></h1><p>Review and approve or reject pending member registrations.</p></div>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button class="btn-primary" onclick="approveAll()">✓ Approve All Selected</button>
+          <button class="btn-danger" onclick="rejectAll()">✕ Reject All Selected</button>
+        </div>
+        <div class="toolbar-right">
+          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search..."></div>
+        </div>
+      </div>
+      <div class="form-section" style="padding:0;overflow:hidden">
+        <table class="admin-table">
+          <thead><tr><th><input type="checkbox" class="checkbox-all" onchange="toggleAll(this)"></th><th>Name</th><th>Email</th><th>Company</th><th>Country</th><th>Registered</th><th>ID Document</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td><input type="checkbox" class="row-check"></td><td><div class="cell-avatar"><div class="av" style="background:#667eea">MJ</div><div>Michael Johnson</div></div></td><td>m.j@arcadepro.com</td><td>ArcadePro Ltd.</td><td>🇺🇸 USA</td><td>Mar 25, 2026</td><td><a href="#" style="color:var(--gold)">View PDF</a></td><td><button class="btn-primary" style="padding:5px 12px;font-size:12px" onclick="approve(this)">Approve</button> <button class="btn-danger" style="padding:5px 12px;font-size:12px" onclick="reject(this)">Reject</button></td></tr>
+            <tr><td><input type="checkbox" class="row-check"></td><td><div class="cell-avatar"><div class="av" style="background:#d4af37">YT</div><div>Yuki Tanaka</div></div></td><td>y.tanaka@funlab.jp</td><td>FunLab Japan</td><td>🇯🇵 Japan</td><td>Mar 24, 2026</td><td><a href="#" style="color:var(--gold)">View PDF</a></td><td><button class="btn-primary" style="padding:5px 12px;font-size:12px" onclick="approve(this)">Approve</button> <button class="btn-danger" style="padding:5px 12px;font-size:12px" onclick="reject(this)">Reject</button></td></tr>
+            <tr><td><input type="checkbox" class="row-check"></td><td><div class="cell-avatar"><div class="av" style="background:#11998e">KA</div><div>Khalid Al-Rashid</div></div></td><td>khalid@games360.ae</td><td>Games360 UAE</td><td>🇦🇪 UAE</td><td>Mar 23, 2026</td><td><a href="#" style="color:var(--gold)">View PDF</a></td><td><button class="btn-primary" style="padding:5px 12px;font-size:12px" onclick="approve(this)">Approve</button> <button class="btn-danger" style="padding:5px 12px;font-size:12px" onclick="reject(this)">Reject</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+function approve(btn){btn.closest('tr').style.opacity='.3';btn.closest('tr').querySelector('.btn-danger').disabled=true;btn.textContent='✓ Approved';btn.style.opacity='.6';}
+function reject(btn){btn.closest('tr').style.opacity='.3';btn.closest('tr').querySelector('.btn-primary').disabled=true;btn.textContent='✕ Rejected';btn.style.opacity='.6';}
+function approveAll(){document.querySelectorAll('.row-check:checked').forEach(c=>c.closest('tr').querySelector('.btn-primary').click());}
+function rejectAll(){document.querySelectorAll('.row-check:checked').forEach(c=>c.closest('tr').querySelector('.btn-danger').click());}
+function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked);}
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

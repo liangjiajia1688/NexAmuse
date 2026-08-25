@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">System › <span>Settings</span></div></div>
+      <div class="header-right"><div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div></div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title"><h1>System Settings</h1><p>Configure site-wide settings, integrations and admin account.</p></div>
+      <!-- Settings Tabs -->
+      <div style="display:flex;gap:4px;margin-bottom:24px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content">
+        <button class="settings-tab active" onclick="showTab('site',this)" style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;background:rgba(212,175,55,.15);color:var(--gold)">Site Info</button>
+        <button class="settings-tab" onclick="showTab('email',this)" style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;background:transparent;color:var(--text-muted)">Email</button>
+        <button class="settings-tab" onclick="showTab('admin',this)" style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;background:transparent;color:var(--text-muted)">Admin Account</button>
+        <button class="settings-tab" onclick="showTab('api',this)" style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;background:transparent;color:var(--text-muted)">API & Integrations</button>
+      </div>
+      <!-- Site Info Tab -->
+      <div id="tab-site">
+        <div class="form-section">
+          <h3>Site Information</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Site Name</label><input type="text" value="NexAmuse Global"></div>
+            <div class="form-group"><label>Tagline</label><input type="text" value="The World's Premier Amusement B2B Platform"></div>
+            <div class="form-group"><label>Contact Email</label><input type="email" value="info@nexamuseglobal.com"></div>
+            <div class="form-group"><label>Support Email</label><input type="email" value="support@nexamuseglobal.com"></div>
+            <div class="form-group"><label>Phone</label><input type="text" value="+1 (888) 639-2683"></div>
+            <div class="form-group"><label>Default Language</label><select><option>English</option></select></div>
+          </div>
+          <div class="form-group" style="margin-top:12px"><label>Site Address / HQ</label><textarea>123 Amusement Blvd, Las Vegas, NV 89101, USA</textarea></div>
+          <div class="form-actions" style="margin-top:16px"><button class="btn-primary" onclick="alert('Settings saved!')">Save Settings</button></div>
+        </div>
+        <div class="form-section">
+          <h3>SEO & Analytics</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Google Analytics ID</label><input type="text" placeholder="G-XXXXXXXXXX"></div>
+            <div class="form-group"><label>Google Tag Manager</label><input type="text" placeholder="GTM-XXXXXXX"></div>
+            <div class="form-group full" style="grid-column:1/-1"><label>Meta Description (Default)</label><textarea>NexAmuse Global is the world's leading B2B marketplace for amusement and entertainment equipment, connecting buyers and suppliers across 60+ countries.</textarea></div>
+          </div>
+          <div class="form-actions" style="margin-top:16px"><button class="btn-primary" onclick="alert('SEO settings saved!')">Save SEO Settings</button></div>
+        </div>
+      </div>
+      <!-- Email Tab -->
+      <div id="tab-email" style="display:none">
+        <div class="form-section">
+          <h3>Email (SMTP) Settings</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>SMTP Host</label><input type="text" placeholder="smtp.gmail.com"></div>
+            <div class="form-group"><label>SMTP Port</label><input type="number" placeholder="587"></div>
+            <div class="form-group"><label>SMTP Username</label><input type="text" placeholder="noreply@nexamuseglobal.com"></div>
+            <div class="form-group"><label>SMTP Password</label><input type="password" placeholder="••••••••••••"></div>
+            <div class="form-group"><label>Encryption</label><select><option>TLS</option><option>SSL</option><option>None</option></select></div>
+            <div class="form-group"><label>From Name</label><input type="text" value="NexAmuse Global"></div>
+          </div>
+          <div class="form-actions" style="margin-top:16px">
+            <button class="btn-primary" onclick="alert('Email settings saved!')">Save SMTP Settings</button>
+            <button class="btn-secondary" onclick="alert('Test email sent to admin!')">Send Test Email</button>
+          </div>
+        </div>
+      </div>
+      <!-- Admin Account Tab -->
+      <div id="tab-admin" style="display:none">
+        <div class="form-section">
+          <h3>Change Admin Password</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Current Password</label><input type="password" placeholder="Current password"></div>
+            <div class="form-group"><label>New Password</label><input type="password" placeholder="Min 8 characters"></div>
+            <div class="form-group"><label>Confirm New Password</label><input type="password" placeholder="Repeat new password"></div>
+          </div>
+          <div class="form-actions" style="margin-top:16px"><button class="btn-primary" onclick="alert('Password updated!')">Update Password</button></div>
+        </div>
+        <div class="form-section">
+          <h3>Two-Factor Authentication</h3>
+          <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">Add an extra layer of security to the admin account.</p>
+          <button class="btn-secondary">Enable 2FA via Authenticator App</button>
+        </div>
+      </div>
+      <!-- API Tab -->
+      <div id="tab-api" style="display:none">
+        <div class="form-section">
+          <h3>API Keys & Integrations</h3>
+          <div class="form-group"><label>AI Writing API Key (OpenAI / DeepSeek)</label>
+            <div style="display:flex;gap:8px">
+              <input type="password" value="sk-••••••••••••••••••••••••••••••••" style="flex:1">
+              <button class="btn-secondary" onclick="this.previousElementSibling.type=this.previousElementSibling.type==='password'?'text':'password';this.textContent=this.textContent==='Show'?'Hide':'Show'">Show</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:12px"><label>Google Maps API Key</label><input type="text" placeholder="AIza..."></div>
+          <div class="form-group" style="margin-top:12px"><label>Stripe / Payment API Key</label><input type="password" placeholder="sk_live_..."></div>
+          <div class="form-group" style="margin-top:12px"><label>WeChat Official Account AppID</label><input type="text" placeholder="wx..."></div>
+          <div class="form-group" style="margin-top:12px"><label>WeChat Official Account AppSecret</label><input type="password" placeholder="••••••••••••••••"></div>
+          <div class="form-actions" style="margin-top:16px"><button class="btn-primary" onclick="alert('API settings saved!')">Save API Settings</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+function showTab(name,btn){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelectorAll('.settings-tab').forEach(b=>{b.style.background='transparent';b.style.color='var(--text-muted)';});
+  btn.style.background='rgba(212,175,55,.15)';btn.style.color='var(--gold)';
+}
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

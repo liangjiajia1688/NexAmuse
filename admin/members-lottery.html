@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucky Draw — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">Members › <span>Lucky Draw</span></div></div>
+      <div class="header-right"><div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div></div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title"><h1>🎰 Lucky Draw</h1><p>Create and manage prize draws, raffles and lotteries for members.</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:24px">
+        <!-- Create Draw -->
+        <div class="form-section">
+          <h3>Create New Draw</h3>
+          <div class="form-group"><label>Draw Name</label><input type="text" placeholder="e.g. IAAPA 2026 Welcome Raffle"></div>
+          <div class="form-group" style="margin-top:12px"><label>Draw Type</label>
+            <select>
+              <option>Random Raffle (All Eligible Members)</option>
+              <option>Points-Based Entry</option>
+              <option>Login Streak Reward</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-top:12px"><label>Prizes</label>
+            <div id="prizeList">
+              <div style="display:flex;gap:8px;margin-bottom:8px">
+                <input type="text" placeholder="1st Prize" style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);outline:none">
+                <input type="number" placeholder="Qty" style="width:70px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);outline:none">
+              </div>
+              <div style="display:flex;gap:8px;margin-bottom:8px">
+                <input type="text" placeholder="2nd Prize" style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);outline:none">
+                <input type="number" placeholder="Qty" value="3" style="width:70px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);outline:none">
+              </div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:12px"><label>Eligible Members</label><select><option>All Active Members</option><option>Gold & Platinum Only</option><option>Buyers Only</option></select></div>
+          <div class="form-grid" style="margin-top:12px">
+            <div class="form-group"><label>Start Date</label><input type="date"></div>
+            <div class="form-group"><label>Draw Date</label><input type="date"></div>
+          </div>
+          <div class="form-actions" style="margin-top:16px">
+            <button class="btn-primary">Launch Draw</button>
+            <button class="btn-secondary">Preview</button>
+          </div>
+        </div>
+        <!-- Active Draws -->
+        <div class="form-section">
+          <h3>Active & Past Draws</h3>
+          <div style="background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.2);border-radius:10px;padding:16px;margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+              <div style="font-weight:600">🎯 IAAPA 2026 Welcome Raffle</div>
+              <span class="tag active">Active</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">2,341 entries · Draw on Apr 15, 2026</div>
+            <div style="display:flex;gap:16px;font-size:13px;margin-bottom:12px">
+              <div><div style="color:var(--text-muted);font-size:11px">1st Prize</div><div style="color:var(--gold)">Exhibition VIP Pass</div></div>
+              <div><div style="color:var(--text-muted);font-size:11px">2nd Prize</div><div>Annual Membership</div></div>
+              <div><div style="color:var(--text-muted);font-size:11px">3rd Prize</div><div>Magazine Bundle</div></div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-primary" style="font-size:12px;padding:5px 16px" onclick="drawNow()">🎰 Draw Now</button>
+              <button class="btn-secondary" style="font-size:12px;padding:5px 12px">View Entries</button>
+              <button class="btn-danger" style="font-size:12px;padding:5px 12px">Cancel</button>
+            </div>
+          </div>
+          <!-- Past draw -->
+          <div style="background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:16px;opacity:.6">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+              <div style="font-weight:600">🎄 New Year 2026 Lucky Draw</div>
+              <span class="tag closed">Completed</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">1,892 entries · Drawn Jan 1, 2026</div>
+            <div style="font-size:12px;color:var(--gold)">Winner: Takeshi Noda — VIP Annual Pass</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+function drawNow(){
+  const names=['James Lawson','Sofia Kramer','Takeshi Noda','Ahmed Mansour','Laura Chen','Emma Wilson'];
+  const winner=names[Math.floor(Math.random()*names.length)];
+  alert('🎰 DRAW RESULT\n\n🏆 1st Prize Winner: '+winner+'\n\n(In production: sends notification email & updates records)');
+}
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

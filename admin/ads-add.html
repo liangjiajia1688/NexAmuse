@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>New Advertisement — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.zone-map{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.zone-opt{border:2px solid var(--border);border-radius:10px;padding:14px 12px;cursor:pointer;transition:.2s;text-align:center}
+.zone-opt:hover,.zone-opt.sel{border-color:var(--gold);background:rgba(201,162,39,.07)}
+.zone-opt .icon{font-size:24px;margin-bottom:6px}
+.zone-opt .name{font-size:13px;font-weight:600;color:#e2e8f0}
+.zone-opt .desc{font-size:11px;color:var(--text-muted);margin-top:2px}
+.schedule-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ad-preview-box{background:repeating-linear-gradient(45deg,rgba(255,255,255,.015),rgba(255,255,255,.015) 10px,rgba(255,255,255,.03) 10px,rgba(255,255,255,.03) 20px);border:2px dashed rgba(201,162,39,.3);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-muted);min-height:120px;flex-direction:column;gap:8px}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="breadcrumb">Advertising / <span>New Advertisement</span></div>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-outline btn-sm" onclick="saveDraft()">💾 Save Draft</button>
+        <button class="btn btn-gold btn-sm" onclick="publishAd()">🚀 Publish Ad</button>
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;"><div class="user-avatar">A</div><span style="color:var(--text-muted);font-size:13px;">Admin</span><span style="color:var(--text-muted);font-size:10px;">▼</span></button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info"><div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div><div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div></div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title"><h1 class="title-h1">➕ New Advertisement</h1><p class="title-sub">Create a new ad placement — set zone, creative, schedule, and targeting.</p></div>
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start">
+        <div>
+          <!-- Basic Info -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3>📋 Basic Information</h3></div>
+            <div class="card-body">
+              <div class="form-group"><label class="form-label">Ad Title / Name <span style="color:#ef4444">*</span></label><input type="text" class="form-input" id="adTitle" placeholder="e.g. GTI Asia 2026 Spring Promo"></div>
+              <div class="form-group"><label class="form-label">Advertiser / Company <span style="color:#ef4444">*</span></label><input type="text" class="form-input" placeholder="Company name"></div>
+              <div class="form-group"><label class="form-label">Click-through URL</label><input type="url" class="form-input" placeholder="https://example.com/landing-page"></div>
+              <div class="form-group"><label class="form-label">Ad Description (internal note)</label><textarea class="form-textarea" rows="2" placeholder="Brief notes about this campaign"></textarea></div>
+            </div>
+          </div>
+
+          <!-- Ad Zone -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3>📍 Ad Zone & Slot</h3></div>
+            <div class="card-body">
+              <label class="form-label">Select Display Zone</label>
+              <div class="zone-map" id="zoneMap">
+                <div class="zone-opt sel" onclick="selectZone(this,'homepage')" data-zone="homepage"><div class="icon">🏠</div><div class="name">Homepage</div><div class="desc">Hero / banner / section</div></div>
+                <div class="zone-opt" onclick="selectZone(this,'sidebar')" data-zone="sidebar"><div class="icon">📌</div><div class="name">Sidebar</div><div class="desc">300×250 / 300×600</div></div>
+                <div class="zone-opt" onclick="selectZone(this,'article')" data-zone="article"><div class="icon">📰</div><div class="name">Article Page</div><div class="desc">Mid/footer banners</div></div>
+                <div class="zone-opt" onclick="selectZone(this,'products')" data-zone="products"><div class="icon">🎮</div><div class="name">Products Page</div><div class="desc">Category header</div></div>
+                <div class="zone-opt" onclick="selectZone(this,'forum')" data-zone="forum"><div class="icon">💬</div><div class="name">Forum</div><div class="desc">Top / between posts</div></div>
+                <div class="zone-opt" onclick="selectZone(this,'ticker')" data-zone="ticker"><div class="icon">📢</div><div class="name">News Ticker</div><div class="desc">Full-width ticker bar</div></div>
+              </div>
+              <div class="form-group" style="margin-top:16px">
+                <label class="form-label">Ad Slot / Size</label>
+                <select class="form-select" id="slotSelect">
+                  <option>Hero Banner (1920×300)</option>
+                  <option>Section Banner (960×200)</option>
+                  <option>Product Grid Sponsor (300×300)</option>
+                  <option>Full-width Strip (1200×90)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Position / Sort Order</label>
+                <select class="form-select">
+                  <option>Top of page (highest priority)</option>
+                  <option>Mid page</option>
+                  <option>Bottom of page</option>
+                  <option>Custom position</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Creative -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3>🖼 Ad Creative</h3></div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div>
+                  <label class="form-label">Upload Image</label>
+                  <div style="border:2px dashed rgba(201,162,39,.3);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:.2s" onclick="pickImg()" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(201,162,39,.3)'">
+                    <div style="font-size:32px;margin-bottom:8px">🖼</div>
+                    <div style="font-size:13px;color:var(--text-muted)">Click to upload</div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:4px">JPG, PNG, GIF, WebP · Max 2MB</div>
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label">Preview</label>
+                  <div class="ad-preview-box" id="adPreviewBox">
+                    <span style="font-size:36px">📢</span>
+                    <span>Ad preview will appear here</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group" style="margin-top:16px">
+                <label class="form-label">Alt Text / Accessibility Label</label>
+                <input type="text" class="form-input" placeholder="Describe the ad image">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Or embed HTML / Script code</label>
+                <textarea class="form-textarea" rows="3" placeholder="Paste third-party ad code here (optional)"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3>📅 Display Schedule & Duration</h3></div>
+            <div class="card-body">
+              <div class="schedule-row">
+                <div class="form-group"><label class="form-label">Start Date & Time <span style="color:#ef4444">*</span></label><input type="datetime-local" class="form-input" id="startDt"></div>
+                <div class="form-group"><label class="form-label">End Date & Time <span style="color:#ef4444">*</span></label><input type="datetime-local" class="form-input" id="endDt" onchange="calcDuration()"></div>
+              </div>
+              <div id="durationInfo" style="font-size:13px;color:var(--gold);margin:-8px 0 14px;display:none">⏱ Duration: <strong id="durText"></strong></div>
+              <div class="form-group">
+                <label class="form-label">Display Frequency</label>
+                <select class="form-select">
+                  <option>Show every page load</option>
+                  <option>Once per session</option>
+                  <option>Once per day per user</option>
+                  <option>Once per week per user</option>
+                </select>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;color:var(--text-muted)"><input type="checkbox" checked> Auto-pause when budget exhausted</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;color:var(--text-muted)"><input type="checkbox"> Show only to logged-in members</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;color:var(--text-muted)"><input type="checkbox"> Exclude VIP members (no ads)</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Budget -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3>💰 Budget & Pricing</h3></div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+                <div class="form-group"><label class="form-label">Pricing Model</label>
+                  <select class="form-select"><option>CPM (per 1000 impressions)</option><option>CPC (per click)</option><option>Fixed Fee / Period</option><option>Free / House Ad</option></select>
+                </div>
+                <div class="form-group"><label class="form-label">Unit Price ($)</label><input type="number" class="form-input" placeholder="0.00"></div>
+                <div class="form-group"><label class="form-label">Total Budget ($)</label><input type="number" class="form-input" placeholder="0.00"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <div class="card" style="margin-bottom:16px;position:sticky;top:20px">
+            <div class="card-header"><h3>⚙️ Ad Settings</h3></div>
+            <div class="card-body">
+              <div class="form-group"><label class="form-label">Status</label>
+                <select class="form-select"><option>Active (published immediately)</option><option selected>Draft (review first)</option><option>Scheduled (start on date)</option></select>
+              </div>
+              <div class="form-group"><label class="form-label">Priority Level</label>
+                <select class="form-select"><option>⭐⭐⭐ Highest</option><option selected>⭐⭐ Normal</option><option>⭐ Low</option></select>
+              </div>
+              <div class="form-group"><label class="form-label">Target Audience</label>
+                <select class="form-select"><option>All Visitors</option><option>Registered Members</option><option>Standard Members</option><option>Premium Members</option><option>VIP Members</option></select>
+              </div>
+              <div class="form-group"><label class="form-label">Language / Region</label>
+                <select class="form-select"><option>All Regions</option><option>Asia-Pacific</option><option>Europe</option><option>Americas</option><option>China only</option></select>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+                <button class="btn btn-gold" style="width:100%" onclick="publishAd()">🚀 Publish Ad</button>
+                <button class="btn btn-outline" style="width:100%" onclick="saveDraft()">💾 Save as Draft</button>
+                <a href="ads.html" class="btn btn-outline" style="width:100%;text-align:center">← Back to Ad Zones</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h3>💡 Zone Sizes Guide</h3></div>
+            <div class="card-body" style="font-size:12px;color:var(--text-muted);line-height:1.9">
+              <p>🏠 <strong style="color:#e2e8f0">Homepage Hero</strong><br>1920×300 or 970×250</p>
+              <p>📌 <strong style="color:#e2e8f0">Sidebar</strong><br>300×250 (medium) · 300×600 (large)</p>
+              <p>📰 <strong style="color:#e2e8f0">Article</strong><br>728×90 (leaderboard) · 970×90</p>
+              <p>💬 <strong style="color:#e2e8f0">Forum</strong><br>970×90 (top) · 300×250 (between posts)</p>
+              <p>📢 <strong style="color:#e2e8f0">Ticker</strong><br>Full width, text + logo only</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+const SLOTS = {
+  homepage:['Hero Banner (1920×300)','Section Banner (960×200)','Product Grid Sponsor (300×300)','Full-width Strip (1200×90)'],
+  sidebar:['Medium Rectangle (300×250)','Half Page (300×600)','Wide Skyscraper (160×600)'],
+  article:['Leaderboard (728×90)','Article Mid-Banner (970×250)','Article Footer (728×90)'],
+  products:['Category Header (960×200)','Product Grid (300×300)'],
+  forum:['Forum Top Banner (970×90)','Between Posts (300×250)','Forum Sidebar (300×250)'],
+  ticker:['News Ticker (full width text)','Breaking Banner (full width image)'],
+};
+function selectZone(el,zone){
+  document.querySelectorAll('.zone-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  const sel=document.getElementById('slotSelect');
+  sel.innerHTML=(SLOTS[zone]||[]).map(s=>`<option>${s}</option>`).join('');
+}
+function pickImg(){showToast('Image picker opened','info');}
+function calcDuration(){
+  const s=document.getElementById('startDt').value;
+  const e=document.getElementById('endDt').value;
+  if(!s||!e)return;
+  const diff=(new Date(e)-new Date(s))/86400000;
+  const info=document.getElementById('durationInfo');
+  if(diff>0){info.style.display='block';document.getElementById('durText').textContent=Math.round(diff)+' days';}
+}
+function publishAd(){const t=document.getElementById('adTitle').value;if(!t){showToast('Please enter an ad title','error');return;}showToast('Advertisement published!','success');setTimeout(()=>window.location.href='ads.html',1200);}
+function saveDraft(){showToast('Saved as draft','success');}
+
+// Pre-fill dates
+const now=new Date(),end=new Date(now.getTime()+30*86400000);
+document.getElementById('startDt').value=now.toISOString().slice(0,16);
+document.getElementById('endDt').value=end.toISOString().slice(0,16);
+</script>
+<style>
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:.2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){var d=document.getElementById('userDropdown');var b=document.getElementById('userMenuBtn');if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}}
+document.addEventListener('click',function(e){var wrap=document.querySelector('.header-user-wrap');if(wrap&&!wrap.contains(e.target)){var d=document.getElementById('userDropdown');if(d)d.classList.remove('open');}});
+</script>
+</body>
+</html>

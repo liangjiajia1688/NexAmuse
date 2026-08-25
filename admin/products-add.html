@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Product — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">Products › <span>Add Product</span></div></div>
+      <div class="header-right"><div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div></div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title"><h1>Add New Product</h1><p>Create a new product listing for the catalog.</p></div>
+      <form onsubmit="submitProduct(event)">
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:24px">
+          <!-- Left: Main Info -->
+          <div>
+            <div class="form-section">
+              <h3>Basic Information</h3>
+              <div class="form-group"><label>Product Name (English) *</label><input type="text" placeholder="e.g. VR Racing Simulator Pro X9" required></div>
+              <div class="form-group" style="margin-top:12px"><label>Short Description</label><input type="text" placeholder="One-line summary for catalog listing"></div>
+              <div class="form-group" style="margin-top:12px"><label>Full Description</label>
+                <div class="editor-toolbar">
+                  <button type="button" class="editor-btn"><b>B</b></button>
+                  <button type="button" class="editor-btn"><i>I</i></button>
+                  <button type="button" class="editor-btn"><u>U</u></button>
+                  <button type="button" class="editor-btn">H1</button>
+                  <button type="button" class="editor-btn">H2</button>
+                  <button type="button" class="editor-btn">• List</button>
+                  <button type="button" class="editor-btn">🔗 Link</button>
+                  <button type="button" class="editor-btn">🖼 Image</button>
+                </div>
+                <div class="editor-area" contenteditable="true">Enter full product description here...</div>
+              </div>
+            </div>
+            <div class="form-section">
+              <h3>Technical Specifications</h3>
+              <div class="form-grid">
+                <div class="form-group"><label>Dimensions (L×W×H)</label><input type="text" placeholder="e.g. 250×180×220 cm"></div>
+                <div class="form-group"><label>Weight (kg)</label><input type="number" placeholder="e.g. 380"></div>
+                <div class="form-group"><label>Power Supply</label><input type="text" placeholder="e.g. 220V/50Hz"></div>
+                <div class="form-group"><label>Power Consumption</label><input type="text" placeholder="e.g. 3.5 kW"></div>
+                <div class="form-group"><label>Min Players</label><input type="number" placeholder="1" min="1"></div>
+                <div class="form-group"><label>Max Players</label><input type="number" placeholder="4" min="1"></div>
+                <div class="form-group"><label>Age Range</label><input type="text" placeholder="e.g. 8+"></div>
+                <div class="form-group"><label>Certification</label><input type="text" placeholder="e.g. CE, TUV, SGS"></div>
+              </div>
+              <div class="form-group" style="margin-top:12px"><label>Additional Specs (Key: Value per line)</label><textarea placeholder="Screen Size: 55 inch 4K&#10;Seat Type: Motion Platform&#10;Network: WiFi + LAN"></textarea></div>
+            </div>
+          </div>
+          <!-- Right: Sidebar Settings -->
+          <div>
+            <div class="form-section">
+              <h3>Publish Settings</h3>
+              <div class="form-group"><label>Status</label>
+                <select>
+                  <option>Published</option><option>Draft</option><option>Pending Review</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-top:12px"><label>Visibility</label>
+                <select>
+                  <option>All Members</option><option>Gold & Platinum</option><option>Platinum Only</option><option>Logged-in Only</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-primary" style="width:100%;margin-top:16px">Publish Product</button>
+              <button type="button" class="btn-secondary" style="width:100%;margin-top:8px">Save as Draft</button>
+            </div>
+            <div class="form-section">
+              <h3>Classification</h3>
+              <div class="form-group"><label>Category *</label>
+                <select required>
+                  <option value="">Select Category</option>
+                  <option>VR/AR Equipment</option><option>Redemption Machines</option><option>Kiddie Rides</option><option>Simulators</option><option>Claw Machines</option><option>Indoor Play</option><option>Bowling & Sports</option><option>Laser Tag</option><option>Trampolines</option><option>Token Systems</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-top:12px"><label>Tags</label><input type="text" placeholder="VR, Simulator, 2-Player (comma separated)"></div>
+              <div class="form-group" style="margin-top:12px"><label>Supplier</label>
+                <select>
+                  <option>TechPlay Corp.</option><option>ArcadeWorld Ltd.</option><option>ClawTech Co.</option><option>ImmersivePlay</option><option>FunRide Co.</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-section">
+              <h3>Pricing</h3>
+              <div class="form-group"><label>Price Type</label>
+                <select>
+                  <option>Price Range</option><option>Fixed Price</option><option>On Request</option>
+                </select>
+              </div>
+              <div class="form-grid" style="margin-top:12px">
+                <div class="form-group"><label>Min Price (USD)</label><input type="number" placeholder="8500"></div>
+                <div class="form-group"><label>Max Price (USD)</label><input type="number" placeholder="12000"></div>
+              </div>
+              <div class="form-group" style="margin-top:12px"><label>MOQ</label><input type="number" placeholder="1" min="1"></div>
+            </div>
+            <div class="form-section">
+              <h3>Product Images</h3>
+              <div onclick="this.querySelector('input').click()" style="border:2px dashed rgba(212,175,55,.3);border-radius:10px;padding:30px;text-align:center;cursor:pointer;color:var(--text-muted);font-size:13px;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(212,175,55,.3)'">
+                <div style="font-size:32px;margin-bottom:8px">🖼</div>
+                <div>Click to upload images</div>
+                <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP — Max 5MB each</div>
+                <input type="file" multiple accept="image/*" style="display:none">
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+function submitProduct(e){
+  e.preventDefault();
+  alert('✅ Product published successfully!\n(In production: saves to database)');
+  location.href='products.html';
+}
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

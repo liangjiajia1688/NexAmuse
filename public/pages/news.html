@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>行业新闻 — NexAmuse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .nwrap{max-width:1000px;margin:40px auto;padding:0 20px;}
+    .nwrap h1{color:#fff;font-size:2.2rem;}
+    .nwrap .lead{color:var(--text-secondary);margin:8px 0 20px;}
+    .filters{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
+    .chip{padding:7px 15px;border-radius:18px;background:var(--card-bg);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;font-size:.85rem;}
+    .chip.active{background:var(--accent-gradient);color:#1a1e2e;font-weight:600;border:none;}
+    .news-item{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;transition:var(--transition);}
+    .news-item:hover{border-color:var(--accent);}
+    .news-item .src{color:var(--accent);font-size:.8rem;font-weight:600;}
+    .news-item .cat{background:var(--tag-bg);color:var(--accent);padding:2px 9px;border-radius:12px;margin-left:8px;font-size:.75rem;}
+    .news-item a.ttl{color:#fff;font-weight:700;font-size:1.15rem;text-decoration:none;display:block;margin:8px 0;}
+    .news-item a.ttl:hover{color:var(--accent);}
+    .news-item .sum{color:var(--text-secondary);font-size:.9rem;line-height:1.7;}
+    .news-item .time{color:var(--text-secondary);font-size:.78rem;margin-top:10px;}
+    .empty{color:var(--text-secondary);text-align:center;padding:50px 0;}
+  </style>
+</head>
+<body>
+  <div id="na-header"></div>
+  <div class="nwrap">
+    <h1>行业新闻</h1>
+    <p class="lead">聚合全球游戏 · 游艺 · 动漫热点资讯（摘要来自各媒体，点击跳转原文）。</p>
+    <div class="filters">
+      <div class="chip active" data-cat="">全部</div>
+      <div class="chip" data-cat="游戏">游戏</div>
+      <div class="chip" data-cat="动漫">动漫</div>
+    </div>
+    <div id="list"></div>
+  </div>
+  <div id="na-footer"></div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/layout.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const list = $('list');
+    let curCat = '';
+
+    document.querySelectorAll('.chip').forEach(c => {
+      c.onclick = () => { document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); curCat = c.dataset.cat; load(); };
+    });
+
+    async function load() {
+      list.innerHTML = '<div class="empty">加载中…</div>';
+      try {
+        const r = await window.Api.news(curCat ? ('?category=' + encodeURIComponent(curCat)) : '');
+        if (r.news && r.news.length) {
+          list.innerHTML = r.news.map(n => `
+            <div class="news-item">
+              <span class="src">${window.Auth.escapeHtml(n.source||'未知来源')}</span><span class="cat">${window.Auth.escapeHtml(n.category||'')}</span>
+              <a class="ttl" href="${n.source_url}" target="_blank" rel="noopener">${window.Auth.escapeHtml(n.title)} →</a>
+              <div class="sum">${window.Auth.escapeHtml(n.summary||'')}</div>
+              <div class="time">🕒 ${n.published_at ? new Date(n.published_at*1000).toLocaleDateString() : ''}</div>
+            </div>`).join('');
+        } else {
+          list.innerHTML = '<div class="empty">暂无新闻，请先在后台触发一次新闻抓取（/api/news-refresh?key=...）</div>';
+        }
+      } catch (e) { list.innerHTML = '<div class="empty">加载失败：' + e.message + '</div>'; }
+    }
+    load();
+  </script>
+</body>
+</html>

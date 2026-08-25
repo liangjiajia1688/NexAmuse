@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>登录 / 注册 — NexAmuse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .auth-wrap{max-width:460px;margin:60px auto;padding:0 20px;}
+    .auth-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:36px;}
+    .auth-tabs{display:flex;gap:8px;margin-bottom:24px;}
+    .auth-tab{flex:1;padding:12px;text-align:center;cursor:pointer;border-radius:8px;color:var(--text-secondary);font-weight:600;border:1px solid transparent;}
+    .auth-tab.active{background:var(--tag-bg);color:var(--accent);border-color:var(--border);}
+    .auth-form{display:none;}
+    .auth-form.active{display:block;}
+    .auth-form h2{color:#fff;margin-bottom:6px;font-size:1.5rem;}
+    .auth-form p.sub{color:var(--text-secondary);font-size:.85rem;margin-bottom:20px;}
+    .auth-msg{font-size:.85rem;margin-top:12px;min-height:18px;}
+    .auth-msg.err{color:#ff6b6b;}
+    .auth-msg.ok{color:var(--success);}
+    .role-pick{display:flex;gap:12px;margin-bottom:16px;}
+    .role-pick label{flex:1;background:#1a2035;border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;color:var(--text-secondary);font-size:.9rem;}
+    .role-pick input{display:none;}
+    .role-pick input:checked + span{color:var(--accent);font-weight:600;}
+    .role-pick label:has(input:checked){border-color:var(--accent);background:var(--tag-bg);}
+  </style>
+</head>
+<body>
+  <div id="na-header"></div>
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <div class="auth-tab active" data-tab="login">登录</div>
+        <div class="auth-tab" data-tab="register">注册</div>
+      </div>
+
+      <!-- 登录 -->
+      <form class="auth-form active" id="formLogin" novalidate>
+        <h2>欢迎回来</h2>
+        <p class="sub">登录你的 NexAmuse 账号</p>
+        <div class="form-group"><label>邮箱</label><input type="email" name="email" required placeholder="you@example.com"/></div>
+        <div class="form-group"><label>密码</label><input type="password" name="password" required placeholder="******"/></div>
+        <button type="submit" class="btn-primary" style="width:100%;padding:12px;margin-top:8px;">登录</button>
+        <div class="auth-msg" id="msgLogin"></div>
+      </form>
+
+      <!-- 注册 -->
+      <form class="auth-form" id="formRegister" novalidate>
+        <h2>创建账号</h2>
+        <p class="sub">普通用户可发布二手设备、参与论坛；企业账号可创建专属主页</p>
+        <div class="role-pick">
+          <label><input type="radio" name="role" value="user" checked/><span>普通用户</span></label>
+          <label><input type="radio" name="role" value="company"/><span>企业账号</span></label>
+        </div>
+        <div class="form-group"><label>用户名</label><input type="text" name="username" required placeholder="显示名称"/></div>
+        <div class="form-group"><label>邮箱</label><input type="email" name="email" required placeholder="you@example.com"/></div>
+        <div class="form-group"><label>密码（至少 6 位）</label><input type="password" name="password" required placeholder="******"/></div>
+        <div class="form-group"><label>确认密码</label><input type="password" name="confirm" required placeholder="******"/></div>
+        <button type="submit" class="btn-primary" style="width:100%;padding:12px;margin-top:8px;">注册</button>
+        <div class="auth-msg" id="msgRegister"></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="na-footer"></div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/layout.js"></script>
+  <script>
+    // Tab 切换
+    document.querySelectorAll('.auth-tab').forEach(t => {
+      t.onclick = () => {
+        document.querySelectorAll('.auth-tab').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        document.getElementById('form' + t.dataset.tab.charAt(0).toUpperCase() + t.dataset.tab.slice(1)).classList.add('active');
+      };
+    });
+
+    const msg = (id, text, ok) => {
+      const el = document.getElementById(id);
+      el.textContent = text; el.className = 'auth-msg ' + (ok ? 'ok' : 'err');
+    };
+
+    document.getElementById('formLogin').onsubmit = async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      try {
+        const r = await window.Api.login({ email: f.email.value, password: f.password.value });
+        if (r.ok) {
+          window.Auth.set(r.token, r.user);
+          msg('msgLogin', '登录成功，跳转中…', true);
+          setTimeout(() => location.href = 'dashboard.html', 700);
+        }
+      } catch (err) { msg('msgLogin', err.message); }
+    };
+
+    document.getElementById('formRegister').onsubmit = async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      if (f.password.value !== f.confirm.value) { msg('msgRegister', '两次密码不一致'); return; }
+      try {
+        const r = await window.Api.register({
+          email: f.email.value, username: f.username.value,
+          password: f.password.value, role: f.role.value,
+        });
+        if (r.ok) {
+          // 自动登录
+          const lg = await window.Api.login({ email: f.email.value, password: f.password.value });
+          if (lg.ok) {
+            window.Auth.set(lg.token, lg.user);
+            msg('msgRegister', '注册成功！跳转中…', true);
+            setTimeout(() => location.href = 'dashboard.html', 700);
+          }
+        }
+      } catch (err) { msg('msgRegister', err.message); }
+    };
+  </script>
+</body>
+</html>

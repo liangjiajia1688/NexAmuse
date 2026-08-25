@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Products — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">Products › <span>Manage Products</span></div></div>
+      <div class="header-right">
+        <div class="header-search"><input type="text" placeholder="Search products..."><span>🔍</span></div>
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title"><h1>Manage Products</h1><p>Browse, edit and manage all product listings in the catalog.</p></div>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search products..." id="prodSearch" oninput="filterProds()"></div>
+          <select class="filter-select" id="catFilter" onchange="filterProds()">
+            <option value="">All Categories</option>
+            <option>VR/AR</option><option>Redemption</option><option>Kiddie Rides</option><option>Simulator</option><option>Claw Machine</option><option>Indoor Play</option>
+          </select>
+          <select class="filter-select" id="statusFilter" onchange="filterProds()">
+            <option value="">All Status</option><option>Published</option><option>Draft</option><option>Pending</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn-primary" onclick="location.href='products-add.html'">+ Add Product</button>
+          <button class="btn-secondary">Export</button>
+        </div>
+      </div>
+      <div class="form-section" style="padding:0;overflow:hidden">
+        <table class="admin-table" id="productsTable">
+          <thead><tr><th><input type="checkbox" class="checkbox-all"></th><th>Product</th><th>Category</th><th>Supplier</th><th>Price Range</th><th>Inquiries</th><th>Views</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="prodsBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="prodPagination"></div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+const products=[
+  {id:1,name:'VR Racing Simulator X9',cat:'VR/AR',supplier:'TechPlay Corp.',price:'$8,500 - $12,000',inquiries:47,views:1892,status:'Published',img:'🏎'},
+  {id:2,name:'Redemption Station Pro',cat:'Redemption',supplier:'ArcadeWorld Ltd.',price:'$3,200 - $5,000',inquiries:31,views:1240,status:'Published',img:'🎯'},
+  {id:3,name:'Claw Master Elite',cat:'Claw Machine',supplier:'ClawTech Co.',price:'$1,800 - $3,500',inquiries:68,views:3201,status:'Published',img:'🦾'},
+  {id:4,name:'AR Adventure Zone',cat:'VR/AR',supplier:'ImmersivePlay',price:'$15,000 - $25,000',inquiries:22,views:892,status:'Published',img:'🥽'},
+  {id:5,name:'Kiddie Carousel Classic',cat:'Kiddie Rides',supplier:'FunRide Co.',price:'$2,400 - $4,200',inquiries:19,views:654,status:'Draft',img:'🎠'},
+  {id:6,name:'Indoor Play Fortress',cat:'Indoor Play',supplier:'PlaySafe Inc.',price:'$18,000 - $45,000',inquiries:8,views:431,status:'Pending',img:'🏰'},
+];
+let pp=1,perP=5;
+function filterProds(){pp=1;renderProds();}
+function renderProds(){
+  const q=document.getElementById('prodSearch').value.toLowerCase();
+  const cf=document.getElementById('catFilter').value;
+  const sf=document.getElementById('statusFilter').value;
+  let data=products.filter(p=>(!q||(p.name+p.cat+p.supplier).toLowerCase().includes(q))&&(!cf||p.cat===cf)&&(!sf||p.status===sf));
+  const pages=Math.ceil(data.length/perP);
+  const slice=data.slice((pp-1)*perP,pp*perP);
+  document.getElementById('prodsBody').innerHTML=slice.map(p=>`
+    <tr>
+      <td><input type="checkbox" class="row-check"></td>
+      <td><div class="cell-avatar"><div style="font-size:28px;width:44px;text-align:center">${p.img}</div><div><div style="font-weight:500">${p.name}</div><div style="font-size:11px;color:var(--text-muted)">#PRD-${1000+p.id}</div></div></div></td>
+      <td><span class="badge">${p.cat}</span></td>
+      <td style="color:var(--text-muted);font-size:13px">${p.supplier}</td>
+      <td style="color:var(--gold)">${p.price}</td>
+      <td><span style="color:#4facfe">${p.inquiries}</span></td>
+      <td style="color:var(--text-muted)">${p.views.toLocaleString()}</td>
+      <td><span class="tag ${p.status==='Published'?'active':p.status==='Draft'?'closed':'processing'}">${p.status}</span></td>
+      <td>
+        <button class="btn-secondary" style="padding:4px 10px;font-size:12px">Edit</button>
+        <button class="btn-danger" style="padding:4px 10px;font-size:12px;margin-left:4px">Del</button>
+      </td>
+    </tr>`).join('');
+  let pg='';
+  for(let i=1;i<=pages;i++) pg+=`<div class="page-btn ${i===pp?'active':''}" onclick="goP(${i})">${i}</div>`;
+  document.getElementById('prodPagination').innerHTML=pg;
+}
+function goP(p){pp=p;renderProds();}
+renderProds();
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

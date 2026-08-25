@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>设备详情 — NexAmuse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .pd{max-width:1000px;margin:40px auto;padding:0 20px;display:grid;grid-template-columns:1.2fr 1fr;gap:36px;}
+    .pd .gallery .main{aspect-ratio:4/3;background:linear-gradient(135deg,#1c2540,#0d1530);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:4rem;color:var(--accent);overflow:hidden;}
+    .pd .gallery .main img{width:100%;height:100%;object-fit:cover;}
+    .pd .gallery .thumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+    .pd .gallery .thumbs img{width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;}
+    .pd h1{color:#fff;font-size:2rem;margin-bottom:10px;}
+    .pd .price{color:var(--accent);font-size:1.8rem;font-weight:800;margin:12px 0;}
+    .pd .info{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-top:16px;}
+    .pd .info .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);color:var(--text-secondary);font-size:.9rem;}
+    .pd .info .row b{color:var(--text-primary);font-weight:600;}
+    .pd .desc{color:var(--text-secondary);line-height:1.8;margin-top:20px;white-space:pre-wrap;}
+    .pd .author{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-top:20px;display:flex;justify-content:space-between;align-items:center;}
+    .pd .author .u{color:#fff;font-weight:600;}
+    .loading{color:var(--text-secondary);text-align:center;padding:80px 0;}
+  </style>
+</head>
+<body>
+  <div id="na-header"></div>
+  <div id="content"><div class="loading">加载中…</div></div>
+  <div id="na-footer"></div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/layout.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const id = new URLSearchParams(location.search).get('id');
+
+    (async () => {
+      if (!id) { $('content').innerHTML = '<div class="loading">缺少设备 ID</div>'; return; }
+      try {
+        const r = await window.Api.product(id);
+        const p = r.product, a = r.author || {};
+        const imgs = (p.images && p.images.length) ? p.images : [];
+        const mainImg = imgs.length ? `<img src="${imgs[0]}"/>` : '🎰';
+        const thumbs = imgs.map((u,i)=>`<img src="${u}" onclick="document.getElementById('mainImg').innerHTML='<img src=\\'${u}\\'>'"/>`).join('');
+        const price = p.price ? '¥' + Number(p.price).toLocaleString() : '面议';
+        $('content').innerHTML = `
+          <div class="pd">
+            <div class="gallery">
+              <div class="main" id="mainImg">${mainImg}</div>
+              <div class="thumbs">${thumbs}</div>
+            </div>
+            <div>
+              <h1>${window.Auth.escapeHtml(p.title)}</h1>
+              <div class="price">${price}</div>
+              <div class="info">
+                <div class="row"><span>新旧程度</span><b>${window.Auth.escapeHtml(p.cond||'—')}</b></div>
+                <div class="row"><span>分类</span><b>${window.Auth.escapeHtml(p.category||'—')}</b></div>
+                <div class="row"><span>所在地</span><b>${window.Auth.escapeHtml(p.location||'—')}</b></div>
+                <div class="row"><span>发布时间</span><b>${new Date(p.created_at*1000).toLocaleDateString()}</b></div>
+              </div>
+              <div class="desc">${window.Auth.escapeHtml(p.description||'暂无描述')}</div>
+              <div class="author">
+                <div><div class="m" style="color:var(--text-secondary);font-size:.8rem">发布者</div><div class="u">${window.Auth.escapeHtml(a.username||'匿名')}</div></div>
+                <a href="dashboard.html" class="btn-ghost">联系 / 留言</a>
+              </div>
+            </div>
+          </div>`;
+        document.title = p.title + ' — NexAmuse';
+      } catch (e) {
+        $('content').innerHTML = '<div class="loading">加载失败：' + e.message + '</div>';
+      }
+    })();
+  </script>
+</body>
+</html>

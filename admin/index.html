@@ -1,0 +1,292 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" id="mobileToggle">☰</button>
+        <div class="breadcrumb">Overview › <span>Dashboard</span></div>
+      </div>
+      <div class="header-right">
+        <div class="header-search"><input type="text" placeholder="Search..."><span>🔍</span></div>
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title">
+        <h1>📊 Dashboard</h1>
+        <p>Welcome back, Administrator. Here's what's happening today.</p>
+      </div>
+
+      <!-- KPI Cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:28px">
+        <div class="form-section" style="padding:20px;display:flex;align-items:center;gap:16px">
+          <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">👥</div>
+          <div>
+            <div style="font-size:26px;font-weight:700;color:#e2e8f0">1,284</div>
+            <div style="font-size:12px;color:var(--text-muted)">Total Members</div>
+            <div style="font-size:11px;color:#56ab2f;margin-top:2px">▲ +24 this week</div>
+          </div>
+        </div>
+        <div class="form-section" style="padding:20px;display:flex;align-items:center;gap:16px">
+          <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#d4af37,#f5d06e);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎮</div>
+          <div>
+            <div style="font-size:26px;font-weight:700;color:#e2e8f0">368</div>
+            <div style="font-size:12px;color:var(--text-muted)">Products Listed</div>
+            <div style="font-size:11px;color:#56ab2f;margin-top:2px">▲ +12 this month</div>
+          </div>
+        </div>
+        <div class="form-section" style="padding:20px;display:flex;align-items:center;gap:16px">
+          <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#11998e,#38ef7d);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📰</div>
+          <div>
+            <div style="font-size:26px;font-weight:700;color:#e2e8f0">94</div>
+            <div style="font-size:12px;color:var(--text-muted)">Published Articles</div>
+            <div style="font-size:11px;color:#56ab2f;margin-top:2px">▲ +6 this week</div>
+          </div>
+        </div>
+        <div class="form-section" style="padding:20px;display:flex;align-items:center;gap:16px">
+          <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#ee0979,#ff6a00);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📩</div>
+          <div>
+            <div style="font-size:26px;font-weight:700;color:#e2e8f0">47</div>
+            <div style="font-size:12px;color:var(--text-muted)">Pending Inquiries</div>
+            <div style="font-size:11px;color:#ee0979;margin-top:2px">● 12 urgent</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-column layout -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+
+        <!-- Recent Members -->
+        <div class="form-section" style="padding:0;overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <h3 style="font-size:14px;color:#e2e8f0">👥 Recent Members</h3>
+            <a href="members.html" style="font-size:12px;color:var(--gold)">View all →</a>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <tbody id="recentMembersBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Recent Articles -->
+        <div class="form-section" style="padding:0;overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <h3 style="font-size:14px;color:#e2e8f0">📰 Recent Articles</h3>
+            <a href="articles.html" style="font-size:12px;color:var(--gold)">View all →</a>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <tbody id="recentArticlesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Quick Actions + System Status -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+        <!-- Quick Actions -->
+        <div class="form-section">
+          <h3 style="font-size:14px;color:#e2e8f0;margin-bottom:16px">⚡ Quick Actions</h3>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <a href="members-add.html" class="quick-action-btn">
+              <div style="font-size:24px;margin-bottom:6px">➕</div>
+              <div style="font-size:12px">Add Member</div>
+            </a>
+            <a href="products-add.html" class="quick-action-btn">
+              <div style="font-size:24px;margin-bottom:6px">🎮</div>
+              <div style="font-size:12px">Add Product</div>
+            </a>
+            <a href="articles-add.html" class="quick-action-btn">
+              <div style="font-size:24px;margin-bottom:6px">✍️</div>
+              <div style="font-size:12px">Write Article</div>
+            </a>
+            <a href="articles-ai.html" class="quick-action-btn">
+              <div style="font-size:24px;margin-bottom:6px">🤖</div>
+              <div style="font-size:12px">AI Write</div>
+            </a>
+            <a href="gallery.html" class="quick-action-btn">
+              <div style="font-size:24px;margin-bottom:6px">🖼️</div>
+              <div style="font-size:12px">Gallery</div>
+            </a>
+            <a href="members-unverified.html" class="quick-action-btn">
+              <div style="font-size:24px;margin-bottom:6px">⏳</div>
+              <div style="font-size:12px">Unverified</div>
+            </a>
+            <a href="settings.html" class="quick-action-btn">
+              <div style="font-size:24px;margin-bottom:6px">⚙️</div>
+              <div style="font-size:12px">Settings</div>
+            </a>
+            <a href="../index.html" target="_blank" class="quick-action-btn">
+              <div style="font-size:24px;margin-bottom:6px">🌐</div>
+              <div style="font-size:12px">View Site</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="form-section">
+          <h3 style="font-size:14px;color:#e2e8f0;margin-bottom:16px">🖥️ System Status</h3>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                <span>Server Load</span><span style="color:#56ab2f">24%</span>
+              </div>
+              <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px">
+                <div style="width:24%;height:100%;background:#56ab2f;border-radius:3px"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                <span>Disk Usage</span><span style="color:#d4af37">61%</span>
+              </div>
+              <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px">
+                <div style="width:61%;height:100%;background:#d4af37;border-radius:3px"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                <span>Memory</span><span style="color:#11998e">38%</span>
+              </div>
+              <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px">
+                <div style="width:38%;height:100%;background:#11998e;border-radius:3px"></div>
+              </div>
+            </div>
+            <div style="margin-top:8px;padding-top:12px;border-top:1px solid var(--border)">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:8px">
+                <span>Database</span><span style="color:#56ab2f">● Online</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:8px">
+                <span>CDN</span><span style="color:#56ab2f">● Active</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+                <span>Email Service</span><span style="color:#56ab2f">● Healthy</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.quick-action-btn {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:14px 8px;border-radius:10px;background:rgba(255,255,255,.04);
+  border:1px solid var(--border);color:var(--text-muted);text-align:center;
+  text-decoration:none;transition:.2s;cursor:pointer;
+}
+.quick-action-btn:hover {
+  background:rgba(212,175,55,.1);border-color:var(--gold);color:#e2e8f0;
+  transform:translateY(-2px);
+}
+</style>
+
+<script src="admin.js"></script>
+<script>
+// Recent Members data
+const recentMembers = [
+  { name:'James Lawson',   company:'Global Fun Ltd.',    level:'Gold',     joined:'2026-03-24' },
+  { name:'Sofia Kramer',   company:'Amusement GmbH',     level:'Silver',   joined:'2026-03-22' },
+  { name:'Takeshi Noda',   company:'Play World Co.',     level:'Platinum', joined:'2026-03-20' },
+  { name:'Ahmed Mansour',  company:'FunZone AE',         level:'Gold',     joined:'2026-03-18' },
+  { name:'Laura Chen',     company:'Arcade Masters SG',  level:'Gold',     joined:'2026-03-15' },
+];
+const levelColors = { Platinum:'#a78bfa', Gold:'#d4af37', Silver:'#94a3b8', Standard:'#64748b' };
+document.getElementById('recentMembersBody').innerHTML = recentMembers.map(m => `
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px 16px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--card-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--gold);flex-shrink:0">
+          ${m.name.split(' ').map(x=>x[0]).join('')}
+        </div>
+        <div>
+          <div style="font-size:13px;color:#e2e8f0">${m.name}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${m.company}</div>
+        </div>
+      </div>
+    </td>
+    <td style="padding:10px 8px;font-size:11px;color:${levelColors[m.level]||'#94a3b8'}">${m.level}</td>
+    <td style="padding:10px 16px;font-size:11px;color:var(--text-muted)">${m.joined}</td>
+  </tr>
+`).join('');
+
+// Recent Articles data
+const recentArticles = [
+  { title:'2026 Global Amusement Industry Outlook',    cat:'Industry News',  date:'2026-03-24', status:'Published' },
+  { title:'Top 10 VR Attractions of 2026',             cat:'Product Review', date:'2026-03-22', status:'Published' },
+  { title:'Safety Standards for Indoor Theme Parks',   cat:'Regulations',    date:'2026-03-20', status:'Published' },
+  { title:'How AI is Reshaping Arcade Gaming',         cat:'Technology',     date:'2026-03-18', status:'Draft' },
+  { title:'GTI China 2026 Exhibitor Preview',          cat:'Exhibitions',    date:'2026-03-15', status:'Published' },
+];
+document.getElementById('recentArticlesBody').innerHTML = recentArticles.map(a => `
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px 16px">
+      <div style="font-size:13px;color:#e2e8f0;margin-bottom:3px">${a.title}</div>
+      <div style="font-size:11px;color:var(--text-muted)">${a.cat} · ${a.date}</div>
+    </td>
+    <td style="padding:10px 16px;font-size:11px;white-space:nowrap">
+      <span style="padding:2px 8px;border-radius:4px;background:${a.status==='Published'?'rgba(86,171,47,.15)':'rgba(255,255,255,.06)'};color:${a.status==='Published'?'#56ab2f':'var(--text-muted)'}">${a.status}</span>
+    </td>
+  </tr>
+`).join('');
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

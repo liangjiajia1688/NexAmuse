@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Params — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">Products › <span>Product Params</span></div></div>
+      <div class="header-right"><div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div></div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title"><h1>Product Parameters</h1><p>Define reusable specification fields for each product category.</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:24px">
+        <div class="form-section">
+          <h3>Add Parameter Group</h3>
+          <div class="form-group"><label>Group Name</label><input type="text" placeholder="e.g. Technical Specs"></div>
+          <div class="form-group" style="margin-top:12px"><label>Applies To Category</label>
+            <select>
+              <option>All Categories</option>
+              <option>VR/AR Equipment</option><option>Redemption Machines</option><option>Kiddie Rides</option><option>Simulators</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-top:12px">
+            <label>Parameters</label>
+            <div id="paramList">
+              <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px">
+                <input type="text" placeholder="Field Name" style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);outline:none">
+                <select style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);outline:none"><option>Text</option><option>Number</option><option>Select</option><option>Multi-Select</option></select>
+                <button type="button" onclick="this.closest('div').remove()" style="background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);color:#ff6b6b;border-radius:6px;padding:0 10px;cursor:pointer">✕</button>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px">
+                <input type="text" placeholder="Field Name" value="Screen Size" style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);outline:none">
+                <select style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);outline:none"><option>Text</option></select>
+                <button type="button" onclick="this.closest('div').remove()" style="background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);color:#ff6b6b;border-radius:6px;padding:0 10px;cursor:pointer">✕</button>
+              </div>
+            </div>
+            <button class="btn-secondary" style="margin-top:8px;font-size:12px;padding:6px 12px" onclick="addParam()">+ Add Field</button>
+          </div>
+          <div class="form-actions" style="margin-top:16px"><button class="btn-primary">Save Parameter Group</button></div>
+        </div>
+        <div class="form-section">
+          <h3>Existing Parameter Groups</h3>
+          <table class="admin-table">
+            <thead><tr><th>Group Name</th><th>Category</th><th>Fields</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td>Technical Specs</td><td>All Categories</td><td>8 fields</td><td><button class="btn-secondary" style="font-size:12px;padding:4px 10px">Edit</button></td></tr>
+              <tr><td>VR Specifications</td><td>VR/AR Equipment</td><td>5 fields</td><td><button class="btn-secondary" style="font-size:12px;padding:4px 10px">Edit</button></td></tr>
+              <tr><td>Safety & Compliance</td><td>All Categories</td><td>4 fields</td><td><button class="btn-secondary" style="font-size:12px;padding:4px 10px">Edit</button></td></tr>
+              <tr><td>Pricing & MOQ</td><td>All Categories</td><td>3 fields</td><td><button class="btn-secondary" style="font-size:12px;padding:4px 10px">Edit</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+function addParam(){
+  const div=document.createElement('div');
+  div.style.cssText='display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px';
+  div.innerHTML='<input type="text" placeholder="Field Name" style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);outline:none"><select style="background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);outline:none"><option>Text</option><option>Number</option><option>Select</option></select><button type="button" onclick="this.closest(\'div\').remove()" style="background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);color:#ff6b6b;border-radius:6px;padding:0 10px;cursor:pointer">✕</button>';
+  document.getElementById('paramList').appendChild(div);
+}
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

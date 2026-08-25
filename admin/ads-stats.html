@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ad Statistics — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-big{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px 22px}
+.stat-big .num{font-size:30px;font-weight:700;color:var(--gold)}
+.stat-big .lab{font-size:12px;color:var(--text-muted);margin-top:4px}
+.stat-big .change{font-size:12px;margin-top:8px}
+.change.up{color:#56ab2f} .change.down{color:#f87171}
+.chart-placeholder{height:220px;background:rgba(201,162,39,.04);border:1px dashed rgba(201,162,39,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px;position:relative;overflow:hidden}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:180px;padding:0 10px}
+.bar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.bar{width:100%;background:linear-gradient(180deg,var(--gold),rgba(201,162,39,.3));border-radius:4px 4px 0 0;transition:all .3s;cursor:pointer;position:relative}
+.bar:hover::after{content:attr(data-val);position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:var(--card-bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:11px;white-space:nowrap;color:var(--text)}
+.bar-label{font-size:10px;color:var(--text-muted);text-align:center}
+.ad-perf-row{display:grid;grid-template-columns:2fr 80px 100px 100px 80px 100px 80px;gap:12px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);font-size:13px}
+.ad-perf-row.header{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;background:rgba(255,255,255,.02)}
+.ctr-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:4px}
+.ctr-fill{height:100%;background:linear-gradient(90deg,var(--gold),#f5d06e);border-radius:3px}
+.zone-pill{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;background:rgba(201,162,39,.1);color:var(--gold);border:1px solid rgba(201,162,39,.2)}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" onclick="toggleSidebar()">☰</button><div class="breadcrumb">Advertising / <span>Statistics</span></div></div>
+      <div class="header-right">
+        <span id="headerUser" style="font-size:13px;color:var(--text-muted)"></span>
+        <div class="user-avatar" id="headerAvatar" onclick="toggleUserMenu()" style="cursor:pointer">A</div>
+        <div class="user-dropdown" id="userDropdown" style="display:none;position:absolute;right:20px;top:60px;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:160px;z-index:999">
+          <a href="index.html" style="display:block;padding:8px 12px;color:var(--text);text-decoration:none;border-radius:6px;font-size:13px" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='transparent'">🏠 Dashboard</a>
+          <hr style="border-color:var(--border);margin:4px 0">
+          <a href="#" onclick="adminLogout()" style="display:block;padding:8px 12px;color:#f87171;text-decoration:none;border-radius:6px;font-size:13px" onmouseover="this.style.background='rgba(248,113,113,.08)'" onmouseout="this.style.background='transparent'">🚪 Sign Out</a>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+
+      <!-- Date Range -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px">
+        <h2 style="margin:0;font-size:20px">Ad Performance Overview</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="display:flex;gap:4px">
+            <button class="range-btn active" onclick="setRange(7,this)">7d</button>
+            <button class="range-btn" onclick="setRange(30,this)">30d</button>
+            <button class="range-btn" onclick="setRange(90,this)">90d</button>
+          </div>
+          <input type="date" value="2026-03-19" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font-size:12px">
+          <span style="color:var(--text-muted);font-size:12px">—</span>
+          <input type="date" value="2026-03-26" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font-size:12px">
+          <button onclick="exportReport()" style="padding:7px 14px;background:rgba(201,162,39,.12);color:var(--gold);border:1px solid rgba(201,162,39,.3);border-radius:8px;cursor:pointer;font-size:13px">📥 Export</button>
+        </div>
+      </div>
+      <style>.range-btn{padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;font-size:12px;transition:all .2s}.range-btn.active,.range-btn:hover{background:rgba(201,162,39,.15);color:var(--gold);border-color:rgba(201,162,39,.3)}</style>
+
+      <!-- Key Stats -->
+      <div class="stats-grid">
+        <div class="stat-big">
+          <div class="num" id="totalImpr">284,720</div>
+          <div class="lab">Total Impressions</div>
+          <div class="change up" id="imprChg">▲ 12.4% vs last period</div>
+        </div>
+        <div class="stat-big">
+          <div class="num" id="totalClicks">8,931</div>
+          <div class="lab">Total Clicks</div>
+          <div class="change up" id="clickChg">▲ 8.7% vs last period</div>
+        </div>
+        <div class="stat-big">
+          <div class="num" id="avgCTR">3.14%</div>
+          <div class="lab">Avg. Click-Through Rate</div>
+          <div class="change down" id="ctrChg">▼ 0.3% vs last period</div>
+        </div>
+        <div class="stat-big">
+          <div class="num" id="revenue">$2,640</div>
+          <div class="lab">Ad Revenue (Est.)</div>
+          <div class="change up" id="revChg">▲ 18.2% vs last period</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:18px;margin-bottom:24px">
+        <!-- Impressions Chart -->
+        <div class="card" style="padding:20px">
+          <div style="font-weight:600;margin-bottom:16px">Daily Impressions & Clicks <span style="font-size:12px;font-weight:400;color:var(--text-muted)">(last 7 days)</span></div>
+          <div style="position:relative;height:200px">
+            <div class="bar-chart" id="impChart" style="height:170px"></div>
+            <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--text-muted)">
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--gold);display:inline-block"></span>Impressions (/100)</span>
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#60a5fa;display:inline-block"></span>Clicks</span>
+            </div>
+          </div>
+        </div>
+        <!-- Zone Distribution -->
+        <div class="card" style="padding:20px">
+          <div style="font-weight:600;margin-bottom:16px">Impressions by Zone</div>
+          <div id="zoneChart" style="display:grid;gap:10px"></div>
+        </div>
+      </div>
+
+      <!-- Per-Ad Performance Table -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-weight:600">Per-Ad Performance</div>
+        <div class="ad-perf-row header">
+          <div>Advertisement</div>
+          <div>Zone</div>
+          <div>Impressions</div>
+          <div>Clicks</div>
+          <div>CTR</div>
+          <div>Budget Used</div>
+          <div>Status</div>
+        </div>
+        <div id="adPerfList"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+const DAYS = ['Mar 20','Mar 21','Mar 22','Mar 23','Mar 24','Mar 25','Mar 26'];
+const IMP = [38200,41500,39800,44200,42100,45800,33120];
+const CLK = [1180,1340,1210,1450,1380,1520,851];
+
+// Bar chart
+const chartEl = document.getElementById('impChart');
+const max = Math.max(...IMP);
+chartEl.innerHTML = DAYS.map((d,i)=>`
+  <div class="bar-wrap">
+    <div class="bar" style="height:${(IMP[i]/max*140)}px;background:linear-gradient(180deg,var(--gold),rgba(201,162,39,.3))" data-val="${IMP[i].toLocaleString()} impr"></div>
+    <div class="bar" style="height:${(CLK[i]/max*140)}px;background:linear-gradient(180deg,#60a5fa,rgba(96,165,250,.3));margin-top:-${(IMP[i]/max*140)}px;opacity:.6" data-val="${CLK[i].toLocaleString()} clicks"></div>
+    <div class="bar-label">${d}</div>
+  </div>
+`).join('');
+
+// Zone distribution
+const ZONES = [
+  {name:'Homepage Hero Banner',pct:38,imp:108194},
+  {name:'Sidebar Rectangle',pct:22,imp:62638},
+  {name:'News Feed Native',pct:19,imp:54097},
+  {name:'Product Listing Top',pct:13,imp:37014},
+  {name:'Forum Leaderboard',pct:8,imp:22777},
+];
+document.getElementById('zoneChart').innerHTML = ZONES.map(z=>`
+  <div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+      <span>${z.name}</span>
+      <span style="color:var(--gold)">${z.pct}%</span>
+    </div>
+    <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden">
+      <div style="height:100%;width:${z.pct}%;background:linear-gradient(90deg,var(--gold),rgba(201,162,39,.4));border-radius:3px"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${z.imp.toLocaleString()} impressions</div>
+  </div>
+`).join('');
+
+// Per-ad table
+const ADS = [
+  {name:'IAAPA 2026 — Main Banner',zone:'Hero',imp:84200,clk:2890,ctr:3.43,budget:800,spent:312,status:'active'},
+  {name:'VR Equipment Showcase',zone:'Sidebar',imp:62400,clk:1740,ctr:2.79,budget:500,spent:248,status:'active'},
+  {name:'Spring Buy Season 2026',zone:'Native',imp:54100,clk:1520,ctr:2.81,budget:600,spent:310,status:'active'},
+  {name:'New Arrivals — Q1 Products',zone:'Product',imp:37000,clk:1280,ctr:3.46,budget:400,spent:218,status:'active'},
+  {name:'Forum Community Spotlight',zone:'Forum',imp:22700,clk:801,ctr:3.53,budget:200,spent:142,status:'active'},
+  {name:'Winter Expo Recap',zone:'Hero',imp:18430,clk:490,ctr:2.66,budget:300,spent:300,status:'expired'},
+  {name:'Industry Awards 2025',zone:'Native',imp:5890,clk:210,ctr:3.56,budget:150,spent:150,status:'expired'},
+];
+const STATUS_MAP={active:'<span style="color:#56ab2f;font-size:11px;font-weight:600">● Active</span>',expired:'<span style="color:#94a3b8;font-size:11px;font-weight:600">○ Expired</span>',paused:'<span style="color:#f59e0b;font-size:11px;font-weight:600">⏸ Paused</span>'};
+document.getElementById('adPerfList').innerHTML = ADS.map(a=>`
+  <div class="ad-perf-row">
+    <div style="font-weight:500">${a.name}</div>
+    <div><span class="zone-pill">${a.zone}</span></div>
+    <div>${a.imp.toLocaleString()}</div>
+    <div>${a.clk.toLocaleString()}</div>
+    <div>
+      <span style="font-weight:600;color:${a.ctr>3.2?'#56ab2f':'var(--text)'}">${a.ctr}%</span>
+      <div class="ctr-bar"><div class="ctr-fill" style="width:${Math.min(a.ctr*20,100)}%"></div></div>
+    </div>
+    <div>
+      <div style="font-size:12px">$${a.spent}/$${a.budget}</div>
+      <div class="ctr-bar"><div class="ctr-fill" style="width:${(a.spent/a.budget*100).toFixed(0)}%;background:${a.spent>=a.budget?'#f87171':'linear-gradient(90deg,var(--gold),#f5d06e)'}"></div></div>
+    </div>
+    <div>${STATUS_MAP[a.status]||''}</div>
+  </div>
+`).join('');
+
+function setRange(days,btn){
+  document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function exportReport(){
+  const rows = ADS.map(a=>[a.name,a.zone,a.imp,a.clk,a.ctr+'%','$'+a.spent+'/$'+a.budget,a.status].join(','));
+  const csv = 'Ad Name,Zone,Impressions,Clicks,CTR,Budget Used,Status\n'+rows.join('\n');
+  const a = document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='ad_stats.csv'; a.click();
+}
+</script>
+</body>
+</html>

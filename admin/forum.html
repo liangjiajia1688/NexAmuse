@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Forum Posts — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.forum-table{width:100%;border-collapse:collapse}
+.forum-table th{padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);border-bottom:1px solid var(--border);font-weight:600}
+.forum-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;vertical-align:middle}
+.forum-table tr:hover td{background:rgba(255,255,255,.02)}
+.post-title{font-weight:600;color:#e2e8f0;cursor:pointer}
+.post-title:hover{color:var(--gold)}
+.post-excerpt{font-size:12px;color:var(--text-muted);margin-top:2px;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.post-meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)}
+.author-pill{display:inline-flex;align-items:center;gap:5px}
+.avatar-xs{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#f5d06e);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#0a0e1a;flex-shrink:0}
+.badge-section{padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600;background:rgba(201,162,39,.12);color:var(--gold);border:1px solid rgba(201,162,39,.2)}
+.badge-pinned{background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.2)}
+.badge-locked{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2)}
+.badge-featured{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+.stat-cell{text-align:center;font-size:13px;font-weight:600;color:#94a3b8}
+.action-btns{display:flex;gap:6px}
+.btn-icon{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text-muted);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.btn-icon:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,162,39,.08)}
+.btn-icon.danger:hover{border-color:#f87171;color:#f87171;background:rgba(248,113,113,.08)}
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.filter-bar select,.filter-bar input{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none}
+.filter-bar select:focus,.filter-bar input:focus{border-color:rgba(201,162,39,.5)}
+.bulk-bar{display:none;align-items:center;gap:10px;padding:10px 16px;background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.2);border-radius:8px;margin-bottom:14px;font-size:13px}
+.bulk-bar.show{display:flex}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center}
+.stat-card .num{font-size:26px;font-weight:700;color:var(--gold)}
+.stat-card .lab{font-size:12px;color:var(--text-muted);margin-top:3px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:#12182b;border:1px solid var(--border);border-radius:14px;padding:28px;width:600px;max-height:80vh;overflow-y:auto}
+.modal-box h3{margin:0 0 16px;font-size:18px;color:#e2e8f0}
+.post-content-preview{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:14px;line-height:1.7;color:#cbd5e1}
+.tab-row{display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.tab-btn{padding:9px 18px;font-size:13px;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.2s;background:none;border-top:none;border-left:none;border-right:none}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" onclick="toggleSidebar()">☰</button><div class="breadcrumb">Forum / <span>Forum Posts</span></div></div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;">
+            <div class="user-avatar">A</div><span style="color:var(--text-muted);font-size:13px;">Admin</span><span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info"><div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div><div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div></div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-header" style="margin-bottom:20px">
+        <div>
+          <h1 class="page-title">Forum Posts</h1>
+          <p class="page-subtitle">Manage all forum discussions, moderate content</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-outline btn-sm" onclick="exportPosts()">📥 Export</button>
+          <a href="forum-sections.html" class="btn btn-outline btn-sm">📂 Sections</a>
+          <a href="forum-reports.html" class="btn btn-gold btn-sm">🚩 Reports <span style="background:#f87171;color:#fff;border-radius:8px;padding:1px 6px;font-size:11px;margin-left:4px">3</span></a>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-row">
+        <div class="stat-card"><div class="num">1,248</div><div class="lab">Total Posts</div></div>
+        <div class="stat-card"><div class="num" style="color:#34d399">87</div><div class="lab">Today's Posts</div></div>
+        <div class="stat-card"><div class="num" style="color:#f87171">3</div><div class="lab">Reported</div></div>
+        <div class="stat-card"><div class="num" style="color:#818cf8">24</div><div class="lab">Pinned</div></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab(this,'all')">All Posts</button>
+        <button class="tab-btn" onclick="switchTab(this,'pinned')">📌 Pinned</button>
+        <button class="tab-btn" onclick="switchTab(this,'reported')">🚩 Reported</button>
+        <button class="tab-btn" onclick="switchTab(this,'locked')">🔒 Locked</button>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <input type="text" placeholder="🔍  Search posts..." id="searchInput" oninput="filterPosts()" style="width:220px">
+        <select id="sectionFilter" onchange="filterPosts()">
+          <option value="">All Sections</option>
+          <option>General Discussion</option>
+          <option>Product Reviews</option>
+          <option>Industry News</option>
+          <option>Technical Support</option>
+          <option>Supplier Showcase</option>
+        </select>
+        <select id="statusFilter" onchange="filterPosts()">
+          <option value="">All Status</option>
+          <option>Published</option>
+          <option>Pending</option>
+          <option>Hidden</option>
+          <option>Deleted</option>
+        </select>
+        <select id="dateFilter" onchange="filterPosts()">
+          <option value="">All Time</option>
+          <option>Today</option>
+          <option>This Week</option>
+          <option>This Month</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="resetFilters()">✕ Reset</button>
+      </div>
+
+      <!-- Bulk Bar -->
+      <div class="bulk-bar" id="bulkBar">
+        <input type="checkbox" id="checkAll" onchange="toggleCheckAll(this)">
+        <span id="selectedCount">0 selected</span>
+        <button class="btn btn-outline btn-sm" onclick="bulkPin()">📌 Pin</button>
+        <button class="btn btn-outline btn-sm" onclick="bulkLock()">🔒 Lock</button>
+        <button class="btn btn-outline btn-sm" onclick="bulkHide()">🙈 Hide</button>
+        <button class="btn btn-sm" style="background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3)" onclick="bulkDelete()">🗑 Delete</button>
+      </div>
+
+      <!-- Table -->
+      <div class="card" style="overflow:auto">
+        <table class="forum-table" id="postTable">
+          <thead>
+            <tr>
+              <th style="width:28px"><input type="checkbox" id="mainCheck" onchange="toggleCheckAll(this)"></th>
+              <th>Post</th>
+              <th>Section</th>
+              <th>Author</th>
+              <th style="text-align:center">Views</th>
+              <th style="text-align:center">Replies</th>
+              <th style="text-align:center">Likes</th>
+              <th>Posted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="postBody">
+          </tbody>
+        </table>
+        <!-- Pagination -->
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;border-top:1px solid var(--border);margin-top:10px">
+          <span style="font-size:13px;color:var(--text-muted)">Showing 1–20 of 1,248 posts</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-outline btn-sm">‹ Prev</button>
+            <button class="btn btn-gold btn-sm">1</button>
+            <button class="btn btn-outline btn-sm">2</button>
+            <button class="btn btn-outline btn-sm">3</button>
+            <button class="btn btn-outline btn-sm">Next ›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <h3 id="modalTitle">Post Title</h3>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer">×</button>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+      <span id="modalSection" class="badge-section">Section</span>
+      <span id="modalAuthor" style="font-size:13px;color:var(--text-muted)">by Author</span>
+      <span id="modalDate" style="font-size:13px;color:var(--text-muted)">Date</span>
+    </div>
+    <div class="post-content-preview" id="modalContent"></div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+      <button class="btn btn-outline btn-sm" onclick="pinPost(currentPostId)">📌 Pin</button>
+      <button class="btn btn-outline btn-sm" onclick="lockPost(currentPostId)">🔒 Lock</button>
+      <button class="btn btn-sm" style="background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3)" onclick="deletePost(currentPostId)">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+const posts = [
+  {id:1, title:'Best roller coaster manufacturers in 2026?', excerpt:'Looking for recommendations on top-tier coaster builders for our new park expansion...', section:'General Discussion', author:'ParkOwner_Mike', avatar:'M', views:1842, replies:47, likes:89, date:'2026-03-25', status:'published', pinned:false, locked:false},
+  {id:2, title:'VR Dark Ride Experience — Full Review', excerpt:'We recently installed the VORTEX VR system and here is our comprehensive 6-month review...', section:'Product Reviews', author:'TechReviewer_Jess', avatar:'J', views:3210, replies:92, likes:214, date:'2026-03-24', status:'published', pinned:true, locked:false},
+  {id:3, title:'[ANNOUNCEMENT] New supplier verification process', excerpt:'Starting April 1st, all new supplier registrations will undergo enhanced verification...', section:'Industry News', author:'Admin_Sarah', avatar:'S', views:5670, replies:33, likes:128, date:'2026-03-23', status:'published', pinned:true, locked:false},
+  {id:4, title:'Water park filter system troubleshooting guide', excerpt:'Comprehensive guide to diagnosing and fixing common filtration issues in water attractions...', section:'Technical Support', author:'WaterTech_Pro', avatar:'W', views:987, replies:28, likes:65, date:'2026-03-22', status:'published', pinned:false, locked:false},
+  {id:5, title:'Our new inflatable obstacle course product line', excerpt:'Excited to showcase our latest 2026 inflatable obstacle course designs featuring...', section:'Supplier Showcase', author:'InflatableCo', avatar:'I', views:756, replies:19, likes:44, date:'2026-03-21', status:'published', pinned:false, locked:false},
+  {id:6, title:'Spam advertising links', excerpt:'Check out these great deals at www.spam-site.com ...', section:'General Discussion', author:'SpamUser123', avatar:'X', views:12, replies:0, likes:0, date:'2026-03-20', status:'pending', pinned:false, locked:false, reported:true},
+  {id:7, title:'Asia Pacific amusement market outlook Q2 2026', excerpt:'Analysis of key trends driving growth in Southeast Asia and Greater China park openings...', section:'Industry News', author:'MarketAnalyst', avatar:'A', views:4320, replies:67, likes:183, date:'2026-03-19', status:'published', pinned:false, locked:false},
+  {id:8, title:'Safety certification requirements for ride operators', excerpt:'Summary of updated ASTM F24 standards and international equivalents for 2026...', section:'Technical Support', author:'SafetyExpert_Lisa', avatar:'L', views:2100, replies:41, likes:97, date:'2026-03-18', status:'published', pinned:false, locked:false},
+  {id:9, title:'Inappropriate content post', excerpt:'This post contains content that violates community guidelines...', section:'General Discussion', author:'TrollAccount', avatar:'T', views:43, replies:2, likes:0, date:'2026-03-17', status:'hidden', pinned:false, locked:true, reported:true},
+  {id:10, title:'LED lighting upgrades for existing attractions', excerpt:'Cost-effective LED retrofit solutions for legacy dark rides and themed environments...', section:'Product Reviews', author:'LightingPro', avatar:'L', views:1567, replies:35, likes:78, date:'2026-03-16', status:'published', pinned:false, locked:false},
+  {id:11, title:'Seeking experienced ride maintenance technicians', excerpt:'Our expanding park network is looking for certified ride maintenance staff across 3 regions...', section:'General Discussion', author:'HRManager_Phil', avatar:'P', views:890, replies:23, likes:31, date:'2026-03-15', status:'published', pinned:false, locked:false},
+  {id:12, title:'Soft play equipment supplier comparison', excerpt:'Detailed comparison of 8 leading soft play manufacturers across price, quality, and lead time...', section:'Supplier Showcase', author:'ProcurementTeam', avatar:'P', views:2340, replies:56, likes:122, date:'2026-03-14', status:'published', pinned:false, locked:false},
+];
+
+let currentPostId = null;
+let filteredPosts = [...posts];
+
+function renderPosts(data){
+  const tb = document.getElementById('postBody');
+  if(!data.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-muted)">No posts found</td></tr>';return;}
+  tb.innerHTML = data.map(p=>`
+    <tr>
+      <td><input type="checkbox" class="row-check" data-id="${p.id}" onchange="updateBulkBar()"></td>
+      <td>
+        <div class="post-title" onclick="viewPost(${p.id})">${p.title}</div>
+        <div class="post-excerpt">${p.excerpt}</div>
+        <div style="margin-top:5px;display:flex;gap:5px">
+          ${p.pinned?'<span class="badge-pinned" style="padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600">📌 Pinned</span>':''}
+          ${p.locked?'<span class="badge-locked" style="padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600">🔒 Locked</span>':''}
+          ${p.reported?'<span style="padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;background:rgba(248,113,113,.1);color:#f87171">🚩 Reported</span>':''}
+          ${p.status==='hidden'?'<span style="padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;background:rgba(148,163,184,.1);color:#94a3b8">🙈 Hidden</span>':''}
+        </div>
+      </td>
+      <td><span class="badge-section">${p.section}</span></td>
+      <td><div class="author-pill"><div class="avatar-xs">${p.avatar}</div><span style="font-size:13px">${p.author}</span></div></td>
+      <td class="stat-cell">${p.views.toLocaleString()}</td>
+      <td class="stat-cell">${p.replies}</td>
+      <td class="stat-cell">${p.likes}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${p.date}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-icon" title="View" onclick="viewPost(${p.id})">👁</button>
+          <button class="btn-icon" title="${p.pinned?'Unpin':'Pin'}" onclick="togglePin(${p.id})">${p.pinned?'📍':'📌'}</button>
+          <button class="btn-icon" title="${p.locked?'Unlock':'Lock'}" onclick="toggleLock(${p.id})">${p.locked?'🔓':'🔒'}</button>
+          <button class="btn-icon danger" title="Delete" onclick="deletePost(${p.id})">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function switchTab(el,tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  if(tab==='pinned') filteredPosts=posts.filter(p=>p.pinned);
+  else if(tab==='reported') filteredPosts=posts.filter(p=>p.reported);
+  else if(tab==='locked') filteredPosts=posts.filter(p=>p.locked);
+  else filteredPosts=[...posts];
+  renderPosts(filteredPosts);
+}
+
+function filterPosts(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const sec=document.getElementById('sectionFilter').value;
+  const status=document.getElementById('statusFilter').value.toLowerCase();
+  filteredPosts=posts.filter(p=>{
+    const matchQ=!q||p.title.toLowerCase().includes(q)||p.author.toLowerCase().includes(q);
+    const matchSec=!sec||p.section===sec;
+    const matchStatus=!status||p.status===status;
+    return matchQ&&matchSec&&matchStatus;
+  });
+  renderPosts(filteredPosts);
+}
+
+function resetFilters(){
+  document.getElementById('searchInput').value='';
+  document.getElementById('sectionFilter').value='';
+  document.getElementById('statusFilter').value='';
+  document.getElementById('dateFilter').value='';
+  filteredPosts=[...posts];
+  renderPosts(filteredPosts);
+}
+
+function viewPost(id){
+  const p=posts.find(x=>x.id===id);
+  if(!p)return;
+  currentPostId=id;
+  document.getElementById('modalTitle').textContent=p.title;
+  document.getElementById('modalSection').textContent=p.section;
+  document.getElementById('modalAuthor').textContent='by '+p.author;
+  document.getElementById('modalDate').textContent=p.date;
+  document.getElementById('modalContent').innerHTML=p.excerpt+'<br><br><em style="color:var(--text-muted);font-size:12px">[ Full post content would appear here in production ]</em>';
+  document.getElementById('postModal').classList.add('show');
+}
+function closeModal(){document.getElementById('postModal').classList.remove('show')}
+
+function togglePin(id){const p=posts.find(x=>x.id===id);if(p){p.pinned=!p.pinned;renderPosts(filteredPosts);showToast(p.pinned?'Post pinned':'Post unpinned')}}
+function toggleLock(id){const p=posts.find(x=>x.id===id);if(p){p.locked=!p.locked;renderPosts(filteredPosts);showToast(p.locked?'Post locked':'Post unlocked')}}
+function deletePost(id){if(confirm('Delete this post?')){const i=posts.findIndex(x=>x.id===id);if(i>-1){posts.splice(i,1);filteredPosts=filteredPosts.filter(x=>x.id!==id);renderPosts(filteredPosts);closeModal();showToast('Post deleted')}}}
+function pinPost(id){togglePin(id);closeModal()}
+function lockPost(id){toggleLock(id);closeModal()}
+
+function updateBulkBar(){
+  const checks=document.querySelectorAll('.row-check:checked');
+  const bar=document.getElementById('bulkBar');
+  document.getElementById('selectedCount').textContent=checks.length+' selected';
+  bar.classList.toggle('show',checks.length>0);
+}
+function toggleCheckAll(el){
+  document.querySelectorAll('.row-check').forEach(c=>c.checked=el.checked);
+  updateBulkBar();
+}
+function bulkPin(){showToast('Selected posts pinned')}
+function bulkLock(){showToast('Selected posts locked')}
+function bulkHide(){showToast('Selected posts hidden')}
+function bulkDelete(){if(confirm('Delete selected posts?'))showToast('Selected posts deleted')}
+function exportPosts(){showToast('Exporting posts...')}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid var(--border);border-radius:8px;padding:10px 18px;color:#e2e8f0;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{renderPosts(filteredPosts)});
+</script>
+</body>
+</html>

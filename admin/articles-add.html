@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Add Article — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.editor-toolbar{display:flex;gap:4px;flex-wrap:wrap;padding:10px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--border);border-radius:8px 8px 0 0}
+.editor-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:4px;font-size:12px;cursor:pointer;transition:all .2s}
+.editor-btn:hover{background:rgba(212,175,55,.15);color:var(--gold)}
+.editor-area{min-height:400px;padding:20px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;color:var(--text);font-size:14px;line-height:1.8;outline:none}
+.editor-area:focus{border-color:var(--gold)}
+/* ── Prose / Rich-text styles inside editor ── */
+.editor-area ul,.editor-area ol{padding-left:1.6em;margin:.6em 0}
+.editor-area ul{list-style:disc}
+.editor-area ul li{list-style-type:disc;margin-bottom:.3em;color:var(--text)}
+.editor-area ol{list-style:decimal}
+.editor-area ol li{list-style-type:decimal;margin-bottom:.3em;color:var(--text)}
+.editor-area h2{font-size:1.4em;font-weight:700;color:#e8eaf0;margin:1.1em 0 .4em;border-bottom:1px solid rgba(201,162,39,.25);padding-bottom:.3em}
+.editor-area h3{font-size:1.15em;font-weight:600;color:#c9a227;margin:.9em 0 .35em}
+.editor-area p{margin-bottom:.7em}
+.editor-area blockquote{border-left:3px solid #c9a227;padding-left:1em;color:rgba(232,234,240,.7);font-style:italic;margin:.8em 0}
+.editor-area a{color:#c9a227;text-decoration:underline}
+.editor-area hr{border:none;border-top:1px solid rgba(201,162,39,.3);margin:1.2em 0}
+.seo-score{display:flex;align-items:center;gap:10px}
+.score-bar{flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.score-fill{height:100%;border-radius:3px;transition:width .5s}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="breadcrumb">Articles / <span>Add Article</span></div>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-outline" onclick="saveDraft()">💾 Save Draft</button>
+        <button class="btn btn-gold" onclick="publishArticle()">🚀 Publish</button>
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start">
+        <!-- Main Editor -->
+        <div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-body">
+              <input type="text" class="form-input" placeholder="Article Title..." style="font-size:22px;font-weight:600;padding:14px 16px;margin-bottom:12px">
+              <input type="text" class="form-input" placeholder="Subtitle or excerpt (optional)...">
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3>✏️ Content Editor</h3></div>
+            <div class="card-body" style="padding:0">
+              <div class="editor-toolbar">
+                <button class="editor-btn" onclick="fmt('bold')"><b>B</b></button>
+                <button class="editor-btn" onclick="fmt('italic')"><i>I</i></button>
+                <button class="editor-btn" onclick="fmt('underline')"><u>U</u></button>
+                <button class="editor-btn" onclick="fmt('strikeThrough')"><s>S</s></button>
+                <span style="width:1px;background:var(--border);margin:0 4px"></span>
+                <button class="editor-btn" onclick="fmt('formatBlock','H2')">H2</button>
+                <button class="editor-btn" onclick="fmt('formatBlock','H3')">H3</button>
+                <button class="editor-btn" onclick="fmt('formatBlock','P')">P</button>
+                <span style="width:1px;background:var(--border);margin:0 4px"></span>
+                <button class="editor-btn" onclick="fmt('insertUnorderedList')">• List</button>
+                <button class="editor-btn" onclick="fmt('insertOrderedList')">1. List</button>
+                <button class="editor-btn" onclick="fmt('insertHorizontalRule')">─ HR</button>
+                <span style="width:1px;background:var(--border);margin:0 4px"></span>
+                <button class="editor-btn" onclick="insertLink()">🔗 Link</button>
+                <button class="editor-btn" onclick="insertImage()">🖼 Image</button>
+                <button class="editor-btn" onclick="fmt('justifyLeft')">⬛ Left</button>
+                <button class="editor-btn" onclick="fmt('justifyCenter')">⬜ Center</button>
+              </div>
+              <div class="editor-area" id="editor" contenteditable="true">
+                <p>Start writing your article here...</p>
+              </div>
+            </div>
+          </div>
+          <!-- SEO Panel -->
+          <div class="card">
+            <div class="card-header"><h3>🔍 SEO Settings</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">SEO Title</label>
+                <input type="text" class="form-input" id="seoTitle" placeholder="SEO optimized title..." oninput="updateSEO()">
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><span id="seoTitleLen">0</span>/60 chars</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Meta Description</label>
+                <textarea class="form-textarea" id="seoDesc" rows="3" placeholder="Brief description for search engines..." oninput="updateSEO()"></textarea>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px"><span id="seoDescLen">0</span>/160 chars</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Keywords</label>
+                <input type="text" class="form-input" placeholder="amusement, arcade, VR, entertainment...">
+              </div>
+              <div class="seo-score">
+                <span style="font-size:12px;color:var(--text-muted)">SEO Score:</span>
+                <div class="score-bar"><div class="score-fill" id="seoFill" style="width:65%;background:linear-gradient(90deg,#f7971e,#ffd200)"></div></div>
+                <span id="seoScore" style="color:#f7971e;font-weight:700;font-size:13px">65</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Sidebar Settings -->
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><h3>📋 Publish Settings</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="form-select">
+                  <option>Draft</option><option>Published</option><option>Scheduled</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Publish Date</label>
+                <input type="datetime-local" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Author</label>
+                <select class="form-select">
+                  <option>Admin</option><option>Editorial Team</option><option>Staff Writer</option>
+                </select>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <button class="btn btn-outline" style="flex:1" onclick="saveDraft()">Save Draft</button>
+                <button class="btn btn-gold" style="flex:1" onclick="publishArticle()">Publish</button>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><h3>📁 Category</h3></div>
+            <div class="card-body">
+              <div id="catList" style="display:flex;flex-direction:column;gap:6px"></div>
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+                <input type="text" class="form-input" placeholder="+ Add new category">
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><h3>🏷 Tags</h3></div>
+            <div class="card-body">
+              <input type="text" class="form-input" placeholder="Add tags, press Enter" id="tagInput" onkeydown="addTagChip(event)">
+              <div id="tagChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><h3>🖼 Featured Image</h3></div>
+            <div class="card-body">
+              <div onclick="pickImage()" style="border:2px dashed var(--border);border-radius:8px;padding:40px 20px;text-align:center;cursor:pointer;transition:border-color .2s" id="dropzone"
+                onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+                <div style="font-size:36px;margin-bottom:8px">🖼</div>
+                <div style="color:var(--text-muted);font-size:13px">Click to upload or drag & drop</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px">JPG, PNG, WebP · Max 5MB</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>⚙️ Options</h3></div>
+            <div class="card-body">
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+                <input type="checkbox" checked> <span style="font-size:13px">Allow Comments</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+                <input type="checkbox"> <span style="font-size:13px">Featured Article</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                <input type="checkbox" checked> <span style="font-size:13px">Show in Newsletter</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+const cats=['Industry News','Product Release','Exhibition','Technology','Business','Interview'];
+document.getElementById('catList').innerHTML=cats.map(c=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" class="cat-cb" data-cat="${c}"> ${c}</label>`).join('');
+function fmt(cmd,val){document.execCommand(cmd,false,val||null)}
+function insertLink(){const url=prompt('Enter URL:');if(url)document.execCommand('createLink',false,url)}
+function insertImage(){const url=prompt('Image URL:');if(url)document.execCommand('insertImage',false,url)}
+function saveDraft(){showToast('Draft saved!','success')}
+function publishArticle(){showToast('Article published successfully!','success')}
+function pickImage(){showToast('Image picker opened','info')}
+
+// ── Load AI-generated article if coming from AI writer ──────
+(function loadAIArticle(){
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('source')!=='ai') return;
+  try{
+    const data=JSON.parse(sessionStorage.getItem('ai_edit_article')||'null');
+    if(!data) return;
+
+    // Show a banner
+    const banner=document.createElement('div');
+    banner.style.cssText='background:linear-gradient(90deg,rgba(201,162,39,.15),rgba(201,162,39,.05));border:1px solid rgba(201,162,39,.3);border-radius:10px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--gold)';
+    banner.innerHTML='<span style="font-size:20px">🤖</span><span><strong>AI Generated Article</strong> — Edit below and publish when ready. <a href="articles-ai.html" style="color:var(--gold);opacity:.7;text-decoration:underline;">← Back to AI Writer</a></span>';
+    document.querySelector('.admin-content').insertBefore(banner, document.querySelector('.admin-content').firstChild);
+
+    // Fill title
+    const titleInput=document.querySelector('.form-input[placeholder="Article Title..."]');
+    if(titleInput) titleInput.value=data.title;
+
+    // Fill excerpt
+    const excerptInput=document.querySelector('.form-input[placeholder="Subtitle or excerpt (optional)..."]');
+    if(excerptInput) excerptInput.value=data.excerpt?data.excerpt.slice(0,160):'';
+
+    // Fill editor content
+    const editor=document.getElementById('editor');
+    if(editor) editor.innerHTML=data.content||'';
+
+    // Fill SEO fields
+    const seoTitleEl=document.getElementById('seoTitle');
+    const seoDescEl=document.getElementById('seoDesc');
+    if(seoTitleEl){ seoTitleEl.value=data.metaTitle||data.title.slice(0,60); }
+    if(seoDescEl){ seoDescEl.value=data.metaDesc||data.excerpt.slice(0,160); }
+    if(typeof updateSEO==='function') setTimeout(updateSEO,100);
+
+    // Check matching category
+    if(data.category){
+      document.querySelectorAll('.cat-cb').forEach(cb=>{
+        if(cb.dataset.cat===data.category) cb.checked=true;
+      });
+    }
+
+    showToast('AI article loaded — ready to edit!','success');
+    sessionStorage.removeItem('ai_edit_article');
+  } catch(e){ console.warn('AI article load failed',e); }
+})();
+const chips=[];
+function addTagChip(e){if(e.key==='Enter'){const v=e.target.value.trim();if(v&&!chips.includes(v)){chips.push(v);renderChips()}e.target.value=''}}
+function renderChips(){document.getElementById('tagChips').innerHTML=chips.map((c,i)=>`<span style="background:rgba(212,175,55,.12);color:var(--gold);padding:4px 10px;border-radius:12px;font-size:12px;display:flex;align-items:center;gap:4px">${c}<span onclick="removeChip(${i})" style="cursor:pointer;opacity:.7">×</span></span>`).join('')}
+function removeChip(i){chips.splice(i,1);renderChips()}
+function updateSEO(){
+  const t=document.getElementById('seoTitle').value;
+  const d=document.getElementById('seoDesc').value;
+  document.getElementById('seoTitleLen').textContent=t.length;
+  document.getElementById('seoDescLen').textContent=d.length;
+  const s=Math.min(100,Math.round((Math.min(t.length,60)/60*40)+(Math.min(d.length,160)/160*60)));
+  document.getElementById('seoScore').textContent=s;
+  document.getElementById('seoFill').style.width=s+'%';
+  document.getElementById('seoFill').style.background=s>=80?'linear-gradient(90deg,#56ab2f,#a8e063)':s>=50?'linear-gradient(90deg,#f7971e,#ffd200)':'linear-gradient(90deg,#ee0979,#ff6a00)';
+}
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

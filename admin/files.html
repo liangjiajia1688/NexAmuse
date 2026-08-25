@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>File Manager — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.fm-layout{display:grid;grid-template-columns:240px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:600px}
+.fm-sidebar{background:rgba(255,255,255,.02);border-right:1px solid var(--border);padding:12px 0}
+.fm-path-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--text-muted);transition:all .2s;border-left:2px solid transparent}
+.fm-path-item:hover,.fm-path-item.active{color:var(--text);background:rgba(255,255,255,.04);border-left-color:var(--gold)}
+.fm-path-item .fm-icon{width:18px;text-align:center;flex-shrink:0}
+.fm-main{background:var(--card-bg);display:flex;flex-direction:column}
+.fm-toolbar{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fm-content{padding:16px;flex:1}
+.fm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.fm-file{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.fm-file:hover{border-color:var(--gold);background:rgba(212,175,55,.05)}
+.fm-file.selected{border-color:var(--gold);background:rgba(212,175,55,.1)}
+.fm-file-icon{font-size:32px;margin-bottom:6px}
+.fm-file-name{font-size:11px;word-break:break-all;color:var(--text)}
+.fm-file-size{font-size:10px;color:var(--text-muted);margin-top:2px}
+.fm-list-row{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:background .2s}
+.fm-list-row:hover{background:rgba(255,255,255,.04)}
+.fm-list-row.selected{background:rgba(212,175,55,.08)}
+.fm-breadcrumb{padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted)}
+.fm-breadcrumb a{color:var(--gold);cursor:pointer}
+.storage-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:6px}
+.storage-fill{height:100%;background:linear-gradient(90deg,var(--gold),#f5d06e);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="breadcrumb">Files / <span>File Manager</span></div>
+      </div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title">
+        <h1 class="title-h1">File Manager</h1>
+        <p class="title-sub">Virtual root directory — manage all uploaded files and media</p>
+      </div>
+      <!-- Storage Stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-icon">💾</div>
+          <div class="stat-value">2.4 GB</div>
+          <div class="stat-label">Total Used</div>
+          <div class="storage-bar"><div class="storage-fill" style="width:48%"></div></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">48% of 5 GB</div>
+        </div>
+        <div class="stat-card"><div class="stat-icon">🖼</div><div class="stat-value">1,284</div><div class="stat-label">Images</div></div>
+        <div class="stat-card"><div class="stat-icon">📄</div><div class="stat-value">247</div><div class="stat-label">Documents</div></div>
+        <div class="stat-card"><div class="stat-icon">🎬</div><div class="stat-value">38</div><div class="stat-label">Videos</div></div>
+      </div>
+
+      <!-- File Manager UI -->
+      <div class="fm-layout">
+        <!-- Left: Directory Tree -->
+        <div class="fm-sidebar">
+          <div style="padding:10px 14px 6px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)">Virtual Root</div>
+          <div id="dirTree"></div>
+          <div style="padding:14px;margin-top:auto;border-top:1px solid var(--border)">
+            <button class="btn btn-outline btn-sm" style="width:100%" onclick="newFolder()">+ New Folder</button>
+          </div>
+        </div>
+        <!-- Right: File Area -->
+        <div class="fm-main">
+          <div class="fm-breadcrumb" id="breadcrumb">
+            <a onclick="navTo('/')">🏠 Root</a>
+            <span id="breadcrumbPath"></span>
+          </div>
+          <div class="fm-toolbar">
+            <button class="btn btn-gold btn-sm" onclick="uploadFile()">📤 Upload</button>
+            <button class="btn btn-outline btn-sm" onclick="newFolder()">📁 New Folder</button>
+            <button class="btn btn-outline btn-sm" id="btnRename" disabled onclick="renameSelected()">✏️ Rename</button>
+            <button class="btn btn-outline btn-sm" id="btnMove" disabled onclick="moveSelected()">📦 Move</button>
+            <button class="btn btn-danger btn-sm" id="btnDelete" disabled onclick="deleteSelected()">🗑 Delete</button>
+            <span style="margin-left:auto;display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" onclick="setView('grid')" id="viewGrid">⊞ Grid</button>
+              <button class="btn btn-outline btn-sm" onclick="setView('list')" id="viewList">☰ List</button>
+              <input type="text" class="form-input" placeholder="🔍 Search files..." style="width:180px">
+            </span>
+          </div>
+          <div class="fm-content">
+            <div id="fileView"></div>
+          </div>
+          <!-- Status Bar -->
+          <div style="padding:8px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted)">
+            <span id="statusLeft">12 items · 0 selected</span>
+            <span id="statusRight">Current: /uploads/images</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+const dirs=[
+  {icon:'📁',name:'uploads',path:'/uploads',children:[
+    {icon:'🖼',name:'images',path:'/uploads/images'},
+    {icon:'📄',name:'documents',path:'/uploads/documents'},
+    {icon:'🎬',name:'videos',path:'/uploads/videos'},
+    {icon:'📦',name:'archives',path:'/uploads/archives'},
+  ]},
+  {icon:'📁',name:'products',path:'/products',children:[
+    {icon:'🖼',name:'catalog',path:'/products/catalog'},
+    {icon:'🖼',name:'banners',path:'/products/banners'},
+  ]},
+  {icon:'📁',name:'news',path:'/news',children:[
+    {icon:'🖼',name:'featured',path:'/news/featured'},
+  ]},
+  {icon:'📁',name:'magazine',path:'/magazine',children:[
+    {icon:'📄',name:'issues',path:'/magazine/issues'},
+    {icon:'📄',name:'covers',path:'/magazine/covers'},
+  ]},
+  {icon:'📁',name:'temp',path:'/temp',children:[]},
+];
+function renderDirTree(){
+  let html='';
+  dirs.forEach(d=>{
+    html+=`<div class="fm-path-item" onclick="navTo('${d.path}',this)"><span class="fm-icon">${d.icon}</span>${d.name}</div>`;
+    if(d.children){
+      d.children.forEach(c=>{
+        html+=`<div class="fm-path-item active" style="padding-left:28px;font-size:12px" onclick="navTo('${c.path}',this)"><span class="fm-icon">${c.icon}</span>${c.name}</div>`;
+      });
+    }
+  });
+  document.getElementById('dirTree').innerHTML=html;
+}
+const fileTypes={img:'🖼',jpg:'🖼',jpeg:'🖼',png:'🖼',gif:'🖼',webp:'🖼',pdf:'📕',doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',ppt:'📊',pptx:'📊',mp4:'🎬',avi:'🎬',mov:'🎬',zip:'📦',rar:'📦',csv:'📊',txt:'📄'};
+function getFileIcon(name){const ext=name.split('.').pop().toLowerCase();return fileTypes[ext]||'📄'}
+const sampleFiles=[
+  {name:'product_banner_vr.jpg',type:'image',size:'2.4 MB',date:'2026-03-20',icon:'🖼'},
+  {name:'arcade_machine_01.png',type:'image',size:'1.8 MB',date:'2026-03-19',icon:'🖼'},
+  {name:'supplier_catalog_2026.pdf',type:'document',size:'5.2 MB',date:'2026-03-18',icon:'📕'},
+  {name:'exhibition_report.docx',type:'document',size:'1.1 MB',date:'2026-03-17',icon:'📝'},
+  {name:'hero_background.webp',type:'image',size:'890 KB',date:'2026-03-16',icon:'🖼'},
+  {name:'video_promo_2026.mp4',type:'video',size:'48.5 MB',date:'2026-03-15',icon:'🎬'},
+  {name:'partner_logos.zip',type:'archive',size:'3.2 MB',date:'2026-03-14',icon:'📦'},
+  {name:'kiddie_zone.jpg',type:'image',size:'2.1 MB',date:'2026-03-13',icon:'🖼'},
+  {name:'price_list_q1.xlsx',type:'document',size:'420 KB',date:'2026-03-12',icon:'📊'},
+  {name:'vr_headset_360.png',type:'image',size:'3.5 MB',date:'2026-03-11',icon:'🖼'},
+  {name:'nexamuse_brand_kit.zip',type:'archive',size:'12.4 MB',date:'2026-03-10',icon:'📦'},
+  {name:'market_analysis.pdf',type:'document',size:'2.8 MB',date:'2026-03-09',icon:'📕'},
+];
+let currentView='grid';
+let selectedFiles=new Set();
+function renderFiles(files){
+  if(currentView==='grid'){
+    document.getElementById('fileView').innerHTML='<div class="fm-grid">'+
+      files.map((f,i)=>`<div class="fm-file" id="ff${i}" onclick="selectFile(${i},this)"><div class="fm-file-icon">${f.icon}</div><div class="fm-file-name">${f.name}</div><div class="fm-file-size">${f.size}</div></div>`).join('')+
+    '</div>';
+  } else {
+    document.getElementById('fileView').innerHTML='<table class="data-table"><thead><tr><th style="width:30px"></th><th>Name</th><th>Type</th><th>Size</th><th>Modified</th><th>Actions</th></tr></thead><tbody>'+
+      files.map((f,i)=>`<tr class="fm-list-row" id="ff${i}" onclick="selectFile(${i},this)"><td>${f.icon}</td><td>${f.name}</td><td style="color:var(--text-muted);font-size:12px">${f.type}</td><td style="color:var(--text-muted);font-size:12px">${f.size}</td><td style="color:var(--text-muted);font-size:12px">${f.date}</td><td onclick="event.stopPropagation()"><button class="btn-sm btn-outline">Download</button><button class="btn-sm btn-danger" onclick="confirmDelete('${f.name}')">Del</button></td></tr>`).join('')+
+    '</tbody></table>';
+  }
+}
+function selectFile(i,el){
+  if(selectedFiles.has(i)){selectedFiles.delete(i);el.classList.remove('selected')}
+  else{selectedFiles.add(i);el.classList.add('selected')}
+  const n=selectedFiles.size;
+  document.getElementById('statusLeft').textContent=`${sampleFiles.length} items · ${n} selected`;
+  ['btnRename','btnMove','btnDelete'].forEach(b=>{document.getElementById(b).disabled=n===0});
+}
+function setView(v){currentView=v;renderFiles(sampleFiles);selectedFiles.clear()}
+function navTo(path,el){
+  if(el){document.querySelectorAll('.fm-path-item').forEach(x=>x.classList.remove('active'));el.classList.add('active')}
+  document.getElementById('statusRight').textContent='Current: '+path;
+  renderFiles(sampleFiles);
+}
+function uploadFile(){showToast('File picker opened','info')}
+function newFolder(){const n=prompt('Folder name:');if(n)showToast('Folder "'+n+'" created','success')}
+function renameSelected(){const n=prompt('New name:');if(n)showToast('File renamed to "'+n+'"','success')}
+function moveSelected(){showToast('Move dialog opened — select destination','info')}
+function deleteSelected(){if(confirm(`Delete ${selectedFiles.size} selected file(s)?`)){showToast(selectedFiles.size+' files deleted','warning');selectedFiles.clear()}}
+function confirmDelete(name){if(confirm('Delete "'+name+'"?')){showToast('"'+name+'" deleted','warning')}}
+renderDirTree();renderFiles(sampleFiles);
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

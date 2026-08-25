@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Article Categories — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="breadcrumb">Articles / <span>Categories</span></div>
+      </div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title">
+        <h1 class="title-h1">Article Categories</h1>
+        <p class="title-sub">Manage article classification structure</p>
+      </div>
+      <div style="display:grid;grid-template-columns:360px 1fr;gap:24px">
+        <!-- Add Form -->
+        <div class="card">
+          <div class="card-header"><h3>Add Category</h3></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Category Name *</label>
+              <input type="text" class="form-input" placeholder="e.g. Industry News">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Slug</label>
+              <input type="text" class="form-input" placeholder="industry-news">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Parent Category</label>
+              <select class="form-select">
+                <option value="">— None (Top Level) —</option>
+                <option>Industry News</option>
+                <option>Technology</option>
+                <option>Business</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Icon (Emoji)</label>
+              <input type="text" class="form-input" placeholder="📰">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" rows="3" placeholder="Category description..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">SEO Meta Description</label>
+              <textarea class="form-textarea" rows="2" placeholder="For search engines..."></textarea>
+            </div>
+            <button class="btn btn-gold" style="width:100%" onclick="addCat()">Add Category</button>
+          </div>
+        </div>
+        <!-- Category Tree -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Category Tree <span class="badge">8</span></h3>
+            <div style="display:flex;gap:8px">
+              <input type="text" class="form-input" placeholder="Search..." style="width:180px">
+              <select class="form-select" style="width:140px">
+                <option>Sort: Name A-Z</option>
+                <option>Sort: Article Count</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>Category</th><th>Slug</th><th>Parent</th><th>Articles</th><th>Order</th><th>Actions</th></tr></thead>
+              <tbody id="catBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+const cats=[
+  {id:1,icon:'📰',name:'Industry News',slug:'industry-news',parent:'—',count:42,order:1},
+  {id:2,icon:'🔬',name:'Technology',slug:'technology',parent:'—',count:28,order:2},
+  {id:3,icon:'💼',name:'Business',slug:'business',parent:'—',count:35,order:3},
+  {id:4,icon:'🎪',name:'Exhibition',slug:'exhibition',parent:'—',count:19,order:4},
+  {id:5,icon:'🛡',name:'Safety & Standards',slug:'safety',parent:'Industry News',count:8,order:5},
+  {id:6,icon:'🌍',name:'Market Reports',slug:'market-reports',parent:'Business',count:12,order:6},
+  {id:7,icon:'🎮',name:'Product Reviews',slug:'product-reviews',parent:'Technology',count:15,order:7},
+  {id:8,icon:'📊',name:'Trends & Forecast',slug:'trends',parent:'Business',count:9,order:8},
+];
+document.getElementById('catBody').innerHTML=cats.map(c=>`
+  <tr>
+    <td><span style="font-size:16px;margin-right:6px">${c.icon}</span><strong>${c.name}</strong></td>
+    <td><code style="background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;font-size:11px">${c.slug}</code></td>
+    <td><span style="color:var(--text-muted);font-size:12px">${c.parent}</span></td>
+    <td><span class="badge">${c.count}</span></td>
+    <td style="color:var(--text-muted)">${c.order}</td>
+    <td>
+      <button class="btn-sm btn-outline">Edit</button>
+      <button class="btn-sm btn-danger" onclick="deleteCat(${c.id})">Del</button>
+    </td>
+  </tr>`).join('');
+function addCat(){showToast('Category added!','success')}
+function deleteCat(id){if(confirm('Delete this category?')){showToast('Category deleted','warning')}}
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

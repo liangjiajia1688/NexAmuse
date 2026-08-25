@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>企业主页 — NexAmuse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .chero{max-width:1100px;margin:40px auto;padding:0 20px;}
+    .chero .top{display:flex;gap:24px;align-items:center;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:28px;}
+    .chero .logo{width:96px;height:96px;border-radius:16px;background:linear-gradient(135deg,#1c2540,#0d1530);display:flex;align-items:center;justify-content:center;font-size:2.6rem;color:var(--accent);overflow:hidden;flex-shrink:0;}
+    .chero .logo img{width:100%;height:100%;object-fit:cover;}
+    .chero h1{color:#fff;font-size:2rem;}
+    .chero .meta{color:var(--text-secondary);margin-top:8px;font-size:.9rem;line-height:1.8;}
+    .chero .meta a{color:var(--accent);}
+    .sec{max-width:1100px;margin:30px auto;padding:0 20px;}
+    .sec h2{color:#fff;font-size:1.5rem;margin-bottom:18px;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;}
+    .pcard{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:var(--transition);}
+    .pcard:hover{transform:translateY(-3px);border-color:var(--accent);}
+    .pcard .thumb{aspect-ratio:4/3;background:linear-gradient(135deg,#1c2540,#0d1530);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--accent);overflow:hidden;}
+    .pcard .thumb img{width:100%;height:100%;object-fit:cover;}
+    .pcard .body{padding:14px;}
+    .pcard .ttl{color:#fff;font-size:.95rem;font-weight:600;}
+    .pcard .pr{color:var(--accent);font-weight:700;margin-top:6px;}
+    .empty{color:var(--text-secondary);text-align:center;padding:40px 0;}
+    .loading{color:var(--text-secondary);text-align:center;padding:80px 0;}
+  </style>
+</head>
+<body>
+  <div id="na-header"></div>
+  <div id="content"><div class="loading">加载中…</div></div>
+  <div id="na-footer"></div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/layout.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const id = new URLSearchParams(location.search).get('id');
+    (async () => {
+      if (!id) { $('content').innerHTML = '<div class="loading">缺少企业 ID</div>'; return; }
+      try {
+        const r = await window.Api.company(id);
+        const c = r.company;
+        const logo = c.logo_url ? `<img src="${c.logo_url}"/>` : '🏭';
+        const contact = c.contact ? `📞 ${window.Auth.escapeHtml(c.contact)}<br/>` : '';
+        const web = c.website ? `🌐 <a href="${c.website}" target="_blank" rel="noopener">${window.Auth.escapeHtml(c.website)}</a><br/>` : '';
+        const loc = c.location ? `📍 ${window.Auth.escapeHtml(c.location)}` : '';
+        const products = (r.products && r.products.length) ? r.products.map(p => {
+          const img = (p.images&&p.images.length) ? `<img src="${p.images[0]}"/>` : '🎰';
+          const price = p.price ? '¥'+Number(p.price).toLocaleString() : '面议';
+          return `<div class="pcard" onclick="location.href='product.html?id=${p.id}'">
+            <div class="thumb">${img}</div><div class="body"><div class="ttl">${window.Auth.escapeHtml(p.title)}</div><div class="pr">${price}</div></div></div>`;
+        }).join('') : '<div class="empty">该企业暂未发布设备</div>';
+
+        $('content').innerHTML = `
+          <div class="chero"><div class="top">
+            <div class="logo">${logo}</div>
+            <div><h1>${window.Auth.escapeHtml(c.name)}</h1>
+              <div class="meta">${contact}${web}${loc}<br/><span style="white-space:pre-wrap">${window.Auth.escapeHtml(c.description||'')}</span></div>
+            </div>
+          </div></div>
+          <div class="sec"><h2>该企业发布的设备</h2><div class="grid">${products}</div></div>`;
+        document.title = c.name + ' — NexAmuse';
+      } catch (e) { $('content').innerHTML = '<div class="loading">加载失败：' + e.message + '</div>'; }
+    })();
+  </script>
+</body>
+</html>

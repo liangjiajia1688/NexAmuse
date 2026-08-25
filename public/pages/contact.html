@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Us — NexAmuse Global</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+    .contact-info-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;}
+    .contact-item{display:flex;gap:16px;align-items:flex-start;padding:20px 0;border-bottom:1px solid var(--border);}
+    .contact-item:last-child{border-bottom:none;}
+    .contact-icon{width:44px;height:44px;border-radius:10px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+    .contact-label{font-size:.78rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+    .contact-value{color:#fff;font-weight:500;}
+    .contact-form-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:36px;}
+    .form-group{margin-bottom:16px;}
+    .form-group label{display:block;font-size:.8rem;color:#9aa0b4;margin-bottom:6px;font-weight:500;}
+    .form-group input,.form-group textarea,.form-group select{width:100%;background:var(--secondary);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:#e8eaf0;font-size:.9rem;outline:none;transition:all .3s;font-family:inherit;}
+    .form-group input:focus,.form-group textarea:focus{border-color:var(--accent);}
+    .form-group textarea{resize:vertical;min-height:120px;}
+    .form-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    @media(max-width:768px){.contact-grid{grid-template-columns:1fr}.form-2col{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="top-bar"><div class="container"><div class="top-bar-left"><span>🌐 NexAmuse Global — Premium Amusement Industry Portal</span></div><div class="top-bar-right"><a href="#">Media Kit</a></div></div></div>
+<nav class="navbar"><div class="container">
+  <a href="../index.html" class="logo"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li>
+      <a href="products.html">Products ▾</a>
+      <div class="dropdown-menu">
+        <a href="products.html?cat=arcade">Arcade Machines</a>
+        <a href="products.html?cat=vr">VR / XR Attractions</a>
+        <a href="products.html?cat=kids">Kids &amp; Family Rides</a>
+        <a href="products.html?cat=redemption">Redemption &amp; Prize</a>
+        <a href="products.html?cat=simulation">Simulation Rides</a>
+        <a href="products.html?cat=outdoor">Outdoor Attractions</a>
+        <a href="products.html?cat=waterpark">Water Park Equipment</a>
+        <a href="products.html?cat=accessories">Accessories &amp; Parts</a>
+      </div>
+    </li>
+    <li>
+      <a href="news.html">News ▾</a>
+      <div class="dropdown-menu">
+        <a href="news.html?cat=industry">Industry Dynamics</a>
+        <a href="news.html?cat=companies">Company News</a>
+        <a href="news.html?cat=interviews">Executive Interviews</a>
+        <a href="news.html?cat=newproducts">New Product Releases</a>
+        <a href="news.html?cat=regulations">Regulations &amp; Compliance</a>
+      </div>
+    </li>
+    <li><a href="suppliers.html">Suppliers</a></li>
+    <li>
+      <a href="exhibitions.html">Exhibitions ▾</a>
+      <div class="dropdown-menu">
+        <a href="exhibitions.html#calendar">Exhibition Calendar</a>
+        <a href="exhibitions.html#reports">Show Reports</a>
+        <a href="exhibitions.html#register">Pre-Register</a>
+      </div>
+    </li>
+    <li><a href="news.html">Articles</a></li>
+    <li><a href="forum.html">Forum</a></li>
+      <li><a href="member-points.html">Points</a></li>
+    <li><a href="magazine.html">Videos</a></li>
+  </ul>
+  <div class="nav-actions">
+      <button class="search-btn js-open-search">🔍 Search</button>
+      <!-- Auth buttons injected dynamically by main.js renderAuthNav() -->
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button></div>
+</div></nav>
+<div class="mobile-menu" id="mobileMenu"><button class="mobile-menu-close" id="mobileClose">✕</button><ul class="mobile-nav-links"><li><a href="../index.html">🏠 Home</a></li><li><a href="products.html">🎮 Products</a></li><li><a href="news.html">📰 News &amp; Articles</a></li><li><a href="suppliers.html">🏭 Suppliers</a></li><li><a href="exhibitions.html">🎪 Exhibitions</a></li><li><a href="forum.html">💬 Forum</a></li><li><a href="member-points.html">⭐ Points</a></li><li><a href="magazine.html">🎬 Videos</a></li><li><a href="contact.html">📩 Contact</a></li></ul><div class="mobile-auth-wrap" style="margin-top:32px;display:flex;flex-direction:column;gap:12px;"><!-- Auth buttons injected dynamically by main.js renderAuthNav() --></div></div>
+<div class="search-overlay" id="searchOverlay"><button class="search-close" id="searchClose">✕</button><div class="search-box"><h2>Search NexAmuse Global</h2><div class="search-input-wrap"><input type="text" placeholder="Search..." autofocus/><button>Search</button></div></div></div>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="../index.html">Home</a><span>/</span><span class="current">Contact</span></div>
+    <h1 style="color:#fff;">Get in <em style="color:var(--accent);font-style:normal;">Touch</em></h1>
+    <p style="color:var(--text-secondary);max-width:480px;margin-top:12px;">Questions about advertising, listing your company, or editorial? We're here to help.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <div class="contact-info-card" style="margin-bottom:24px;">
+          <h3 style="color:#fff;margin-bottom:4px;">NexAmuse Global</h3>
+          <p style="color:var(--text-secondary);font-size:.88rem;margin-bottom:20px;">The World's Premier Amusement Industry B2B Portal</p>
+          <div class="contact-item"><div class="contact-icon">📧</div><div><div class="contact-label">General Inquiries</div><div class="contact-value">info@nexamuseglobal.com</div></div></div>
+          <div class="contact-item"><div class="contact-icon">📰</div><div><div class="contact-label">Editorial / Press</div><div class="contact-value">editorial@nexamuseglobal.com</div></div></div>
+          <div class="contact-item"><div class="contact-icon">📣</div><div><div class="contact-label">Advertising / Partnerships</div><div class="contact-value">advertising@nexamuseglobal.com</div></div></div>
+          <div class="contact-item"><div class="contact-icon">🏭</div><div><div class="contact-label">Supplier Listings</div><div class="contact-value">suppliers@nexamuseglobal.com</div></div></div>
+          <div class="contact-item"><div class="contact-icon">🌐</div><div><div class="contact-label">Website</div><div class="contact-value">www.nexamuseglobal.com</div></div></div>
+        </div>
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+          <h4 style="color:#fff;margin-bottom:16px;">Quick Links</h4>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <a href="suppliers.html" class="btn btn-outline btn-sm" style="justify-content:space-between;">🏭 List Your Company on NexAmuse <span>→</span></a>
+            <a href="#" class="btn btn-outline btn-sm" style="justify-content:space-between;">📣 Advertise With Us — Media Kit <span>→</span></a>
+            <a href="magazine.html" class="btn btn-outline btn-sm" style="justify-content:space-between;">📖 Submit a Press Release <span>→</span></a>
+            <a href="exhibitions.html" class="btn btn-outline btn-sm" style="justify-content:space-between;">🎪 Exhibition Partnership <span>→</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="contact-form-box">
+        <h3 style="color:#fff;margin-bottom:6px;">Send Us a Message</h3>
+        <p style="color:var(--text-secondary);font-size:.88rem;margin-bottom:24px;">We respond to all messages within 1 business day.</p>
+        <form onsubmit="event.preventDefault();this.querySelector('[type=submit]').textContent='✓ Message Sent!';this.querySelector('[type=submit]').style.background='#22c55e';">
+          <div class="form-2col">
+            <div class="form-group"><label>First Name *</label><input type="text" placeholder="John" required/></div>
+            <div class="form-group"><label>Last Name *</label><input type="text" placeholder="Smith" required/></div>
+          </div>
+          <div class="form-group"><label>Business Email *</label><input type="email" placeholder="john@company.com" required/></div>
+          <div class="form-group"><label>Company</label><input type="text" placeholder="Your Company Ltd."/></div>
+          <div class="form-group"><label>Subject *</label>
+            <select>
+              <option>General Inquiry</option>
+              <option>Advertise With Us</option>
+              <option>List My Company</option>
+              <option>Press / Editorial</option>
+              <option>Technical Support</option>
+              <option>Partnership Proposal</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Message *</label><textarea placeholder="How can we help you?" required></textarea></div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">Send Message →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="../index.html" class="logo" style="margin-bottom:16px;"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a><p style="color:var(--text-secondary);font-size:.88rem;">The world's premier B2B intelligence platform.</p></div><div class="footer-col"><h4>Products</h4><ul class="footer-links"><li><a href="products.html">All Products</a></li></ul></div><div class="footer-col"><h4>Resources</h4><ul class="footer-links"><li><a href="news.html">News</a></li><li><a href="exhibitions.html">Exhibitions</a></li><li><a href="magazine.html">Videos</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul class="footer-links"><li><a href="#">About</a></li><li><a href="contact.html">Contact</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 NexAmuse Global. All rights reserved.</p></div></div></footer>
+<button class="scroll-top" id="scrollTop">↑</button>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

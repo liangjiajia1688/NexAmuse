@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Product Tags — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="breadcrumb">Products / <span>Product Tags</span></div>
+      </div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title">
+        <h1 class="title-h1">Product Tags</h1>
+        <p class="title-sub">Manage product tag labels for search and filtering</p>
+      </div>
+      <div style="display:grid;grid-template-columns:340px 1fr;gap:24px">
+        <!-- Add Tag Form -->
+        <div class="card">
+          <div class="card-header"><h3>Add New Tag</h3></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Tag Name (EN) *</label>
+              <input type="text" class="form-input" placeholder="e.g. VR Experience">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tag Slug</label>
+              <input type="text" class="form-input" placeholder="vr-experience (auto-generated)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tag Color</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+                <span onclick="setColor(this,'#d4af37')" style="width:28px;height:28px;background:#d4af37;border-radius:50%;cursor:pointer;border:2px solid #fff"></span>
+                <span onclick="setColor(this,'#ee0979')" style="width:28px;height:28px;background:#ee0979;border-radius:50%;cursor:pointer"></span>
+                <span onclick="setColor(this,'#00c9ff')" style="width:28px;height:28px;background:#00c9ff;border-radius:50%;cursor:pointer"></span>
+                <span onclick="setColor(this,'#56ab2f')" style="width:28px;height:28px;background:#56ab2f;border-radius:50%;cursor:pointer"></span>
+                <span onclick="setColor(this,'#f7971e')" style="width:28px;height:28px;background:#f7971e;border-radius:50%;cursor:pointer"></span>
+                <span onclick="setColor(this,'#9b59b6')" style="width:28px;height:28px;background:#9b59b6;border-radius:50%;cursor:pointer"></span>
+              </div>
+              <input type="hidden" id="selectedColor" value="#d4af37">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" rows="3" placeholder="Optional description..."></textarea>
+            </div>
+            <button class="btn btn-gold" onclick="addTag()" style="width:100%">➕ Add Tag</button>
+          </div>
+        </div>
+        <!-- Tag List -->
+        <div class="card">
+          <div class="card-header">
+            <h3>All Tags <span class="badge">24</span></h3>
+            <div style="display:flex;gap:8px">
+              <input type="text" class="form-input" placeholder="Search tags..." style="width:200px" oninput="filterTags(this.value)">
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table" id="tagTable">
+              <thead><tr><th>Tag</th><th>Slug</th><th>Products</th><th>Color</th><th>Actions</th></tr></thead>
+              <tbody id="tagBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+const tags = [
+  {id:1,name:'VR Experience',slug:'vr-experience',count:18,color:'#00c9ff'},
+  {id:2,name:'Outdoor',slug:'outdoor',count:32,color:'#56ab2f'},
+  {id:3,name:'Family',slug:'family',count:47,color:'#d4af37'},
+  {id:4,name:'Action',slug:'action',count:25,color:'#ee0979'},
+  {id:5,name:'Premium',slug:'premium',count:15,color:'#f7971e'},
+  {id:6,name:'Kiddie Ride',slug:'kiddie-ride',count:29,color:'#9b59b6'},
+  {id:7,name:'Arcade',slug:'arcade',count:41,color:'#d4af37'},
+  {id:8,name:'Simulator',slug:'simulator',count:12,color:'#00c9ff'},
+  {id:9,name:'Water Play',slug:'water-play',count:8,color:'#3498db'},
+  {id:10,name:'Multi-Player',slug:'multi-player',count:22,color:'#ee0979'},
+  {id:11,name:'Token',slug:'token',count:19,color:'#f7971e'},
+  {id:12,name:'Redemption',slug:'redemption',count:35,color:'#56ab2f'},
+];
+function renderTags(list){
+  document.getElementById('tagBody').innerHTML = list.map(t=>`
+    <tr>
+      <td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:${t.color};border-radius:50%;display:inline-block"></span>${t.name}</span></td>
+      <td><code style="background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;font-size:12px">${t.slug}</code></td>
+      <td><span class="badge">${t.count}</span></td>
+      <td><span style="background:${t.color};color:#000;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600">${t.color}</span></td>
+      <td>
+        <button class="btn-sm btn-outline" onclick="editTag(${t.id})">Edit</button>
+        <button class="btn-sm btn-danger" onclick="deleteTag(${t.id})">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+renderTags(tags);
+function filterTags(v){renderTags(tags.filter(t=>t.name.toLowerCase().includes(v.toLowerCase())))}
+function addTag(){showToast('Tag added successfully!','success');renderTags(tags)}
+function editTag(id){showToast('Edit mode activated','info')}
+function deleteTag(id){if(confirm('Delete this tag?')){showToast('Tag deleted','warning')}}
+function setColor(el,c){document.getElementById('selectedColor').value=c;document.querySelectorAll('[onclick^="setColor"]').forEach(e=>e.style.border='none');el.style.border='2px solid #fff'}
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

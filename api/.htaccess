@@ -1,0 +1,12 @@
+# Protect API directory
+<Files "*.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+
+# Disable directory listing
+Options -Indexes
+
+# Disable PHP error display in production
+php_flag display_errors Off
+php_flag log_errors On

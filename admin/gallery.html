@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Gallery Manager — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.gallery-item{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;overflow:hidden;position:relative;cursor:pointer;transition:all .2s}
+.gallery-item:hover{border-color:var(--gold);transform:translateY(-2px)}
+.gallery-item.selected{border-color:var(--gold);box-shadow:0 0 0 2px rgba(212,175,55,.3)}
+.gallery-thumb{width:100%;height:140px;object-fit:cover;background:linear-gradient(135deg,#1a2035,#0d1224);display:flex;align-items:center;justify-content:center;font-size:40px}
+.gallery-info{padding:8px 10px}
+.gallery-check{position:absolute;top:8px;left:8px;width:20px;height:20px;background:rgba(0,0,0,.6);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.gallery-check.checked{background:var(--gold);color:#000}
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:60px 20px;text-align:center;cursor:pointer;transition:all .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:rgba(212,175,55,.04)}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="breadcrumb">Gallery / <span>Manage Gallery</span></div>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-gold" onclick="document.getElementById('uploadModal').style.display='flex'">+ Create Album</button>
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title">
+        <h1 class="title-h1">Gallery Manager</h1>
+        <p class="title-sub">Organize and manage your photo albums</p>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:4px;margin-bottom:24px;background:rgba(255,255,255,.04);padding:4px;border-radius:8px;width:fit-content">
+        <button class="btn btn-gold" onclick="switchTab('albums',this)" id="tabAlbums">Albums</button>
+        <button class="btn btn-outline" onclick="switchTab('photos',this)" id="tabPhotos">All Photos</button>
+        <button class="btn btn-outline" onclick="switchTab('categories',this)" id="tabCategories">Categories</button>
+      </div>
+
+      <!-- Albums Tab -->
+      <div id="tabContentAlbums">
+        <div class="gallery-grid" id="albumGrid"></div>
+      </div>
+
+      <!-- All Photos Tab -->
+      <div id="tabContentPhotos" style="display:none">
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+          <div class="upload-zone" style="padding:16px 24px;flex:none" onclick="triggerUpload()">
+            <span style="margin-right:8px">📤</span> Upload Images
+          </div>
+          <select class="form-select" style="width:160px">
+            <option>All Albums</option>
+            <option>Exhibition 2026</option>
+            <option>Product Showcase</option>
+            <option>Company</option>
+          </select>
+          <select class="form-select" style="width:140px">
+            <option>Date: Newest</option>
+            <option>Date: Oldest</option>
+            <option>Name A-Z</option>
+            <option>Size: Largest</option>
+          </select>
+          <input type="text" class="form-input" placeholder="🔍 Search photos..." style="width:200px">
+          <div style="margin-left:auto;display:flex;gap:8px" id="bulkPhotoActions" style="display:none">
+            <span id="selectedCount" style="color:var(--text-muted);font-size:13px">0 selected</span>
+            <button class="btn btn-outline btn-sm">Move to Album</button>
+            <button class="btn btn-danger btn-sm">Delete</button>
+          </div>
+        </div>
+        <div class="gallery-grid" id="photoGrid"></div>
+      </div>
+
+      <!-- Categories Tab -->
+      <div id="tabContentCategories" style="display:none">
+        <div style="display:grid;grid-template-columns:360px 1fr;gap:24px">
+          <div class="card">
+            <div class="card-header"><h3>Add Category</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Category Name</label>
+                <input type="text" class="form-input" placeholder="e.g. Exhibition Photos">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Slug</label>
+                <input type="text" class="form-input" placeholder="exhibition-photos">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-textarea" rows="3"></textarea>
+              </div>
+              <button class="btn btn-gold" style="width:100%" onclick="showToast('Category added!','success')">Add Category</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Categories</h3></div>
+            <div class="card-body" style="padding:0">
+              <table class="data-table">
+                <thead><tr><th>Name</th><th>Slug</th><th>Albums</th><th>Photos</th><th>Actions</th></tr></thead>
+                <tbody id="galCatBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Album Modal -->
+<div id="uploadModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center">
+  <div class="card" style="width:500px;max-width:95vw">
+    <div class="card-header"><h3>Create New Album</h3><button onclick="document.getElementById('uploadModal').style.display='none'" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer">×</button></div>
+    <div class="card-body">
+      <div class="form-group">
+        <label class="form-label">Album Name *</label>
+        <input type="text" class="form-input" placeholder="e.g. IAAPA Asia 2026">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-select">
+          <option>Exhibition</option><option>Products</option><option>Company</option><option>Events</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cover Image</label>
+        <div class="upload-zone" onclick="triggerUpload()">
+          <div style="font-size:32px">🖼</div>
+          <div style="margin-top:8px;color:var(--text-muted)">Click or drag to upload cover</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('uploadModal').style.display='none'">Cancel</button>
+        <button class="btn btn-gold" style="flex:1" onclick="createAlbum()">Create Album</button>
+      </div>
+    </div>
+  </div>
+</div>
+<input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+
+<script src="admin.js"></script>
+<script>
+const albums=[
+  {id:1,emoji:'🎪',name:'IAAPA Asia 2026',cat:'Exhibition',photos:48,date:'2026-03-15',cover:''},
+  {id:2,emoji:'🎮',name:'Product Showcase Q1',cat:'Products',photos:24,date:'2026-03-10',cover:''},
+  {id:3,emoji:'🏭',name:'Factory & Partners',cat:'Company',photos:36,date:'2026-02-28',cover:''},
+  {id:4,emoji:'🎡',name:'GTI Expo Highlights',cat:'Exhibition',photos:55,date:'2026-02-20',cover:''},
+  {id:5,emoji:'🏆',name:'Award Ceremony 2026',cat:'Events',photos:18,date:'2026-02-10',cover:''},
+  {id:6,emoji:'📸',name:'Product Catalog 2026',cat:'Products',photos:72,date:'2026-01-20',cover:''},
+];
+function renderAlbums(){
+  document.getElementById('albumGrid').innerHTML=albums.map(a=>`
+    <div class="gallery-item" onclick="showAlbum(${a.id})">
+      <div class="gallery-thumb" style="font-size:50px;background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(0,201,255,.05))">${a.emoji}</div>
+      <div class="gallery-info">
+        <div style="font-weight:600;font-size:13px;margin-bottom:3px">${a.name}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${a.photos} photos · ${a.cat}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${a.date}</div>
+      </div>
+      <div style="position:absolute;top:8px;right:8px;display:flex;gap:4px">
+        <button class="btn-sm btn-outline" onclick="event.stopPropagation();editAlbum(${a.id})">Edit</button>
+        <button class="btn-sm btn-danger" onclick="event.stopPropagation();deleteAlbum(${a.id})">Del</button>
+      </div>
+    </div>`).join('');
+}
+const emojis=['🎮','🎡','🎰','🎪','🎠','🎭','🎯','🏆','🌟','⚡','🔥','🌈'];
+function renderPhotos(){
+  document.getElementById('photoGrid').innerHTML=Array.from({length:24},(_,i)=>`
+    <div class="gallery-item" onclick="toggleSelect(this)">
+      <div class="gallery-thumb">${emojis[i%emojis.length]}</div>
+      <div class="gallery-check" id="check${i}">○</div>
+      <div class="gallery-info">
+        <div style="font-size:12px;font-weight:500">photo_${String(i+1).padStart(3,'0')}.jpg</div>
+        <div style="font-size:11px;color:var(--text-muted)">${(Math.random()*3+0.5).toFixed(1)} MB</div>
+      </div>
+    </div>`).join('');
+}
+let selectedPhotos=0;
+function toggleSelect(el){
+  el.classList.toggle('selected');
+  const check=el.querySelector('.gallery-check');
+  if(el.classList.contains('selected')){check.textContent='✓';check.classList.add('checked');selectedPhotos++;}
+  else{check.textContent='○';check.classList.remove('checked');selectedPhotos--;}
+  document.getElementById('selectedCount').textContent=selectedPhotos+' selected';
+}
+const galCats=[
+  {name:'Exhibition',slug:'exhibition',albums:3,photos:103},
+  {name:'Products',slug:'products',albums:2,photos:96},
+  {name:'Company',slug:'company',albums:1,photos:36},
+  {name:'Events',slug:'events',albums:1,photos:18},
+];
+function renderGalCats(){
+  document.getElementById('galCatBody').innerHTML=galCats.map(c=>`
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td><code style="background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;font-size:11px">${c.slug}</code></td>
+      <td><span class="badge">${c.albums}</span></td>
+      <td><span class="badge">${c.photos}</span></td>
+      <td><button class="btn-sm btn-outline">Edit</button><button class="btn-sm btn-danger">Del</button></td>
+    </tr>`).join('');
+}
+function switchTab(tab,btn){
+  ['Albums','Photos','Categories'].forEach(t=>{
+    document.getElementById('tabContent'+t).style.display=tab===t.toLowerCase()?'block':'none';
+  });
+  document.querySelectorAll('[id^="tab"]').forEach(b=>{b.className='btn btn-outline'});
+  btn.className='btn btn-gold';
+}
+function showAlbum(id){showToast('Opening album '+id,'info')}
+function editAlbum(id){showToast('Edit album '+id,'info')}
+function deleteAlbum(id){if(confirm('Delete album?')){showToast('Album deleted','warning')}}
+function createAlbum(){document.getElementById('uploadModal').style.display='none';showToast('Album created!','success')}
+function triggerUpload(){document.getElementById('fileInput').click()}
+document.getElementById('fileInput').onchange=function(){showToast(this.files.length+' files selected','info')};
+renderAlbums();renderPhotos();renderGalCats();
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

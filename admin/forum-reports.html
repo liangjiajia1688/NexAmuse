@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Reported Posts — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.report-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;transition:.2s}
+.report-card:hover{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.02)}
+.report-card.resolved{opacity:.5;border-left:3px solid #34d399}
+.report-card.pending{border-left:3px solid #f87171}
+.report-card.reviewing{border-left:3px solid #f59e0b}
+.severity-badge{padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600}
+.sev-high{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+.sev-medium{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3)}
+.sev-low{background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.2)}
+.post-preview-box{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.15);border-radius:8px;padding:12px 14px;margin:10px 0;font-size:13px;color:#cbd5e1;line-height:1.6}
+.report-reason-tag{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid var(--border);margin-right:5px}
+.reporter-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);margin-bottom:6px}
+.avatar-xs{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f87171,#fb923c);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.action-row{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05)}
+.stat-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center}
+.stat-item .num{font-size:26px;font-weight:700}
+.stat-item .lab{font-size:12px;color:var(--text-muted);margin-top:3px}
+.tab-row{display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.tab-btn{padding:9px 18px;font-size:13px;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.2s;background:none;border-top:none;border-left:none;border-right:none}
+.tab-btn.active{color:#f87171;border-bottom-color:#f87171}
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.filter-bar select,.filter-bar input{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" onclick="toggleSidebar()">☰</button><div class="breadcrumb">Forum / <span>Reported Posts</span></div></div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;">
+            <div class="user-avatar">A</div><span style="color:var(--text-muted);font-size:13px;">Admin</span><span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info"><div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div><div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div></div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-header" style="margin-bottom:20px">
+        <div>
+          <h1 class="page-title">🚩 Reported Posts</h1>
+          <p class="page-subtitle">Review community reports and take moderation action</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <a href="forum.html" class="btn btn-outline btn-sm">💬 All Posts</a>
+          <button class="btn btn-sm" style="background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3)" onclick="resolveAll()">✓ Resolve All</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-summary">
+        <div class="stat-item"><div class="num" style="color:#f87171">3</div><div class="lab">Pending Review</div></div>
+        <div class="stat-item"><div class="num" style="color:#f59e0b">1</div><div class="lab">Under Review</div></div>
+        <div class="stat-item"><div class="num" style="color:#34d399">28</div><div class="lab">Resolved (30d)</div></div>
+        <div class="stat-item"><div class="num" style="color:var(--gold)">5</div><div class="lab">Avg. Resolution Hours</div></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab(this,'all')">All Reports (4)</button>
+        <button class="tab-btn" onclick="switchTab(this,'pending')">🔴 Pending (3)</button>
+        <button class="tab-btn" onclick="switchTab(this,'reviewing')">🟡 Reviewing (1)</button>
+        <button class="tab-btn" onclick="switchTab(this,'resolved')">✅ Resolved</button>
+      </div>
+
+      <!-- Filter -->
+      <div class="filter-bar">
+        <select id="reasonFilter" onchange="filterReports()">
+          <option value="">All Reasons</option>
+          <option>Spam</option>
+          <option>Inappropriate Content</option>
+          <option>Misinformation</option>
+          <option>Harassment</option>
+          <option>Copyright Violation</option>
+        </select>
+        <select id="severityFilter" onchange="filterReports()">
+          <option value="">All Severity</option>
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
+        </select>
+      </div>
+
+      <!-- Report Cards -->
+      <div id="reportList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Action Modal -->
+<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center" id="actionModal">
+  <div style="background:#12182b;border:1px solid var(--border);border-radius:14px;padding:28px;width:520px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="margin:0;font-size:17px;color:#e2e8f0">Take Moderation Action</h3>
+      <button onclick="closeAction()" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer">×</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Post: <strong id="actionPostTitle" style="color:#e2e8f0"></strong></p>
+    <div style="display:grid;gap:10px;margin-bottom:18px">
+      <button class="btn btn-outline" style="text-align:left;padding:12px 16px;justify-content:flex-start;gap:12px" onclick="takeAction('warn')">
+        <span style="font-size:20px">⚠️</span>
+        <div><div style="font-weight:600;font-size:13px">Warn Author</div><div style="font-size:12px;color:var(--text-muted)">Send a warning message to the post author</div></div>
+      </button>
+      <button class="btn btn-outline" style="text-align:left;padding:12px 16px;justify-content:flex-start;gap:12px" onclick="takeAction('hide')">
+        <span style="font-size:20px">🙈</span>
+        <div><div style="font-weight:600;font-size:13px">Hide Post</div><div style="font-size:12px;color:var(--text-muted)">Remove from public view but keep in database</div></div>
+      </button>
+      <button class="btn btn-outline" style="text-align:left;padding:12px 16px;justify-content:flex-start;gap:12px" onclick="takeAction('delete')">
+        <span style="font-size:20px">🗑</span>
+        <div><div style="font-weight:600;font-size:13px">Delete Post</div><div style="font-size:12px;color:var(--text-muted)">Permanently remove the post</div></div>
+      </button>
+      <button class="btn btn-outline" style="text-align:left;padding:12px 16px;justify-content:flex-start;gap:12px" onclick="takeAction('ban')">
+        <span style="font-size:20px">🚫</span>
+        <div><div style="font-weight:600;font-size:13px">Ban User</div><div style="font-size:12px;color:var(--text-muted)">Suspend the author's account and remove post</div></div>
+      </button>
+      <button class="btn btn-outline" style="text-align:left;padding:12px 16px;justify-content:flex-start;gap:12px;border-color:rgba(52,211,153,.3);color:#34d399" onclick="takeAction('dismiss')">
+        <span style="font-size:20px">✅</span>
+        <div><div style="font-weight:600;font-size:13px">Dismiss Report</div><div style="font-size:12px;color:var(--text-muted)">Mark as reviewed — no action needed</div></div>
+      </button>
+    </div>
+    <div>
+      <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Moderator Note (optional)</label>
+      <textarea id="modNote" rows="2" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none;box-sizing:border-box" placeholder="Add an internal note..."></textarea>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+const reports = [
+  {
+    id:1, status:'pending', severity:'high',
+    post:'Spam advertising links — multiple external URLs',
+    author:'SpamUser123', authorAvatar:'S',
+    section:'General Discussion',
+    content:'Check out these amazing deals! Buy now at www.spam-site.com, also visit www.another-spam.net for more...',
+    reasons:['Spam','Inappropriate Content'],
+    reporters:[{name:'ParkOwner_Mike',avatar:'M',time:'2h ago'},{name:'TechReviewer_Jess',avatar:'J',time:'3h ago'},{name:'WaterTech_Pro',avatar:'W',time:'4h ago'}],
+    reported:'2026-03-25 14:32'
+  },
+  {
+    id:2, status:'reviewing', severity:'high',
+    post:'Inappropriate content — violates community guidelines',
+    author:'TrollAccount', authorAvatar:'T',
+    section:'General Discussion',
+    content:'This post contains language and content that is disrespectful and hostile towards other industry professionals...',
+    reasons:['Harassment','Inappropriate Content'],
+    reporters:[{name:'SafetyExpert_Lisa',avatar:'L',time:'1d ago'},{name:'MarketAnalyst',avatar:'A',time:'1d ago'}],
+    reported:'2026-03-24 09:15'
+  },
+  {
+    id:3, status:'pending', severity:'medium',
+    post:'Unverified safety claim about competitor product',
+    author:'Anonymous_User', authorAvatar:'A',
+    section:'Product Reviews',
+    content:'I heard that [CompetitorBrand] rides have had 5 unreported accidents in the past year. My source says...',
+    reasons:['Misinformation'],
+    reporters:[{name:'LightingPro',avatar:'L',time:'2d ago'}],
+    reported:'2026-03-23 16:45'
+  },
+  {
+    id:4, status:'pending', severity:'low',
+    post:'Possible copyright violation — copied article',
+    author:'ContentCopier', authorAvatar:'C',
+    section:'Industry News',
+    content:'[This appears to be copied verbatim from an industry publication without attribution or permission...]',
+    reasons:['Copyright Violation'],
+    reporters:[{name:'ProcurementTeam',avatar:'P',time:'3d ago'}],
+    reported:'2026-03-22 11:20'
+  },
+];
+
+let currentReportId=null;
+let filteredReports=[...reports];
+
+function renderReports(data){
+  const list=document.getElementById('reportList');
+  if(!data.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">No reports found ✅</div>';return;}
+  list.innerHTML=data.map(r=>`
+    <div class="report-card ${r.status}" id="rc${r.id}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <span class="severity-badge sev-${r.severity}">🚩 ${r.severity.toUpperCase()} SEVERITY</span>
+            ${r.reasons.map(rr=>`<span class="report-reason-tag">${rr}</span>`).join('')}
+            <span style="font-size:12px;color:var(--text-muted)">${r.reported}</span>
+          </div>
+          <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:4px">${r.post}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">
+            Section: <span style="color:var(--gold)">${r.section}</span> · 
+            Author: <span style="color:#94a3b8">${r.author}</span>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <span style="font-size:12px;font-weight:600;padding:4px 10px;border-radius:8px;
+            ${r.status==='pending'?'background:rgba(248,113,113,.1);color:#f87171':''}
+            ${r.status==='reviewing'?'background:rgba(245,158,11,.1);color:#f59e0b':''}
+            ${r.status==='resolved'?'background:rgba(52,211,153,.1);color:#34d399':''}
+          ">${r.status.toUpperCase()}</span>
+        </div>
+      </div>
+
+      <div class="post-preview-box">${r.content}</div>
+
+      <div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">Reported by (${r.reporters.length})</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          ${r.reporters.map(rep=>`
+            <div class="reporter-row">
+              <div class="avatar-xs">${rep.avatar}</div>
+              <span>${rep.name}</span>
+              <span style="color:rgba(148,163,184,.6)">· ${rep.time}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.25)" onclick="openAction(${r.id})">⚡ Take Action</button>
+        <button class="btn btn-outline btn-sm" onclick="startReview(${r.id})">👁 Mark Reviewing</button>
+        <button class="btn btn-outline btn-sm" onclick="dismissReport(${r.id})">✓ Dismiss</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function switchTab(el,tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  if(tab==='pending') filteredReports=reports.filter(r=>r.status==='pending');
+  else if(tab==='reviewing') filteredReports=reports.filter(r=>r.status==='reviewing');
+  else if(tab==='resolved') filteredReports=reports.filter(r=>r.status==='resolved');
+  else filteredReports=[...reports];
+  renderReports(filteredReports);
+}
+
+function filterReports(){
+  const reason=document.getElementById('reasonFilter').value;
+  const sev=document.getElementById('severityFilter').value.toLowerCase();
+  filteredReports=reports.filter(r=>{
+    const matchR=!reason||r.reasons.includes(reason);
+    const matchS=!sev||r.severity===sev;
+    return matchR&&matchS;
+  });
+  renderReports(filteredReports);
+}
+
+function openAction(id){
+  const r=reports.find(x=>x.id===id);
+  currentReportId=id;
+  document.getElementById('actionPostTitle').textContent=r.post;
+  document.getElementById('actionModal').style.display='flex';
+}
+function closeAction(){document.getElementById('actionModal').style.display='none';currentReportId=null;}
+
+function takeAction(type){
+  const r=reports.find(x=>x.id===currentReportId);
+  if(r){
+    r.status='resolved';
+    filteredReports=filteredReports.map(x=>x.id===currentReportId?r:x);
+    renderReports(filteredReports);
+  }
+  closeAction();
+  const msgs={warn:'⚠️ Warning sent to author',hide:'Post hidden from public',delete:'Post deleted',ban:'User banned and post removed',dismiss:'Report dismissed'};
+  showToast(msgs[type]||'Action taken');
+}
+
+function startReview(id){
+  const r=reports.find(x=>x.id===id);
+  if(r&&r.status==='pending'){r.status='reviewing';renderReports(filteredReports);showToast('Marked as reviewing');}
+}
+function dismissReport(id){
+  const r=reports.find(x=>x.id===id);
+  if(r){r.status='resolved';renderReports(filteredReports);showToast('Report dismissed');}
+}
+function resolveAll(){
+  if(confirm('Dismiss all pending reports?')){
+    reports.forEach(r=>{if(r.status!=='resolved')r.status='resolved'});
+    filteredReports=[...reports];
+    renderReports(filteredReports);
+    showToast('All reports resolved');
+  }
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid var(--border);border-radius:8px;padding:10px 18px;color:#e2e8f0;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+document.addEventListener('DOMContentLoaded',()=>renderReports(filteredReports));
+</script>
+</body>
+</html>

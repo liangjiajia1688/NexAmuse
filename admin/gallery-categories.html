@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery Categories — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">Media › <span>Gallery Categories</span></div></div>
+      <div class="header-right"><div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div></div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title"><h1>Gallery Categories</h1><p>Organize gallery albums into logical categories.</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:24px">
+        <div class="form-section">
+          <h3>Add Gallery Category</h3>
+          <div class="form-group"><label>Category Name</label><input type="text" placeholder="e.g. Product Photos"></div>
+          <div class="form-group" style="margin-top:12px"><label>Icon</label><input type="text" placeholder="🖼" style="width:80px"></div>
+          <div class="form-group" style="margin-top:12px"><label>Description</label><textarea placeholder="Category description..." style="min-height:70px"></textarea></div>
+          <div class="form-group" style="margin-top:12px"><label>Sort Order</label><input type="number" value="0" min="0"></div>
+          <div class="form-group" style="margin-top:12px"><label>Visibility</label>
+            <select><option>Public</option><option>Members Only</option><option>Private (Admin)</option></select>
+          </div>
+          <div class="form-actions" style="margin-top:16px"><button class="btn-primary" onclick="alert('Category added!')">Save Category</button></div>
+        </div>
+        <div class="form-section">
+          <h3>Existing Gallery Categories</h3>
+          <table class="admin-table">
+            <thead><tr><th>Category</th><th>Albums</th><th>Images</th><th>Visibility</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><div style="display:flex;align-items:center;gap:8px"><span>🎮</span>Product Showcase</div></td><td>12</td><td><span style="color:#4facfe">584</span></td><td><span class="tag active">Public</span></td><td><button class="btn-secondary" style="font-size:12px;padding:4px 10px">Edit</button></td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:8px"><span>🎪</span>Exhibitions</div></td><td>8</td><td><span style="color:#4facfe">392</span></td><td><span class="tag active">Public</span></td><td><button class="btn-secondary" style="font-size:12px;padding:4px 10px">Edit</button></td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:8px"><span>📰</span>Press & Media</div></td><td>4</td><td><span style="color:#4facfe">128</span></td><td><span class="tag active">Public</span></td><td><button class="btn-secondary" style="font-size:12px;padding:4px 10px">Edit</button></td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:8px"><span>🔒</span>Internal Assets</div></td><td>3</td><td><span style="color:#4facfe">67</span></td><td><span class="tag closed">Private</span></td><td><button class="btn-secondary" style="font-size:12px;padding:4px 10px">Edit</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){
+  var d=document.getElementById('userDropdown');
+  var b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  var wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var d=document.getElementById('userDropdown');
+    var b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+</body>
+</html>

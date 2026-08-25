@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ad Zones — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.ad-zone-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;transition:all .2s}
+.ad-zone-card:hover{border-color:rgba(201,162,39,.4)}
+.ad-zone-card.active{border-left:3px solid #56ab2f}
+.ad-zone-card.paused{border-left:3px solid #f59e0b}
+.ad-zone-card.expired{border-left:3px solid #f87171;opacity:.7}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.s-active{background:rgba(86,171,47,.15);color:#56ab2f}
+.s-paused{background:rgba(245,158,11,.15);color:#f59e0b}
+.s-expired{background:rgba(248,113,113,.1);color:#f87171}
+.s-pending{background:rgba(148,163,184,.1);color:#94a3b8}
+.ad-thumb{width:80px;height:50px;border-radius:6px;object-fit:cover;background:linear-gradient(135deg,rgba(201,162,39,.2),rgba(0,201,255,.1));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.zone-tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:11px;background:rgba(201,162,39,.1);color:var(--gold);border:1px solid rgba(201,162,39,.2);margin-right:4px}
+.progress-thin{height:4px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),#f5d06e);border-radius:4px}
+.stat-mini{text-align:center;padding:10px 16px;background:rgba(255,255,255,.03);border-radius:8px}
+.stat-mini .num{font-size:20px;font-weight:700;color:var(--gold)}
+.stat-mini .lab{font-size:11px;color:var(--text-muted);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" onclick="toggleSidebar()">☰</button><div class="breadcrumb">Advertising / <span>Ad Zones</span></div></div>
+      <div class="header-right">
+        <a href="ads-add.html" class="btn btn-gold btn-sm">+ New Advertisement</a>
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;">
+            <div class="user-avatar">A</div><span style="color:var(--text-muted);font-size:13px;">Admin</span><span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info"><div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div><div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div></div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title">
+        <h1 class="title-h1">📢 Ad Zone Management</h1>
+        <p class="title-sub">Manage all advertising slots, display schedules and performance metrics</p>
+      </div>
+
+      <!-- Stats Row -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px">
+        <div class="stat-mini"><div class="num">24</div><div class="lab">Total Ads</div></div>
+        <div class="stat-mini"><div class="num" style="color:#56ab2f">16</div><div class="lab">Active</div></div>
+        <div class="stat-mini"><div class="num" style="color:#f59e0b">5</div><div class="lab">Paused</div></div>
+        <div class="stat-mini"><div class="num" style="color:#f87171">3</div><div class="lab">Expired</div></div>
+        <div class="stat-mini"><div class="num">128k</div><div class="lab">Total Impressions</div></div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+        <select class="form-select" style="width:auto" onchange="filterAds(this.value)" id="zoneFilter">
+          <option value="">All Zones</option>
+          <option>Homepage Banner</option>
+          <option>Sidebar Right</option>
+          <option>News Top</option>
+          <option>Products Page</option>
+          <option>Footer Strip</option>
+        </select>
+        <select class="form-select" style="width:auto" onchange="filterStatus(this.value)">
+          <option value="">All Status</option>
+          <option>Active</option><option>Paused</option><option>Expired</option><option>Pending</option>
+        </select>
+        <input type="date" class="form-input" style="width:160px" placeholder="From date">
+        <input type="date" class="form-input" style="width:160px" placeholder="To date">
+        <button class="btn btn-outline btn-sm" onclick="applyFilter()">🔍 Filter</button>
+        <button class="btn btn-outline btn-sm" onclick="exportAds()">📊 Export</button>
+      </div>
+
+      <!-- Ad Zone Legend -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><h3>🗺️ Ad Zone Map</h3></div>
+        <div class="card-body">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:13px">
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.2);border-radius:8px"><span>🏠</span><span><strong>Z1</strong> Homepage Hero Banner (1200×200)</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(0,201,255,.06);border:1px solid rgba(0,201,255,.15);border-radius:8px"><span>📰</span><span><strong>Z2</strong> News Page Top (728×90)</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px"><span>📦</span><span><strong>Z3</strong> Products Sidebar (300×250)</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(86,171,47,.08);border:1px solid rgba(86,171,47,.2);border-radius:8px"><span>🔳</span><span><strong>Z4</strong> Footer Strip (1200×60)</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px"><span>💬</span><span><strong>Z5</strong> Forum Sidebar (300×600)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ads List -->
+      <div id="adsList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+const ADS_DATA = [
+  {id:1,title:'GTI Asia 2026 — Official Exhibitor Ad',client:'GTI Expo',zone:'Homepage Banner (Z1)',size:'1200×200',status:'active',startDate:'2026-03-01',endDate:'2026-04-15',impressions:32400,clicks:892,budget:3500,spent:2100,img:'🎪'},
+  {id:2,title:'SuperFun VR — New Product Launch',client:'SuperFun Tech',zone:'News Page Top (Z2)',size:'728×90',status:'active',startDate:'2026-03-10',endDate:'2026-03-31',impressions:18200,clicks:441,budget:1200,spent:1200,img:'🥽'},
+  {id:3,title:'Guangzhou Amusement Co. — Brand Banner',client:'Guangzhou Amusement',zone:'Products Sidebar (Z3)',size:'300×250',status:'paused',startDate:'2026-02-15',endDate:'2026-05-30',impressions:9100,clicks:187,budget:2000,spent:600,img:'🏭'},
+  {id:4,title:'IAAPA Europark 2026 Pre-Registration',client:'IAAPA',zone:'Footer Strip (Z4)',size:'1200×60',status:'active',startDate:'2026-03-20',endDate:'2026-06-01',impressions:24500,clicks:720,budget:4000,spent:900,img:'🎡'},
+  {id:5,title:'LeisureTech Forum Sponsorship',client:'LeisureTech',zone:'Forum Sidebar (Z5)',size:'300×600',status:'active',startDate:'2026-03-25',endDate:'2026-04-25',impressions:6700,clicks:203,budget:1500,spent:400,img:'💻'},
+  {id:6,title:'Kiddie Zone Equipment - Spring Sale',client:'Happy Kids Co.',zone:'Homepage Banner (Z1)',size:'1200×200',status:'expired',startDate:'2026-01-01',endDate:'2026-02-28',impressions:41200,clicks:1320,budget:5000,spent:5000,img:'🎠'},
+  {id:7,title:'Coin Pusher Pro — New Series',client:'ArcadeKing',zone:'Products Sidebar (Z3)',size:'300×250',status:'pending',startDate:'2026-04-01',endDate:'2026-04-30',impressions:0,clicks:0,budget:800,spent:0,img:'🪙'},
+];
+
+function renderAds(data){
+  const el=document.getElementById('adsList');
+  if(!data.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">No ads found</div>';return;}
+  el.innerHTML=data.map(a=>{
+    const pct=a.budget?Math.round(a.spent/a.budget*100):0;
+    const ctr=a.impressions?((a.clicks/a.impressions)*100).toFixed(2):0;
+    const daysLeft=Math.max(0,Math.ceil((new Date(a.endDate)-new Date())/(1000*60*60*24)));
+    const sClass={active:'s-active',paused:'s-paused',expired:'s-expired',pending:'s-pending'}[a.status]||'s-pending';
+    return `<div class="ad-zone-card ${a.status}" id="adcard${a.id}">
+      <div style="display:flex;gap:16px;align-items:flex-start">
+        <div class="ad-thumb">${a.img}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-weight:600;font-size:14px;color:#e2e8f0;margin-bottom:4px">${a.title}</div>
+              <div style="font-size:12px;color:var(--text-muted)">${a.client} &nbsp;·&nbsp; <span class="zone-tag">${a.zone}</span> <span class="zone-tag">${a.size}</span></div>
+            </div>
+            <span class="status-badge ${sClass}">${a.status==='active'?'● ':''}${a.status.toUpperCase()}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px;font-size:12px">
+            <div><div style="color:var(--text-muted)">Period</div><div style="color:#e2e8f0;margin-top:2px">${a.startDate}<br>→ ${a.endDate}</div></div>
+            <div><div style="color:var(--text-muted)">Days Left</div><div style="color:${daysLeft<=3?'#f87171':'#e2e8f0'};font-size:16px;font-weight:700;margin-top:2px">${a.status==='expired'?'—':daysLeft}</div></div>
+            <div><div style="color:var(--text-muted)">Impressions</div><div style="color:#e2e8f0;font-weight:600;margin-top:2px">${a.impressions.toLocaleString()}</div></div>
+            <div><div style="color:var(--text-muted)">Clicks / CTR</div><div style="color:#e2e8f0;font-weight:600;margin-top:2px">${a.clicks} <span style="color:var(--gold);font-size:11px">(${ctr}%)</span></div></div>
+            <div><div style="color:var(--text-muted)">Budget Used</div>
+              <div style="color:#e2e8f0;font-weight:600;margin-top:2px">$${a.spent} / $${a.budget}</div>
+              <div class="progress-thin"><div class="progress-fill" style="width:${pct}%;background:${pct>=90?'linear-gradient(90deg,#f87171,#ee0979)':pct>=70?'linear-gradient(90deg,#f59e0b,#fcd34d)':'linear-gradient(90deg,var(--gold),#f5d06e)'}"></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button class="btn btn-outline btn-sm" onclick="editAd(${a.id})">✏️ Edit</button>
+          ${a.status==='active'?`<button class="btn btn-outline btn-sm" onclick="pauseAd(${a.id})">⏸ Pause</button>`:''}
+          ${a.status==='paused'?`<button class="btn btn-outline btn-sm" style="color:#56ab2f;border-color:#56ab2f" onclick="resumeAd(${a.id})">▶ Resume</button>`:''}
+          <button class="btn btn-outline btn-sm" style="color:#f87171;border-color:rgba(248,113,113,.3)" onclick="deleteAd(${a.id})">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterAds(z){renderAds(z?ADS_DATA.filter(a=>a.zone.includes(z)):ADS_DATA)}
+function filterStatus(s){renderAds(s?ADS_DATA.filter(a=>a.status===s.toLowerCase()):ADS_DATA)}
+function applyFilter(){renderAds(ADS_DATA)}
+function editAd(id){window.location.href='ads-add.html?id='+id}
+function pauseAd(id){const a=ADS_DATA.find(x=>x.id===id);if(a){a.status='paused';renderAds(ADS_DATA);showToast('Ad paused','info')}}
+function resumeAd(id){const a=ADS_DATA.find(x=>x.id===id);if(a){a.status='active';renderAds(ADS_DATA);showToast('Ad resumed','success')}}
+function deleteAd(id){if(confirm('Delete this ad?')){const i=ADS_DATA.findIndex(x=>x.id===id);if(i>=0){ADS_DATA.splice(i,1);renderAds(ADS_DATA);showToast('Ad deleted','success')}}}
+function exportAds(){showToast('Exporting ad data...','info')}
+
+renderAds(ADS_DATA);
+</script>
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+<script>
+function toggleUserMenu(){var d=document.getElementById('userDropdown');var b=document.getElementById('userMenuBtn');if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}}
+document.addEventListener('click',function(e){var wrap=document.querySelector('.header-user-wrap');if(wrap&&!wrap.contains(e.target)){var d=document.getElementById('userDropdown');if(d)d.classList.remove('open');}});
+</script>
+</body>
+</html>

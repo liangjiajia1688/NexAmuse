@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>用户中心 — NexAmuse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .dash{max-width:1000px;margin:40px auto;padding:0 20px;}
+    .dash h1{color:#fff;font-size:2rem;margin-bottom:4px;}
+    .dash .role-tag{display:inline-block;background:var(--tag-bg);color:var(--accent);padding:3px 12px;border-radius:20px;font-size:.8rem;margin-bottom:24px;}
+    .dash-tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+    .dash-tab{padding:10px 18px;cursor:pointer;border-radius:8px;color:var(--text-secondary);font-weight:600;border:1px solid var(--border);background:var(--card-bg);}
+    .dash-tab.active{background:var(--tag-bg);color:var(--accent);}
+    .dash-panel{display:none;}
+    .dash-panel.active{display:block;}
+    .card-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:28px;}
+    .img-preview{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+    .img-preview img{width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--border);}
+    .my-item{background:var(--secondary);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+    .my-item .t{color:#fff;font-weight:600;}
+    .my-item .m{color:var(--text-secondary);font-size:.82rem;}
+    .post-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+    .post-box .pc{color:var(--text-secondary);margin-top:8px;white-space:pre-wrap;}
+    .hint{color:var(--text-secondary);font-size:.85rem;margin:10px 0;}
+    .center-msg{min-height:18px;font-size:.88rem;margin-top:10px;}
+    .center-msg.err{color:#ff6b6b;} .center-msg.ok{color:var(--success);}
+  </style>
+</head>
+<body>
+  <div id="na-header"></div>
+
+  <div class="dash">
+    <h1 id="welcome">用户中心</h1>
+    <div id="roleTag" class="role-tag"></div>
+    <div id="guestHint" class="hint" style="display:none;">请先 <a href="login.html" style="color:var(--accent)">登录 / 注册</a> 后使用发布功能。</div>
+
+    <div class="dash-tabs" id="tabs">
+      <div class="dash-tab active" data-p="p">发布二手设备</div>
+      <div class="dash-tab" data-p="c">企业主页</div>
+      <div class="dash-tab" data-p="m">我的发布</div>
+    </div>
+
+    <!-- 发布二手 -->
+    <div class="dash-panel active" id="panel-p">
+      <div class="card-box">
+        <h2 style="color:#fff;margin-bottom:16px;">发布二手设备</h2>
+        <div class="form-group"><label>标题 *</label><input id="p_title" placeholder="如：9成新娃娃机 投币式"/></div>
+        <div class="form-row">
+          <div class="form-group"><label>分类</label>
+            <select id="p_cat">
+              <option value="arcade">游戏机 / 街机</option>
+              <option value="amusement">游乐设备</option>
+              <option value="anime">动漫周边</option>
+              <option value="other">其他</option>
+            </select>
+          </div>
+          <div class="form-group"><label>新旧程度</label>
+            <select id="p_cond">
+              <option value="全新">全新</option>
+              <option value="9成新">9成新</option>
+              <option value="7成新">7成新</option>
+              <option value="二手">二手</option>
+              <option value="报废">报废/配件</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>价格（元，可空）</label><input id="p_price" type="number" placeholder="0"/></div>
+          <div class="form-group"><label>所在地</label><input id="p_loc" placeholder="如：广州"/></div>
+        </div>
+        <div class="form-group"><label>描述</label><textarea id="p_desc" placeholder="设备状况、使用年限、数量、交易方式…"></textarea></div>
+        <div class="form-group"><label>图片（可多张）</label>
+          <input type="file" id="p_imgs" accept="image/*" multiple/>
+          <div class="img-preview" id="p_preview"></div>
+        </div>
+        <button class="btn-primary" id="p_submit" style="padding:12px 28px;margin-top:8px;">发布</button>
+        <div class="center-msg" id="p_msg"></div>
+      </div>
+    </div>
+
+    <!-- 企业主页 -->
+    <div class="dash-panel" id="panel-c">
+      <div class="card-box">
+        <h2 style="color:#fff;margin-bottom:8px;">企业主页</h2>
+        <p class="hint">企业账号可创建专属展示页，发布本公司产品。普通用户请在「登录/注册」时选择企业账号。</p>
+        <div class="form-group"><label>企业名称 *</label><input id="c_name" placeholder="公司全称"/></div>
+        <div class="form-group"><label>简介</label><textarea id="c_desc" placeholder="主营业务、优势…"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>联系方式</label><input id="c_contact" placeholder="电话 / 微信"/></div>
+          <div class="form-group"><label>官网</label><input id="c_web" placeholder="https://"/></div>
+        </div>
+        <div class="form-group"><label>所在地</label><input id="c_loc" placeholder="如：深圳"/></div>
+        <div class="form-group"><label>Logo</label><input type="file" id="c_logo" accept="image/*"/><div class="img-preview" id="c_preview"></div></div>
+        <button class="btn-primary" id="c_submit" style="padding:12px 28px;margin-top:8px;">保存企业主页</button>
+        <div class="center-msg" id="c_msg"></div>
+      </div>
+    </div>
+
+    <!-- 我的发布 -->
+    <div class="dash-panel" id="panel-m">
+      <h2 style="color:#fff;margin-bottom:16px;">我的二手设备</h2>
+      <div id="myProducts"></div>
+      <h2 style="color:#fff;margin:28px 0 16px;">我的论坛帖子</h2>
+      <div id="myPosts"></div>
+    </div>
+  </div>
+
+  <div id="na-footer"></div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/layout.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const msg = (id, t, ok) => { const e = $(id); e.textContent = t; e.className = 'center-msg ' + (ok ? 'ok' : 'err'); };
+    const readAsDataURL = (file) => new Promise((res, rej) => {
+      const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file);
+    });
+
+    document.querySelectorAll('.dash-tab').forEach(t => {
+      t.onclick = () => {
+        document.querySelectorAll('.dash-tab').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.dash-panel').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        $('panel-' + t.dataset.p).classList.add('active');
+        if (t.dataset.p === 'm') loadMine();
+      };
+    });
+
+    let uploadedImages = [];   // 二手设备图片 url
+    let uploadedLogo = '';     // 企业 logo url
+
+    // 图片预览 + 上传
+    $('p_imgs').addEventListener('change', async (e) => {
+      uploadedImages = []; $('p_preview').innerHTML = '上传中…';
+      for (const f of e.target.files) {
+        const b64 = await readAsDataURL(f);
+        try { const r = await window.Api.upload(b64); uploadedImages.push(r.url); }
+        catch (err) { alert('图片上传失败：' + err.message); }
+      }
+      $('p_preview').innerHTML = uploadedImages.map(u => `<img src="${u}"/>`).join('');
+    });
+    $('c_logo').addEventListener('change', async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      const b64 = await readAsDataURL(f);
+      try { const r = await window.Api.upload(b64); uploadedLogo = r.url; $('c_preview').innerHTML = `<img src="${r.url}"/>`; }
+      catch (err) { alert('Logo 上传失败：' + err.message); }
+    });
+
+    $('p_submit').onclick = async () => {
+      if (!window.Auth.isLogin()) { msg('p_msg', '请先登录'); return; }
+      const title = $('p_title').value.trim(); if (!title) { msg('p_msg', '标题必填'); return; }
+      try {
+        const r = await window.Api.createProduct({
+          title, description: $('p_desc').value, price: $('p_price').value || null,
+          cond: $('p_cond').value, category: $('p_cat').value,
+          images: uploadedImages, location: $('p_loc').value,
+        });
+        if (r.ok) { msg('p_msg', '发布成功！', true); $('p_title').value=''; $('p_desc').value=''; uploadedImages=[]; $('p_preview').innerHTML=''; }
+      } catch (err) { msg('p_msg', err.message); }
+    };
+
+    $('c_submit').onclick = async () => {
+      if (!window.Auth.isLogin()) { msg('c_msg', '请先登录'); return; }
+      if (window.Auth.getUser().role !== 'company') { msg('c_msg', '仅企业账号可创建企业主页'); return; }
+      const name = $('c_name').value.trim(); if (!name) { msg('c_msg', '企业名称必填'); return; }
+      try {
+        const r = await window.Api.createCompany({
+          name, description: $('c_desc').value, logo_url: uploadedLogo,
+          contact: $('c_contact').value, website: $('c_web').value, location: $('c_loc').value,
+        });
+        if (r.ok) msg('c_msg', '企业主页已保存！', true);
+      } catch (err) { msg('c_msg', err.message); }
+    };
+
+    async function loadMine() {
+      if (!window.Auth.isLogin()) { $('myProducts').innerHTML = '<p class="hint">请先登录</p>'; return; }
+      const p = await window.Api.my('products');
+      $('myProducts').innerHTML = (p.items && p.items.length)
+        ? p.items.map(it => `<div class="my-item"><div><div class="t">${window.Auth.escapeHtml(it.title)}</div><div class="m">${it.cond||''} · ${it.location||''} · ${it.price?('¥'+it.price):'面议'}</div></div><a class="btn-ghost" href="product.html?id=${it.id}">查看</a></div>`).join('')
+        : '<p class="hint">还没有发布</p>';
+      const ps = await window.Api.my('posts');
+      $('myPosts').innerHTML = (ps.items && ps.items.length)
+        ? ps.items.map(it => `<div class="post-box"><div class="t" style="color:#fff;font-weight:600">${window.Auth.escapeHtml(it.title)}</div><div class="pc">${window.Auth.escapeHtml(it.content).slice(0,120)}…</div></div>`).join('')
+        : '<p class="hint">还没有发帖</p>';
+    }
+
+    (async () => {
+      const u = await window.Auth.ensure();
+      if (!u) { $('guestHint').style.display = 'block'; $('tabs').style.display = 'none'; return; }
+      $('welcome').textContent = '你好，' + u.username;
+      $('roleTag').textContent = u.role === 'company' ? '企业账号' : '普通用户';
+      if (u.role !== 'company') { document.querySelector('[data-p="c"]').style.display = 'none'; }
+    })();
+  </script>
+</body>
+</html>

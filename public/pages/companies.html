@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="index">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>企业主页 — NexAmuse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .cwrap{max-width:1200px;margin:40px auto;padding:0 20px;}
+    .cwrap h1{color:#fff;font-size:2.2rem;}
+    .cwrap .lead{color:var(--text-secondary);margin:8px 0 24px;}
+    .search-inline{max-width:360px;margin-bottom:24px;}
+    .search-inline input{width:100%;background:#1a2035;border:1px solid var(--border);border-radius:20px;padding:10px 16px;color:#e8eaf0;outline:none;}
+    .search-inline input:focus{border-color:var(--accent);}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;}
+    .ccard{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:22px;cursor:pointer;transition:var(--transition);}
+    .ccard:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:var(--shadow-hover);}
+    .ccard .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#1c2540,#0d1530);display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--accent);overflow:hidden;margin-bottom:12px;}
+    .ccard .logo img{width:100%;height:100%;object-fit:cover;}
+    .ccard .nm{color:#fff;font-weight:700;font-size:1.1rem;}
+    .ccard .lc{color:var(--accent);font-size:.8rem;margin:4px 0 8px;}
+    .ccard .ds{color:var(--text-secondary);font-size:.85rem;line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+    .empty{color:var(--text-secondary);text-align:center;padding:60px 0;grid-column:1/-1;}
+  </style>
+</head>
+<body>
+  <div id="na-header"></div>
+  <div class="cwrap">
+    <h1>企业主页</h1>
+    <p class="lead">认证供应商与厂商的专属展示空间，查看企业资料与其发布的设备。</p>
+    <div class="search-inline"><input id="search" placeholder="搜索企业名称…"/></div>
+    <div class="grid" id="grid"></div>
+  </div>
+  <div id="na-footer"></div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/layout.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const grid = $('grid');
+    async function load(q) {
+      grid.innerHTML = '<div class="empty">加载中…</div>';
+      try {
+        const r = await window.Api.companies(q ? ('?q=' + encodeURIComponent(q)) : '');
+        grid.innerHTML = (r.companies && r.companies.length)
+          ? r.companies.map(c => {
+              const logo = c.logo_url ? `<img src="${c.logo_url}"/>` : '🏭';
+              return `<div class="ccard" onclick="location.href='company.html?id=${c.id}'">
+                <div class="logo">${logo}</div>
+                <div class="nm">${window.Auth.escapeHtml(c.name)}</div>
+                <div class="lc">📍 ${window.Auth.escapeHtml(c.location||'未填写')}</div>
+                <div class="ds">${window.Auth.escapeHtml(c.description||'暂无简介')}</div></div>`;
+            }).join('')
+          : '<div class="empty">暂无企业，企业账号可在用户中心创建主页</div>';
+      } catch (e) { grid.innerHTML = '<div class="empty">加载失败：' + e.message + '</div>'; }
+    }
+    let timer;
+    $('search').addEventListener('input', (e) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => load(e.target.value.trim()), 350);
+    });
+    load();
+  </script>
+</body>
+</html>

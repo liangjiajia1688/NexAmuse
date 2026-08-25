@@ -1,0 +1,15 @@
+{
+  "name": "nexamuse-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NexAmuse 平台 - 二手游戏游艺设备交易 + 企业主页 + 论坛 + 全球新闻聚合 (Cloudflare Pages + D1 + ImgBB)",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public",
+    "db:init": "wrangler d1 execute nexamuse-db --local --file=src/migrations/schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.78.0"
+  }
+}

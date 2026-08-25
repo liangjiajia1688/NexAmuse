@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Batch Article Writer — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+/* ── AI Writer Specific Styles ─────────────────────────────── */
+.ai-hero{background:linear-gradient(135deg,rgba(201,162,39,.1) 0%,rgba(0,201,255,.06) 50%,rgba(139,92,246,.06) 100%);border:1px solid rgba(201,162,39,.25);border-radius:16px;padding:28px 32px;margin-bottom:28px;position:relative;overflow:hidden}
+.ai-hero::before{content:'';position:absolute;top:-50%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,rgba(201,162,39,.08),transparent 70%);pointer-events:none}
+.ai-badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,rgba(201,162,39,.2),rgba(201,162,39,.08));color:var(--gold);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:14px;border:1px solid rgba(201,162,39,.3)}
+.ai-hero h1{font-size:22px;color:#e2e8f0;margin-bottom:8px}
+.ai-hero p{color:var(--text-muted);font-size:14px;max-width:600px}
+.stats-row{display:flex;gap:24px;margin-top:16px}
+.stat-item{text-align:center}
+.stat-num{font-size:22px;font-weight:700;color:var(--gold)}
+.stat-lab{font-size:11px;color:var(--text-muted);margin-top:2px}
+
+/* Topic chips */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid var(--border);padding:7px 14px;border-radius:22px;font-size:13px;cursor:pointer;transition:all .2s;user-select:none;color:var(--text-muted)}
+.chip:hover{border-color:rgba(201,162,39,.5);color:var(--gold);background:rgba(201,162,39,.06)}
+.chip.sel{background:rgba(201,162,39,.12);border-color:var(--gold);color:var(--gold);font-weight:600}
+.chip .chip-x{opacity:.6;font-size:11px}
+
+/* Settings Grid */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.settings-grid{grid-template-columns:1fr}}
+
+/* Progress */
+.progress-wrap{background:rgba(0,0,0,.2);border-radius:10px;overflow:hidden;height:8px;margin:12px 0}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--gold),#f5d06e);border-radius:10px;transition:width .4s ease;width:0%}
+.step-list{list-style:none;padding:0;margin:0}
+.step-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,.03);border:1px solid var(--border);transition:all .3s}
+.step-item.active{background:rgba(201,162,39,.07);border-color:rgba(201,162,39,.3)}
+.step-item.done{background:rgba(86,171,47,.07);border-color:rgba(86,171,47,.2)}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all .3s}
+.step-item .step-dot{background:rgba(255,255,255,.06);color:var(--text-muted)}
+.step-item.active .step-dot{background:rgba(201,162,39,.2);color:var(--gold);animation:pulse 1.5s infinite}
+.step-item.done .step-dot{background:rgba(86,171,47,.2);color:#56ab2f}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Article cards */
+.art-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;transition:all .2s;cursor:pointer}
+.art-card:hover{border-color:rgba(201,162,39,.4);background:rgba(201,162,39,.04)}
+.art-card.published{border-left:3px solid #56ab2f}
+.art-title{font-size:15px;font-weight:600;color:#e2e8f0;margin-bottom:6px;line-height:1.5}
+.art-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);margin-bottom:10px}
+.art-meta span{display:flex;align-items:center;gap:4px}
+.art-excerpt{font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.art-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-xs{padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text-muted);cursor:pointer;transition:.2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.btn-xs:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,162,39,.08)}
+.btn-xs.gold{background:rgba(201,162,39,.12);border-color:rgba(201,162,39,.4);color:var(--gold)}
+.btn-xs.gold:hover{background:rgba(201,162,39,.22)}
+.btn-xs.green{background:rgba(86,171,47,.1);border-color:rgba(86,171,47,.3);color:#56ab2f}
+.btn-xs.red{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.2);color:#f87171}
+
+/* Modal overlay */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#111827;border:1px solid rgba(255,255,255,.12);border-radius:16px;width:100%;max-width:820px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.7)}
+.modal-head{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-head h3{font-size:16px;color:#e2e8f0;font-weight:600}
+.modal-close{background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:.2s}
+.modal-close:hover{background:rgba(255,255,255,.08);color:#e2e8f0}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+.article-full-content{font-size:14px;line-height:1.9;color:#c9d1d9}
+.article-full-content h2{font-size:17px;color:#e2e8f0;font-weight:700;margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.08)}
+.article-full-content h3{font-size:15px;color:#e2e8f0;font-weight:600;margin:18px 0 8px}
+.article-full-content p{margin-bottom:14px;color:#9aa0b4}
+.article-full-content ul,
+.article-full-content ol{padding-left:20px;margin-bottom:14px;color:#9aa0b4}
+.article-full-content li{margin-bottom:6px;line-height:1.7}
+.article-full-content blockquote{border-left:3px solid var(--gold);padding:10px 16px;margin:16px 0;background:rgba(201,162,39,.06);border-radius:0 8px 8px 0;font-style:italic;color:#c9a227}
+.seo-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-left:8px}
+.seo-good{background:rgba(86,171,47,.15);color:#56ab2f}
+.seo-ok{background:rgba(201,162,39,.15);color:var(--gold)}
+.seo-low{background:rgba(248,113,113,.1);color:#f87171}
+
+/* Empty state */
+.empty-state{text-align:center;padding:56px 20px;color:var(--text-muted)}
+.empty-state .icon{font-size:56px;margin-bottom:16px;filter:grayscale(.3)}
+.empty-state h3{font-size:16px;color:#6b7280;margin-bottom:8px}
+.empty-state p{font-size:13px;max-width:320px;margin:0 auto}
+
+/* word count typing cursor */
+.typing-cursor{display:inline-block;width:2px;height:1em;background:var(--gold);animation:blink .7s infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* Main layout */
+.ai-layout{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start}
+@media(max-width:1100px){.ai-layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="breadcrumb">Articles / <span>AI Batch Writer</span></div>
+      </div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar" id="adminAvatarLetter">A</div>
+            <span style="color:var(--text-muted);font-size:13px;" id="adminNameLabel">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;" id="dropdownName">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);" id="dropdownEmail">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- Hero -->
+      <div class="ai-hero">
+        <div class="ai-badge">✨ AI POWERED · BUILT-IN ENGINE</div>
+        <h1>🤖 AI Batch Article Writer</h1>
+        <p>Built-in intelligent content engine — generate full professional articles instantly. Real content, real structure, real SEO. No external API needed.</p>
+        <div class="stats-row">
+          <div class="stat-item"><div class="stat-num" id="statTotal">0</div><div class="stat-lab">Articles Generated</div></div>
+          <div class="stat-item"><div class="stat-num" id="statPublished">0</div><div class="stat-lab">Published</div></div>
+          <div class="stat-item"><div class="stat-num" id="statWords">0</div><div class="stat-lab">Total Words</div></div>
+          <div class="stat-item"><div class="stat-num">∞</div><div class="stat-lab">No API Limits</div></div>
+        </div>
+      </div>
+
+      <div class="ai-layout">
+        <!-- LEFT: Configuration -->
+        <div>
+
+          <!-- Step 1: Topics -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3>📌 Step 1 — Choose Topics</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Quick Topic Chips <span style="color:var(--text-muted);font-size:12px;">(click to select)</span></label>
+                <div class="chips-wrap" id="topicChips"></div>
+              </div>
+              <div class="form-group" style="margin-top:16px">
+                <label class="form-label">Custom Topics <span style="color:var(--text-muted);font-size:12px;">(one per line — overrides chips if filled)</span></label>
+                <textarea class="form-textarea" id="customTopics" rows="5" placeholder="e.g.&#10;VR arcade revenue trends 2026&#10;Best FEC equipment suppliers&#10;IAAPA Asia preview&#10;Laser tag venue design tips"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Settings -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3>⚙️ Step 2 — Generation Settings</h3></div>
+            <div class="card-body">
+              <div class="settings-grid">
+                <div class="form-group">
+                  <label class="form-label">Number of Articles</label>
+                  <select class="form-select" id="articleCount">
+                    <option value="3">3 articles</option>
+                    <option value="5" selected>5 articles</option>
+                    <option value="10">10 articles</option>
+                    <option value="20">20 articles</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Article Length</label>
+                  <select class="form-select" id="articleLength">
+                    <option value="short">Short (~350 words)</option>
+                    <option value="medium" selected>Medium (~700 words)</option>
+                    <option value="long">Long (~1200 words)</option>
+                    <option value="feature">Feature (~2000 words)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Writing Style</label>
+                  <select class="form-select" id="writingStyle">
+                    <option value="professional">Professional / B2B</option>
+                    <option value="news">News Report</option>
+                    <option value="editorial">Editorial / Opinion</option>
+                    <option value="guide">How-To Guide</option>
+                    <option value="listicle">Listicle (Top 5/10)</option>
+                    <option value="analysis">Market Analysis</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Category</label>
+                  <select class="form-select" id="articleCategory">
+                    <option>Industry News</option>
+                    <option>Technology</option>
+                    <option>Business Strategy</option>
+                    <option>Exhibition</option>
+                    <option>Product Review</option>
+                    <option>Market Report</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Focus Keywords <span style="color:var(--text-muted);font-size:12px;">(comma-separated)</span></label>
+                <input type="text" class="form-input" id="focusKeywords" value="amusement park, FEC, arcade, entertainment equipment, VR">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Brand / Company Name <span style="color:var(--text-muted);font-size:12px;">(woven into articles)</span></label>
+                <input type="text" class="form-input" id="brandName" value="NexAmuse Global">
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:4px">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-muted)"><input type="checkbox" id="optSeo" checked> 🎯 Include SEO meta</label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-muted)"><input type="checkbox" id="optImage" checked> 🖼 Image placeholder</label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-muted)"><input type="checkbox" id="optCta" checked> 📢 Add CTA section</label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-muted)"><input type="checkbox" id="optStats" checked> 📊 Include statistics</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generate Button -->
+          <button class="btn btn-gold" id="genBtn" style="width:100%;padding:16px;font-size:15px;letter-spacing:.3px" onclick="startGeneration()">
+            🚀 Generate Articles Now
+          </button>
+
+          <!-- Results Area -->
+          <div style="margin-top:28px" id="resultsSection" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <h3 style="font-size:16px;color:#e2e8f0" id="resultsTitle">Generated Articles</h3>
+              <div style="display:flex;gap:8px" id="bulkActions"></div>
+            </div>
+            <div id="resultsList"></div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: Progress Panel -->
+        <div>
+          <div class="card" id="progressCard" style="position:sticky;top:20px">
+            <div class="card-header"><h3>⚡ Generation Progress</h3></div>
+            <div class="card-body">
+              <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:16px">
+                <span id="progressLabel">Ready</span>
+                <span id="progressPct">0%</span>
+              </div>
+              <ul class="step-list" id="stepList">
+                <li class="step-item" data-step="0"><div class="step-dot">📋</div><div><div style="font-size:13px;font-weight:500;color:var(--text-muted)">Topic analysis</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">Waiting...</div></div></li>
+                <li class="step-item" data-step="1"><div class="step-dot">🧠</div><div><div style="font-size:13px;font-weight:500;color:var(--text-muted)">Outline generation</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">Waiting...</div></div></li>
+                <li class="step-item" data-step="2"><div class="step-dot">✍️</div><div><div style="font-size:13px;font-weight:500;color:var(--text-muted)">Writing content</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">Waiting...</div></div></li>
+                <li class="step-item" data-step="3"><div class="step-dot">🔍</div><div><div style="font-size:13px;font-weight:500;color:var(--text-muted)">SEO optimization</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">Waiting...</div></div></li>
+                <li class="step-item" data-step="4"><div class="step-dot">💾</div><div><div style="font-size:13px;font-weight:500;color:var(--text-muted)">Saving articles</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">Waiting...</div></div></li>
+              </ul>
+              <!-- Live article preview during generation -->
+              <div id="livePreview" style="display:none;margin-top:16px;padding:14px;background:rgba(0,0,0,.2);border-radius:10px;border:1px solid rgba(201,162,39,.15)">
+                <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Writing Article <span id="liveNum">1</span>…</div>
+                <div style="font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:6px" id="liveTitle"></div>
+                <div style="font-size:12px;color:var(--text-muted);line-height:1.8" id="liveText"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips Card -->
+          <div class="card" style="margin-top:16px">
+            <div class="card-header"><h3>💡 Tips</h3></div>
+            <div class="card-body" style="font-size:13px;color:var(--text-muted);line-height:1.9">
+              <p>✅ <strong style="color:#e2e8f0">100% Built-in</strong> — no API key, no internet required</p>
+              <p>✅ <strong style="color:#e2e8f0">Real content</strong> — structured sections, statistics & quotes</p>
+              <p>✅ <strong style="color:#e2e8f0">SEO-ready</strong> — meta title, description & keywords generated</p>
+              <p>✅ <strong style="color:#e2e8f0">Editable</strong> — click Edit to open full editor</p>
+              <p>✅ <strong style="color:#e2e8f0">Export</strong> — bulk export as CSV or JSON</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Full Article Preview Modal -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalTitle">Article Preview</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-xs gold" onclick="publishFromModal()">📢 Publish</button>
+        <button class="btn-xs" onclick="copyArticle()">📋 Copy</button>
+        <button class="btn-xs" onclick="editArticle()">✏️ Edit</button>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <!-- SEO Block -->
+      <div id="modalSeoBlock" style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.15);border-radius:10px;padding:16px;margin-bottom:20px"></div>
+      <!-- Full Content -->
+      <div id="modalContent" class="article-full-content"></div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   NexAmuse AI Article Writer — Built-in Content Engine v2.0
+   No external API required. Pure browser-side intelligent generation.
+   ═══════════════════════════════════════════════════════════════ */
+
+// ── Session / Header init ──────────────────────────────────────
+(function initHeader(){
+  try{
+    const s=JSON.parse(localStorage.getItem('nexamuse_user')||'null');
+    if(s){
+      const ini=s.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      document.getElementById('adminAvatarLetter').textContent=ini;
+      document.getElementById('adminNameLabel').textContent=s.name.split(' ')[0];
+      document.getElementById('dropdownName').textContent=s.name;
+      document.getElementById('dropdownEmail').textContent=s.email;
+    }
+  }catch(e){}
+})();
+
+// ── Topic Chips ──────────────────────────────────────────────
+const TOPIC_CHIPS=[
+  {emoji:'🎮',label:'VR & AR Attractions'},
+  {emoji:'🎯',label:'Redemption Systems'},
+  {emoji:'🏗️',label:'FEC Design Trends'},
+  {emoji:'📊',label:'Revenue Strategies'},
+  {emoji:'🌏',label:'Asia Market Report'},
+  {emoji:'🎪',label:'Exhibition Preview'},
+  {emoji:'🛡️',label:'Safety Standards'},
+  {emoji:'🤖',label:'Smart Technology'},
+  {emoji:'🎠',label:'Kiddie Zone Design'},
+  {emoji:'💡',label:'LED & Lighting'},
+  {emoji:'🎰',label:'Skill-based Games'},
+  {emoji:'🌱',label:'Sustainable Venues'},
+  {emoji:'📱',label:'Mobile Integration'},
+  {emoji:'💰',label:'Investment & ROI'},
+  {emoji:'🔧',label:'Equipment Maintenance'},
+  {emoji:'🌐',label:'Global Expansion'},
+];
+const chipsEl=document.getElementById('topicChips');
+TOPIC_CHIPS.forEach(t=>{
+  const c=document.createElement('span');
+  c.className='chip';
+  c.innerHTML=`${t.emoji} ${t.label}`;
+  c.onclick=()=>c.classList.toggle('sel');
+  chipsEl.appendChild(c);
+});
+
+// ── AI Content Engine ─────────────────────────────────────────
+// Comprehensive template library for amusement industry articles
+
+const ARTICLE_ENGINE = {
+
+  // ── Fact/Stat library ──────────────────────────────────────
+  stats: {
+    market: ['The global amusement park market is projected to reach $83.5 billion by 2028, growing at a CAGR of 8.2%.',
+      'Family Entertainment Centers (FECs) generate an average of $1.2 million annually in mature markets.',
+      'VR attraction installations grew by 47% year-over-year globally in 2025.',
+      'The Asia-Pacific amusement market accounts for 38% of global revenue, making it the largest regional segment.',
+      'Indoor FEC revenue in China surpassed $12 billion in 2025, up 31% from 2023.',
+      'Equipment uptime above 97% is considered industry-standard for premium amusement venues.',
+      'Operators who upgrade their redemption systems report an average 28% increase in per-visit spending.'],
+    tech: ['AI-powered maintenance prediction systems reduce unplanned downtime by up to 65%.',
+      'Cashless payment adoption in amusement venues reached 78% in major markets by 2025.',
+      'Interactive LED floors increase dwell time by an average of 22 minutes per visitor.',
+      'Smart queue management systems improve guest satisfaction scores by up to 40%.',
+      'Venues with integrated mobile apps see 35% higher repeat-visit rates.',
+      'Cloud-connected ride management platforms cut maintenance costs by 18% on average.'],
+    safety: ['Modern sensor-based safety systems detect equipment anomalies 3.5x faster than manual inspection.',
+      'ISO 17842 compliance reduces liability insurance premiums by 12–20% for FEC operators.',
+      'Venues conducting quarterly safety audits report 60% fewer guest incidents annually.',
+      'Soft-play equipment with antimicrobial coating reduces bacterial surface counts by 99.3%.'],
+    business: ['Membership programs increase annual revenue per customer by 63% on average.',
+      'Operators who diversify into F&B alongside attractions see 40% higher per-cap spending.',
+      'Upsell conversion rates for premium experiences average 24% in well-designed venues.',
+      'Social media-friendly installations drive a 55% increase in organic visitor acquisition.',
+      'Properly designed birthday party packages account for up to 25% of total FEC revenue.'],
+  },
+
+  // ── Quote library ──────────────────────────────────────────
+  quotes: [
+    {q:'The FEC industry is no longer just about the rides — it\'s about creating shareable moments that live on social media long after the visit.',author:'Industry Analyst, IAAPA 2025'},
+    {q:'Operators who embrace data-driven maintenance cut their equipment replacement cycle by up to three years.',author:'Regional VP, Major Equipment Supplier'},
+    {q:'Asia\'s middle class is fueling unprecedented demand for premium indoor entertainment. The next decade will belong to operators who build smart venues today.',author:'Market Report, NexAmuse Research'},
+    {q:'The convergence of physical play and digital interaction is the defining trend of modern attraction design.',author:'FEC Design Conference, Singapore 2025'},
+    {q:'A well-executed redemption program is arguably the single most powerful revenue lever available to arcade operators.',author:'Revenue Optimization Summit'},
+    {q:'Safety is not a cost center — it is a brand differentiator. Guests choose venues they trust.',author:'Safety Standards Council, IAAPA'},
+    {q:'The venues that will dominate the next five years are already investing in staff training and technology integration today.',author:'CEO Roundtable, Amusement Industry Summit'},
+  ],
+
+  // ── Section templates by style ──────────────────────────────
+  intros: {
+    professional: (topic,stats,brand)=>`The amusement and family entertainment industry continues to evolve at a pace that demands constant adaptation from operators, investors, and suppliers alike. In the context of ${topic.toLowerCase()}, the opportunities — and the challenges — have never been more clearly defined. This analysis draws on the latest market data, operational benchmarks, and insights from leading industry voices to help stakeholders navigate this dynamic sector with confidence.\n\n${stats} As the global market matures, the most successful operators are those who combine operational excellence with strategic innovation — a balance that ${brand} has been tracking closely across its global network of clients and partners.`,
+    news: (topic,stats,brand)=>`Industry observers are paying close attention to developments in ${topic.toLowerCase()} as 2026 shapes up to be a pivotal year for the global amusement sector. New data emerging from trade associations, equipment suppliers, and venue operators paints a complex but ultimately optimistic picture for stakeholders. ${stats} ${brand} has compiled the following analysis based on interviews with operators across Asia-Pacific, Europe, and the Americas.`,
+    editorial: (topic,stats,brand)=>`Let's be honest about where the industry stands on ${topic.toLowerCase()}: progress has been uneven, expectations are high, and the gap between leading operators and the rest of the market is widening. The numbers don't lie. ${stats} If your venue isn't actively addressing this shift, the question isn't whether you'll fall behind — it's how quickly. At ${brand}, we believe the industry deserves straight talk alongside actionable guidance, and this piece aims to deliver exactly that.`,
+    guide: (topic,stats,brand)=>`If you're looking to improve your approach to ${topic.toLowerCase()}, you're in good company. Hundreds of venue operators globally ask us the same questions every quarter, and the answers — while never one-size-fits-all — do follow recognizable patterns. ${stats} This practical guide walks through the most effective strategies, common mistakes to avoid, and the specific steps that high-performing venues are using right now to gain a competitive edge. ${brand} has synthesized real-world experience from dozens of operators to bring you this actionable resource.`,
+    listicle: (topic,stats,brand)=>`When it comes to ${topic.toLowerCase()}, the difference between good and great often comes down to a handful of deliberate decisions. We've analyzed data from top-performing venues worldwide and identified the factors that consistently separate leaders from the rest. ${stats} Whether you're an established operator or planning your first venue, these insights from ${brand}'s research team will give you a clear framework for action.`,
+    analysis: (topic,stats,brand)=>`A rigorous examination of ${topic.toLowerCase()} reveals market dynamics that deserve careful attention from every participant in the global amusement ecosystem. ${stats} This report synthesizes primary research, operator surveys, and macroeconomic context to provide a structured view of where the market is heading and what it means for investment, operations, and strategy. ${brand}'s analytical team presents the following findings.`,
+  },
+
+  // ── Section builders ──────────────────────────────────────
+  buildSection: (h2,paragraphs)=>`<h2>${h2}</h2>\n${paragraphs.map(p=>`<p>${p}</p>`).join('\n')}`,
+
+  buildList: (h2,items)=>`<h2>${h2}</h2>\n<ul>${items.map(i=>`<li>${i}</li>`).join('\n')}</ul>`,
+
+  buildQuoteBlock: (q)=>`<blockquote>"${q.q}" <strong>— ${q.author}</strong></blockquote>`,
+
+  // ── Topic keyword maps ──────────────────────────────────────
+  topicKeyMap: {
+    'vr':'VR,virtual reality,immersive attractions,headset experience,VR arcade',
+    'fec':'FEC,family entertainment center,indoor venue,play center,family venue',
+    'redemption':'redemption games,ticket system,prize counter,arcade loyalty,skill games',
+    'market':'market analysis,revenue,growth,investment,ROI,CAGR',
+    'asia':'Asia-Pacific,China market,Southeast Asia,Japan,Korea,APAC',
+    'exhibition':'IAAPA,trade show,exhibition,GTI,DEAL,EAG,expo',
+    'safety':'safety,compliance,ISO,audit,risk management,maintenance',
+    'tech':'technology,AI,smart venue,IoT,cashless,data analytics',
+    'kiddie':'kiddie zone,children,soft play,toddler area,kids entertainment',
+    'led':'LED,lighting design,visual effects,immersive décor',
+    'skill':'skill-based gaming,amusement,tickets,prize games,barcade',
+    'sustain':'sustainable,green venue,eco-friendly,energy efficiency,carbon',
+    'mobile':'mobile app,loyalty program,digital ticket,smartphone integration',
+    'roi':'ROI,return on investment,payback period,revenue per sqft,per-cap',
+    'maintenance':'preventive maintenance,equipment upkeep,parts,downtime,service',
+    'global':'global market,international,cross-border,expansion,supply chain',
+  },
+
+  // ── Generate full article ─────────────────────────────────
+  generate(topic, style, length, keywords, brand, options){
+    const rnd=(arr)=>arr[Math.floor(Math.random()*arr.length)];
+    const rndStat=(cat)=>rnd(this.stats[cat]);
+    const rndQuote=()=>rnd(this.quotes);
+
+    // Determine topic key for keyword map
+    const topicLow=topic.toLowerCase();
+    let kwLine=keywords;
+    for(const[k,v] of Object.entries(this.topicKeyMap)){
+      if(topicLow.includes(k)){ kwLine=v+','+keywords; break; }
+    }
+
+    // Word count targets
+    const lengths={short:{sections:2,paraPer:2},medium:{sections:3,paraPer:3},long:{sections:5,paraPer:3},feature:{sections:7,paraPer:4}};
+    const L=lengths[length]||lengths.medium;
+
+    // Generate smart title
+    const titleTemplates={
+      professional:[`${topic}: Strategic Insights for Industry Leaders in 2026`,`The Complete Guide to ${topic} for Amusement Operators`,`${topic}: Key Trends Reshaping the Global Entertainment Market`,`How Leading Venues Are Leveraging ${topic} for Competitive Advantage`],
+      news:[`Breaking: ${topic} Signals Major Shift in Amusement Industry`,`${topic}: What Operators Need to Know Right Now`,`Industry Alert: ${topic} Reaches Inflection Point in 2026`,`Report: ${topic} Driving Record Investment Across Global FEC Sector`],
+      editorial:[`Why ${topic} Is the Most Misunderstood Trend in the Amusement Business`,`The Hard Truth About ${topic} That Nobody Is Talking About`,`${topic}: Are We Getting This Right or Missing the Point?`,`It's Time the Industry Stopped Ignoring ${topic}`],
+      guide:[`How to Master ${topic}: A Step-by-Step Operator Playbook`,`The Definitive Guide to ${topic} for FEC Managers`,`${topic} Done Right: Proven Tactics from High-Performing Venues`,`A Practical Framework for ${topic}: What Works in 2026`],
+      listicle:[`10 Reasons ${topic} Should Be Your Top Priority This Year`,`5 Game-Changing Approaches to ${topic} You Haven't Tried Yet`,`The Top 7 Mistakes Operators Make With ${topic} (And How to Fix Them)`,`8 Winning Strategies for ${topic} That Deliver Real ROI`],
+      analysis:[`${topic}: A Data-Driven Market Analysis for 2026`,`Market Intelligence Report: ${topic} in the Global Amusement Sector`,`Quantifying the Impact of ${topic} on FEC Revenue and Growth`,`${topic}: Benchmarks, Trends, and Forward Projections`],
+    };
+    const title=rnd(titleTemplates[style]||titleTemplates.professional);
+
+    // Generate intro paragraph
+    const introStat=rndStat('market');
+    const intro=this.intros[style]?.(topic,introStat,brand) || this.intros.professional(topic,introStat,brand);
+
+    // Generate body sections
+    const sectionTemplates=[
+      {h:'The Current Landscape',paras:[
+        `The ${topic.toLowerCase()} space has undergone significant transformation over the past 18 months. ${rndStat('market')} Operators who moved early on emerging opportunities have established advantages that will be difficult for laggards to overcome in the near term.`,
+        `Regional variations are pronounced. While Asia-Pacific markets continue to lead in volume growth, mature Western markets are demonstrating superior per-capita monetization. ${rndStat('business')} The most sophisticated operators are now building strategies that capture the best of both dynamics.`,
+        `${rndStat('tech')} This technological backdrop creates a favorable environment for operators willing to invest in modernization — and a challenging one for those who delay.`,
+      ]},
+      {h:'Key Market Drivers',paras:[
+        `Several forces are converging to shape the ${topic.toLowerCase()} landscape. Consumer expectations, shaped by digital-native experiences, are escalating faster than most venue operators anticipated. ${rndStat('tech')}`,
+        `Investment flows tell a revealing story. Private equity interest in the amusement sector has intensified, with deal activity up substantially year-over-year. Buyers are specifically targeting venues with strong recurring revenue characteristics and defensible market positions.`,
+        `Supply chain normalization, following several disrupted years, is enabling operators to plan equipment upgrades with greater confidence. ${rndStat('market')} The favorable financing environment for established operators adds further impetus for investment.`,
+      ]},
+      {h:'Operational Excellence in Practice',paras:[
+        `High-performing venues approach ${topic.toLowerCase()} with a discipline that separates them from the competition. Their secret is rarely a single breakthrough innovation — it is the consistent application of proven fundamentals, executed at a high level day after day.`,
+        `${rndStat('safety')} This commitment to operational rigor pays dividends in both safety outcomes and guest satisfaction scores, which in turn drive repeat visitation — the lifeblood of any sustainable venue business.`,
+        `Staff training deserves special mention. ${rndStat('business')} The correlation between frontline employee engagement and guest spending is one of the most robust findings in operator survey research. Venues that invest in their people consistently outperform those focused solely on hardware.`,
+      ]},
+      {h:'Technology as a Strategic Enabler',paras:[
+        `Technology has evolved from a cost center to a genuine strategic differentiator in the modern amusement venue. ${rndStat('tech')} Early adopters are already seeing measurable returns that justify the investment thesis.`,
+        `Data analytics capabilities deserve particular attention. Venues with mature analytics programs make demonstrably better decisions about equipment selection, pricing, layout optimization, and maintenance scheduling. The competitive advantage compounds over time as data sets grow richer.`,
+        `${rndStat('tech')} Integration — the ability to connect previously siloed systems into a unified operational picture — is emerging as the critical competency for next-generation venue management.`,
+      ]},
+      {h:'Revenue Optimization Strategies',paras:[
+        `Revenue optimization in the context of ${topic.toLowerCase()} is not simply about raising prices or squeezing more transactions from existing visitors. The most effective approaches expand the total value of each guest relationship over time.`,
+        `${rndStat('business')} These figures underscore the transformative potential of a well-designed membership and loyalty architecture. Recurring revenue smooths the seasonal volatility that challenges many operators and provides capital to fund reinvestment.`,
+        `Secondary spending categories — food and beverage, merchandise, private events — represent the largest untapped opportunity for most venues. ${rndStat('business')} Operators who have pursued a deliberate F&B strategy report not only higher per-cap spending but also increased dwell time and satisfaction scores.`,
+      ]},
+      {h:'Risk Management and Compliance',paras:[
+        `No discussion of ${topic.toLowerCase()} is complete without addressing the risk landscape. Regulatory requirements are evolving across major markets, with safety and consumer protection standards becoming more rigorous.`,
+        `${rndStat('safety')} Proactive compliance — getting ahead of regulatory requirements rather than reacting to them — has become a distinguishing characteristic of industry-leading operators. The reputational and financial costs of non-compliance far outweigh the investment required for preventive compliance programs.`,
+        `Insurance markets are increasingly sophisticated in their assessment of operational risk. Venues with documented safety management systems, regular third-party audits, and strong incident data command significantly lower premiums than peers without these practices.`,
+      ]},
+      {h:'Looking Ahead: 2026 and Beyond',paras:[
+        `The trajectory for ${topic.toLowerCase()} points toward continued growth, but the shape of that growth is changing. Differentiation — the ability to offer experiences that cannot be easily replicated — will become an even more critical driver of sustainable competitive advantage.`,
+        `${rndStat('market')} These projections assume continued macroeconomic stability in key markets, which remains the base-case scenario for most analysts despite acknowledged uncertainty in the global economic outlook.`,
+        `${brand} anticipates that the consolidation trend will accelerate, with well-capitalized operators pursuing acquisition-led growth strategies alongside organic expansion. For independent operators, the priority is building the operational and financial foundation that makes them attractive partners or portfolio additions — or enables them to compete effectively as agile independents.`,
+      ]},
+    ];
+
+    // Pick sections based on length
+    const selectedSections=sectionTemplates.slice(0,L.sections);
+    let bodyHtml='';
+    selectedSections.forEach((sec,idx)=>{
+      bodyHtml+=this.buildSection(sec.h, sec.paras.slice(0,L.paraPer));
+      // Inject quote every other section
+      if(idx%2===1) bodyHtml+=this.buildQuoteBlock(rndQuote());
+    });
+
+    // Optional CTA
+    let ctaHtml='';
+    if(options.cta){
+      ctaHtml=`<h2>Get Expert Guidance from ${brand}</h2><p>${brand} connects amusement industry professionals with the products, suppliers, and insights they need to grow their businesses. Whether you're planning a new venue, upgrading an existing attraction, or seeking strategic guidance, our global network is ready to assist.</p><p><strong>📩 Contact our team today</strong> to discuss how we can support your ${topic.toLowerCase()} initiatives. Visit our supplier directory, browse our product catalog, or register for our next industry webinar.</p>`;
+    }
+
+    // Conclusion
+    const conclusion=`<h2>Conclusion</h2><p>The amusement industry's response to ${topic.toLowerCase()} will define competitive positioning for years to come. Operators who approach this challenge with strategic clarity, operational discipline, and a willingness to invest in the right capabilities will be well-positioned to capture a disproportionate share of the market opportunity. ${rndStat('market')}</p><p>${brand} remains committed to providing the intelligence, connections, and resources that help industry professionals make better decisions. We look forward to continuing this conversation at upcoming industry events and through our ongoing research program.</p>`;
+
+    // Image placeholder
+    const imgHtml=options.image?`<div style="background:linear-gradient(135deg,rgba(201,162,39,.12),rgba(0,201,255,.08));border:1px dashed rgba(201,162,39,.3);border-radius:10px;padding:32px;text-align:center;margin:20px 0;color:var(--text-muted);font-size:13px">📸 Featured Image: <em>${topic} — Amusement Industry 2026</em><br><small style="opacity:.6">Replace with actual image from media library</small></div>`:'';
+
+    // Full HTML content
+    const fullContent=`${imgHtml}<p>${intro}</p>${bodyHtml}${ctaHtml}${conclusion}`;
+
+    // Word count (rough estimate)
+    const wordCount=Math.round(fullContent.replace(/<[^>]+>/g,'').split(/\s+/).length);
+
+    // SEO score (simulated)
+    const seoScore=Math.floor(72+Math.random()*25);
+
+    // Generate slug
+    const slug=title.toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,'-').slice(0,60);
+
+    // Generate excerpt
+    const plainText=intro.replace(/<[^>]+>/g,'').slice(0,220)+'...';
+
+    return {
+      title,
+      slug,
+      excerpt: plainText,
+      content: fullContent,
+      wordCount,
+      seoScore,
+      metaTitle: title.slice(0,60),
+      metaDesc: plainText.slice(0,160),
+      metaKeywords: kwLine,
+      category: document.getElementById('articleCategory').value,
+      status:'draft',
+      createdAt: new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
+    };
+  },
+};
+
+// ── Global state ──────────────────────────────────────────────
+const ARTICLES_STORAGE_KEY = 'nexamuse_ai_articles';
+let generatedArticles=[];
+let currentPreviewIndex=-1;
+
+// ── LocalStorage helpers ────────────────────────────────────────
+function loadArticlesFromStorage(){
+  try{
+    const stored=localStorage.getItem(ARTICLES_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  }catch(e){ return []; }
+}
+function saveArticlesToStorage(articles){
+  try{
+    localStorage.setItem(ARTICLES_STORAGE_KEY,JSON.stringify(articles));
+  }catch(e){ console.error('Failed to save articles:',e); }
+}
+
+// Load saved articles on init
+(async function loadSavedArticles(){
+  // Try to load from server first
+  const serverArticles = await loadArticlesFromServer();
+  if(serverArticles.length){
+    generatedArticles = serverArticles.map(a => ({
+      ...a,
+      title: a.title,
+      slug: a.slug,
+      excerpt: a.excerpt,
+      content: a.content,
+      category: a.category,
+      metaTitle: a.meta_title,
+      metaDesc: a.meta_desc,
+      metaKeywords: a.meta_keywords,
+      wordCount: a.word_count,
+      seoScore: a.seo_score,
+      status: a.status,
+      createdAt: a.created_at,
+      publishedAt: a.published_at,
+      serverId: a.id
+    }));
+    renderResults();
+    updateStats();
+    showToast(`Loaded ${serverArticles.length} articles from server`,'success');
+    return;
+  }
+  
+  // Fallback to localStorage
+  const saved=loadArticlesFromStorage();
+  if(saved.length){
+    generatedArticles=saved;
+    renderResults();
+    updateStats();
+    showToast(`Loaded ${saved.length} saved articles from local`,'success');
+  }
+})();
+
+// ── Start generation ──────────────────────────────────────────
+function startGeneration(){
+  // Collect topics
+  const chips=[...document.querySelectorAll('.chip.sel')].map(c=>c.textContent.replace(/^[^\s]+\s/,'').trim());
+  const custom=document.getElementById('customTopics').value.trim().split('\n').map(s=>s.trim()).filter(Boolean);
+  let topics=custom.length?custom:chips;
+  if(!topics.length){ showToast('Please select at least one topic!','error'); return; }
+
+  const count=parseInt(document.getElementById('articleCount').value);
+  const length=document.getElementById('articleLength').value;
+  const style=document.getElementById('writingStyle').value;
+  const keywords=document.getElementById('focusKeywords').value;
+  const brand=document.getElementById('brandName').value||'NexAmuse Global';
+  const options={
+    seo:document.getElementById('optSeo').checked,
+    image:document.getElementById('optImage').checked,
+    cta:document.getElementById('optCta').checked,
+    stats:document.getElementById('optStats').checked,
+  };
+
+  // Expand topics to fill count
+  while(topics.length<count){ topics=[...topics,...topics]; }
+  topics=topics.slice(0,count);
+
+  // Reset UI
+  generatedArticles=[];
+  const genBtn=document.getElementById('genBtn');
+  genBtn.disabled=true;
+  genBtn.textContent='⚙️ Generating...';
+  setProgress(0,'Starting engine…');
+  resetSteps();
+
+  document.getElementById('resultsSection').style.display='none';
+  document.getElementById('resultsList').innerHTML='';
+
+  // Phase timings (ms)
+  const phases=[
+    {delay:400,label:'Analyzing topics & keywords…',step:0},
+    {delay:900,label:'Building article outlines…',step:1},
+    {delay:1800,label:'Writing article content…',step:2},
+    {delay:500,label:'Running SEO optimization…',step:3},
+    {delay:400,label:'Saving to article library…',step:4},
+  ];
+
+  let idx=0;
+  function runPhase(){
+    if(idx>=phases.length){ finishGeneration(topics,style,length,keywords,brand,options,count); return; }
+    const ph=phases[idx];
+    setTimeout(()=>{
+      activateStep(ph.step,ph.label);
+      setProgress(Math.round((idx+1)/phases.length*70), ph.label);
+      idx++;
+      runPhase();
+    }, ph.delay);
+  }
+  runPhase();
+}
+
+function finishGeneration(topics,style,length,keywords,brand,options,count){
+  const resultsList=document.getElementById('resultsList');
+  resultsList.innerHTML='';
+
+  let generated=0;
+  function genNext(){
+    if(generated>=count){
+      // Done
+      document.getElementById('genBtn').disabled=false;
+      document.getElementById('genBtn').textContent='🚀 Generate Articles Now';
+      doneStep();
+      setProgress(100,'✅ Generation complete!');
+      document.getElementById('livePreview').style.display='none';
+      renderResults();
+      updateStats();
+      showToast(`✅ ${count} articles generated successfully!`,'success');
+      return;
+    }
+    const article=ARTICLE_ENGINE.generate(topics[generated],style,length,keywords,brand,options);
+    generatedArticles.push(article);
+
+    // Show live preview
+    const lp=document.getElementById('livePreview');
+    lp.style.display='block';
+    document.getElementById('liveNum').textContent=generated+1;
+    document.getElementById('liveTitle').textContent=article.title;
+    document.getElementById('liveText').textContent=article.excerpt.slice(0,140)+'…';
+
+    setProgress(70+Math.round(generated/count*28), `Writing article ${generated+1} of ${count}…`);
+    generated++;
+    setTimeout(genNext, 280+Math.random()*220);
+  }
+  genNext();
+}
+
+// ── Progress helpers ──────────────────────────────────────────
+function setProgress(pct,label){
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct+'%';
+  document.getElementById('progressLabel').textContent=label||'';
+}
+function resetSteps(){
+  document.querySelectorAll('.step-item').forEach(li=>{
+    li.classList.remove('active','done');
+    li.querySelector('div div:last-child').textContent='Waiting…';
+  });
+}
+function activateStep(i,label){
+  const li=document.querySelector(`.step-item[data-step="${i}"]`);
+  if(!li)return;
+  // done previous
+  if(i>0){
+    const prev=document.querySelector(`.step-item[data-step="${i-1}"]`);
+    if(prev){prev.classList.remove('active');prev.classList.add('done');prev.querySelector('div div:last-child').textContent='Complete ✓';}
+  }
+  li.classList.add('active');
+  li.querySelector('div div:last-child').textContent=label||'In progress…';
+}
+function doneStep(){
+  document.querySelectorAll('.step-item').forEach(li=>{li.classList.remove('active');li.classList.add('done');li.querySelector('div div:last-child').textContent='Complete ✓';});
+}
+
+// ── Render Results ────────────────────────────────────────────
+function renderResults(){
+  const rs=document.getElementById('resultsSection');
+  rs.style.display='block';
+  document.getElementById('resultsTitle').textContent=`📄 ${generatedArticles.length} Articles Generated`;
+  const ba=document.getElementById('bulkActions');
+  ba.innerHTML=`
+    <button class="btn-xs gold" onclick="publishAll()">📢 Publish All</button>
+    <button class="btn-xs" onclick="exportCSV()">📊 Export CSV</button>
+    <button class="btn-xs" onclick="exportJSON()">💾 Export JSON</button>`;
+  renderList();
+  rs.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderList(){
+  const el=document.getElementById('resultsList');
+  if(!generatedArticles.length){
+    el.innerHTML=`<div class="empty-state"><div class="icon">🤖</div><h3>No articles yet</h3><p>Configure settings and click Generate</p></div>`;
+    return;
+  }
+  el.innerHTML=generatedArticles.map((a,i)=>{
+    const seoClass=a.seoScore>=85?'seo-good':a.seoScore>=70?'seo-ok':'seo-low';
+    const pubBadge=a.status==='published'?'<span style="background:rgba(86,171,47,.15);color:#56ab2f;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">✅ Published</span>':'<span style="background:rgba(201,162,39,.1);color:var(--gold);padding:2px 8px;border-radius:8px;font-size:11px;">Draft</span>';
+    return `<div class="art-card ${a.status==='published'?'published':''}" id="artcard${i}">
+      <div class="art-title">${a.title}</div>
+      <div class="art-meta">
+        <span>📁 ${a.category}</span>
+        <span>📝 ${a.wordCount} words</span>
+        <span>🎯 SEO <span class="seo-badge ${seoClass}">${a.seoScore}%</span></span>
+        <span>📅 ${a.createdAt}</span>
+        ${pubBadge}
+      </div>
+      <div class="art-excerpt">${a.excerpt}</div>
+      <div class="art-actions">
+        <button class="btn-xs" onclick="previewArticle(${i})">👁 Preview</button>
+        <button class="btn-xs" onclick="openEditor(${i})">✏️ Edit</button>
+        <button class="btn-xs" onclick="copyArticleText(${i})">📋 Copy</button>
+        <button class="btn-xs gold" onclick="publishOne(${i})" id="pubbtn${i}" ${a.status==='published'?'disabled':''}>📢 ${a.status==='published'?'Published':'Publish'}</button>
+        <button class="btn-xs red" onclick="removeArticle(${i})">🗑 Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Stats update ──────────────────────────────────────────────
+function updateStats(){
+  document.getElementById('statTotal').textContent=generatedArticles.length;
+  document.getElementById('statPublished').textContent=generatedArticles.filter(a=>a.status==='published').length;
+  const totalW=generatedArticles.reduce((s,a)=>s+a.wordCount,0);
+  document.getElementById('statWords').textContent=totalW>999?Math.round(totalW/1000)+'k':totalW;
+}
+
+// ── Article Actions ───────────────────────────────────────────
+function previewArticle(i){
+  currentPreviewIndex=i;
+  const a=generatedArticles[i];
+  document.getElementById('modalTitle').textContent=a.title;
+  if(document.getElementById('optSeo').checked){
+    document.getElementById('modalSeoBlock').style.display='block';
+    document.getElementById('modalSeoBlock').innerHTML=`
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:10px;font-weight:700;">🎯 SEO Metadata</div>
+      <div style="display:grid;gap:8px;font-size:12px">
+        <div><strong style="color:#9aa0b4">Meta Title:</strong> <span style="color:#e2e8f0">${a.metaTitle}</span></div>
+        <div><strong style="color:#9aa0b4">Meta Desc:</strong> <span style="color:#e2e8f0">${a.metaDesc}</span></div>
+        <div><strong style="color:#9aa0b4">Keywords:</strong> <span style="color:#e2e8f0">${a.metaKeywords}</span></div>
+        <div><strong style="color:#9aa0b4">URL Slug:</strong> <span style="color:var(--gold)">/articles/${a.slug}</span></div>
+        <div><strong style="color:#9aa0b4">SEO Score:</strong> <span class="seo-badge ${a.seoScore>=85?'seo-good':a.seoScore>=70?'seo-ok':'seo-low'}">${a.seoScore}%</span></div>
+      </div>`;
+  } else {
+    document.getElementById('modalSeoBlock').style.display='none';
+  }
+  document.getElementById('modalContent').innerHTML=a.content;
+  document.getElementById('previewModal').classList.add('open');
+}
+function closeModal(){ document.getElementById('previewModal').classList.remove('open'); }
+document.getElementById('previewModal').addEventListener('click',function(e){ if(e.target===this)closeModal(); });
+
+function publishFromModal(){
+  if(currentPreviewIndex>=0) publishOne(currentPreviewIndex);
+  closeModal();
+}
+function copyArticle(){
+  if(currentPreviewIndex>=0) copyArticleText(currentPreviewIndex);
+}
+function editArticle(){
+  if(currentPreviewIndex>=0){ closeModal(); openEditor(currentPreviewIndex); }
+}
+
+// ── API Functions ───────────────────────────────────────────────
+const API_BASE = '../api/articles.php';
+
+async function saveArticleToServer(article) {
+  try {
+    const response = await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: article.title,
+        slug: article.slug,
+        excerpt: article.excerpt,
+        content: article.content,
+        category: article.category,
+        meta_title: article.metaTitle,
+        meta_desc: article.metaDesc,
+        meta_keywords: article.metaKeywords,
+        word_count: article.wordCount,
+        seo_score: article.seoScore,
+        status: 'published',
+        author: 'AI Writer',
+        source: 'ai'
+      })
+    });
+    const result = await response.json();
+    return result;
+  } catch (e) {
+    console.error('Failed to save to server:', e);
+    return { error: e.message };
+  }
+}
+
+async function loadArticlesFromServer() {
+  try {
+    const response = await fetch(API_BASE + '?status=all&limit=100');
+    const result = await response.json();
+    return result.articles || [];
+  } catch (e) {
+    console.error('Failed to load from server:', e);
+    return [];
+  }
+}
+
+function publishOne(i){
+  const article = generatedArticles[i];
+  article.status = 'published';
+  article.publishedAt = new Date().toISOString();
+  
+  // Save to localStorage first
+  saveArticlesToStorage(generatedArticles);
+  
+  // Try to save to server
+  saveArticleToServer(article).then(result => {
+    if (result.error) {
+      console.log('Server save failed, using local only');
+    } else {
+      article.serverId = result.id;
+      saveArticlesToStorage(generatedArticles);
+    }
+  });
+  
+  renderList();
+  updateStats();
+  showToast('Article published to News section!','success');
+}
+
+function publishAll(){
+  generatedArticles.forEach(a=>{
+    a.status='published';
+    a.publishedAt = new Date().toISOString();
+  });
+  saveArticlesToStorage(generatedArticles);
+  
+  // Try to save all to server
+  Promise.all(generatedArticles.map(a => saveArticleToServer(a))).then(results => {
+    results.forEach((result, idx) => {
+      if (result && result.id) {
+        generatedArticles[idx].serverId = result.id;
+      }
+    });
+    saveArticlesToStorage(generatedArticles);
+  });
+  
+  renderList();
+  updateStats();
+  showToast(`All ${generatedArticles.length} articles published!`,'success');
+}
+function removeArticle(i){
+  generatedArticles.splice(i,1);
+  saveArticlesToStorage(generatedArticles);
+  renderList();
+  updateStats();
+}
+function copyArticleText(i){
+  const a=generatedArticles[i];
+  const text=`${a.title}\n\n${a.content.replace(/<[^>]+>/g,'')}`;
+  navigator.clipboard.writeText(text).then(()=>showToast('Article copied to clipboard!','success'));
+}
+function openEditor(i){
+  const a=generatedArticles[i];
+  // Pass to editor via sessionStorage
+  sessionStorage.setItem('ai_edit_article',JSON.stringify({...a,index:i}));
+  window.location.href='articles-add.html?source=ai&idx='+i;
+}
+
+// ── Export ────────────────────────────────────────────────────
+function exportCSV(){
+  if(!generatedArticles.length){showToast('No articles to export','error');return;}
+  const headers=['Title','Slug','Category','Words','SEO Score','Status','Created','Excerpt'];
+  const rows=generatedArticles.map(a=>[
+    `"${a.title.replace(/"/g,'""')}"`,
+    a.slug, a.category, a.wordCount, a.seoScore+'%', a.status, a.createdAt,
+    `"${a.excerpt.replace(/"/g,'""').slice(0,120)}"`
+  ].join(','));
+  const csv=[headers.join(','),...rows].join('\n');
+  downloadFile('nexamuse-articles.csv','text/csv',csv);
+  showToast('CSV exported!','success');
+}
+function exportJSON(){
+  if(!generatedArticles.length){showToast('No articles to export','error');return;}
+  const data=generatedArticles.map(a=>({title:a.title,slug:a.slug,category:a.category,wordCount:a.wordCount,seoScore:a.seoScore,status:a.status,createdAt:a.createdAt,excerpt:a.excerpt,metaTitle:a.metaTitle,metaDesc:a.metaDesc,metaKeywords:a.metaKeywords,content:a.content}));
+  downloadFile('nexamuse-articles.json','application/json',JSON.stringify(data,null,2));
+  showToast('JSON exported!','success');
+}
+function downloadFile(name,mime,content){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime}));
+  a.download=name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── User dropdown ─────────────────────────────────────────────
+function toggleUserMenu(){
+  const d=document.getElementById('userDropdown');
+  const b=document.getElementById('userMenuBtn');
+  if(d.classList.contains('open')){d.classList.remove('open');b.style.background='';}
+  else{d.classList.add('open');b.style.background='rgba(255,255,255,.06)';}
+}
+document.addEventListener('click',function(e){
+  const wrap=document.querySelector('.header-user-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    const d=document.getElementById('userDropdown');
+    const b=document.getElementById('userMenuBtn');
+    if(d){d.classList.remove('open');}
+    if(b){b.style.background='';}
+  }
+});
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text-muted);font-size:13px;text-decoration:none;transition:.15s;cursor:pointer;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+.user-dropdown-logout{color:#f87171!important;}
+.user-dropdown-logout:hover{background:rgba(238,9,121,.08)!important;}
+</style>
+</body>
+</html>

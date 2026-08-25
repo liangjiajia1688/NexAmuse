@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Global Exhibitions & Trade Shows — NexAmuse Global</title>
+  <meta name="description" content="Complete global amusement industry exhibition calendar. Find upcoming trade shows, register as an exhibitor or buyer, and access show reports and highlights."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .expo-full{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;transition:var(--transition);}
+    .expo-full:hover{border-color:rgba(201,162,39,.4);box-shadow:var(--shadow-hover);}
+    .expo-full-inner{display:grid;grid-template-columns:160px 1fr auto;gap:0;align-items:stretch;}
+    .expo-date-col{background:linear-gradient(135deg,#1a2035,#0d1530);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;text-align:center;border-right:1px solid var(--border);}
+    .expo-day{font-family:var(--font-display);font-size:2.5rem;font-weight:900;color:var(--accent);line-height:1;}
+    .expo-month-yr{font-size:.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:2px;margin-top:4px;}
+    .expo-body{padding:24px;}
+    .expo-body h3{color:#fff;font-size:1.1rem;margin-bottom:6px;}
+    .expo-body-meta{display:flex;gap:16px;font-size:.8rem;color:var(--text-secondary);margin-bottom:10px;flex-wrap:wrap;}
+    .expo-body-desc{font-size:.85rem;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;}
+    .expo-actions{padding:24px;display:flex;flex-direction:column;gap:10px;justify-content:center;border-left:1px solid var(--border);min-width:160px;}
+    .tab-nav{display:flex;gap:4px;margin-bottom:32px;background:var(--card-bg);border:1px solid var(--border);border-radius:50px;padding:4px;width:fit-content;}
+    .tab-btn{padding:8px 24px;border-radius:50px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:.88rem;font-weight:500;transition:var(--transition);}
+    .tab-btn.active{background:var(--accent-gradient);color:var(--primary);font-weight:600;}
+    .tab-content{display:none;}
+    .tab-content.active{display:block;}
+    .reg-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:640px;margin:0 auto;}
+    .form-group{margin-bottom:16px;}
+    .form-group label{display:block;font-size:.8rem;color:#9aa0b4;margin-bottom:6px;font-weight:500;}
+    .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--secondary);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:#e8eaf0;font-size:.9rem;outline:none;transition:all .3s;font-family:inherit;}
+    .form-group input:focus,.form-group select:focus{border-color:var(--accent);}
+    .form-group select option{background:var(--secondary);}
+    .form-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    @media(max-width:768px){.expo-full-inner{grid-template-columns:1fr}.expo-date-col{flex-direction:row;gap:12px;border-right:none;border-bottom:1px solid var(--border);padding:16px 20px;justify-content:flex-start}.expo-actions{border-left:none;border-top:1px solid var(--border);flex-direction:row}.form-2col{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="top-bar"><div class="container"><div class="top-bar-left"><span><span class="live-badge"><span class="live-dot"></span>LIVE</span>&nbsp;GTI Asia Pacific 2026 — March 28–30, Guangzhou</span></div><div class="top-bar-right"><a href="#">Advertise</a><a href="contact.html">Contact</a></div></div></div>
+<nav class="navbar"><div class="container">
+  <a href="../index.html" class="logo"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li>
+      <a href="products.html">Products ▾</a>
+      <div class="dropdown-menu">
+        <a href="products.html?cat=arcade">Arcade Machines</a>
+        <a href="products.html?cat=vr">VR / XR Attractions</a>
+        <a href="products.html?cat=kids">Kids &amp; Family Rides</a>
+        <a href="products.html?cat=redemption">Redemption &amp; Prize</a>
+        <a href="products.html?cat=simulation">Simulation Rides</a>
+        <a href="products.html?cat=outdoor">Outdoor Attractions</a>
+        <a href="products.html?cat=waterpark">Water Park Equipment</a>
+        <a href="products.html?cat=accessories">Accessories &amp; Parts</a>
+      </div>
+    </li>
+    <li>
+      <a href="news.html">News ▾</a>
+      <div class="dropdown-menu">
+        <a href="news.html?cat=industry">Industry Dynamics</a>
+        <a href="news.html?cat=companies">Company News</a>
+        <a href="news.html?cat=interviews">Executive Interviews</a>
+        <a href="news.html?cat=newproducts">New Product Releases</a>
+        <a href="news.html?cat=regulations">Regulations &amp; Compliance</a>
+      </div>
+    </li>
+    <li><a href="suppliers.html">Suppliers</a></li>
+    <li>
+      <a href="exhibitions.html" class="active">Exhibitions ▾</a>
+      <div class="dropdown-menu">
+        <a href="exhibitions.html#calendar">Exhibition Calendar</a>
+        <a href="exhibitions.html#reports">Show Reports</a>
+        <a href="exhibitions.html#register">Pre-Register</a>
+      </div>
+    </li>
+    <li><a href="news.html">Articles</a></li>
+    <li><a href="forum.html">Forum</a></li>
+      <li><a href="member-points.html">Points</a></li>
+    <li><a href="magazine.html">Videos</a></li>
+  </ul>
+  <div class="nav-actions"><button class="search-btn js-open-search">🔍 Search</button><a href="#register" class="btn btn-primary btn-sm">Pre-Register</a><button class="hamburger" id="hamburger"><span></span><span></span><span></span></button></div>
+</div></nav>
+<div class="mobile-menu" id="mobileMenu"><button class="mobile-menu-close" id="mobileClose">✕</button><ul class="mobile-nav-links"><li><a href="../index.html">🏠 Home</a></li><li><a href="products.html">🎮 Products</a></li><li><a href="news.html">📰 News &amp; Articles</a></li><li><a href="suppliers.html">🏭 Suppliers</a></li><li><a href="exhibitions.html">🎪 Exhibitions</a></li><li><a href="forum.html">💬 Forum</a></li><li><a href="member-points.html">⭐ Points</a></li><li><a href="magazine.html">🎬 Videos</a></li><li><a href="contact.html">📩 Contact</a></li></ul><div class="mobile-auth-wrap" style="margin-top:32px;display:flex;flex-direction:column;gap:12px;"><!-- Auth buttons injected dynamically by main.js renderAuthNav() --></div></div>
+<div class="search-overlay" id="searchOverlay"><button class="search-close" id="searchClose">✕</button><div class="search-box"><h2>Search NexAmuse Global</h2><div class="search-input-wrap"><input type="text" placeholder="Search exhibitions, shows, events..." autofocus/><button>Search</button></div></div></div>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="../index.html">Home</a><span>/</span><span class="current">Exhibitions</span></div>
+    <h1 style="color:#fff;">Global Exhibition <em style="color:var(--accent);font-style:normal;">Calendar</em></h1>
+    <p style="color:var(--text-secondary);max-width:560px;margin-top:12px;">Your complete guide to the world's top amusement & attractions industry trade shows and exhibitions.</p>
+    <div style="display:flex;gap:16px;margin-top:20px;flex-wrap:wrap;">
+      <span class="badge badge-gold">🎪 38 Shows in 2026</span>
+      <span class="badge badge-blue">🌍 25 Countries</span>
+      <span class="badge badge-green">👥 500K+ Total Visitors</span>
+    </div>
+  </div>
+</div>
+
+<section class="section" id="calendar">
+  <div class="container">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('calendar-tab',this)">📅 Full Calendar</button>
+      <button class="tab-btn" onclick="switchTab('reports-tab',this)">📸 Show Reports</button>
+      <button class="tab-btn" onclick="switchTab('register-tab',this)">✏️ Pre-Register</button>
+    </div>
+
+    <!-- Calendar Tab -->
+    <div class="tab-content active" id="calendar-tab">
+      <!-- Dynamic area: populated by JS if localStorage data exists -->
+      <div id="dynamicCalendar" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="dynamicFilterBar">
+            <button class="filter-btn active" onclick="filterExpos('all',this)">All</button>
+            <button class="filter-btn" onclick="filterExpos('upcoming',this)">🟢 Upcoming</button>
+            <button class="filter-btn" onclick="filterExpos('ongoing',this)">🟡 Ongoing</button>
+            <button class="filter-btn" onclick="filterExpos('asia',this)">🌏 Asia</button>
+            <button class="filter-btn" onclick="filterExpos('europe',this)">🌍 Europe</button>
+            <button class="filter-btn" onclick="filterExpos('americas',this)">🌎 Americas</button>
+            <button class="filter-btn" onclick="filterExpos('middleeast',this)">🕌 Mid East</button>
+          </div>
+          <span id="dynamicCount" style="font-size:13px;color:var(--text-secondary)"></span>
+        </div>
+        <div id="dynamicExpoList"></div>
+      </div>
+
+      <!-- Static fallback content (shown when no dynamic data) -->
+      <div id="staticCalendar">
+      <h3 style="color:var(--text-secondary);font-size:.85rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;font-family:var(--font-body);font-weight:600;">Q1–Q2 2026</h3>
+
+      <div class="expo-full">
+        <div class="expo-full-inner">
+          <div class="expo-date-col">
+            <div class="expo-day">28–30</div>
+            <div class="expo-month-yr">March 2026</div>
+          </div>
+          <div class="expo-body">
+            <div style="display:flex;gap:8px;margin-bottom:8px;"><span class="badge badge-green">● UPCOMING</span></div>
+            <h3>GTI Asia Pacific Expo 2026</h3>
+            <div class="expo-body-meta"><span>📍 Poly World Trade Center, Guangzhou, China</span><span>🏛 800+ Exhibitors</span><span>📐 60,000 sqm</span><span>👥 50,000+ Visitors</span></div>
+            <div class="expo-body-desc">Asia's largest amusement and gaming equipment trade show. Featuring the latest in arcade games, VR attractions, redemption games, themed rides, and FEC solutions from manufacturers worldwide.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="tag">Arcade</span><span class="tag">VR</span><span class="tag">FEC</span><span class="tag">Rides</span><span class="tag">Redemption</span></div>
+          </div>
+          <div class="expo-actions">
+            <a href="#register" class="btn btn-primary btn-sm" onclick="switchTabById('register-tab')">Pre-Register</a>
+            <a href="news.html" class="btn btn-outline btn-sm">Show Preview</a>
+            <a href="#" class="btn btn-ghost btn-sm">Add to Calendar</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="expo-full">
+        <div class="expo-full-inner">
+          <div class="expo-date-col">
+            <div class="expo-day">15–17</div>
+            <div class="expo-month-yr">April 2026</div>
+          </div>
+          <div class="expo-body">
+            <h3>AAE Asia Amusements & Attractions Expo 2026</h3>
+            <div class="expo-body-meta"><span>📍 Singapore Expo, Singapore</span><span>🏛 350+ Exhibitors</span><span>📐 25,000 sqm</span><span>👥 20,000+ Visitors</span></div>
+            <div class="expo-body-desc">Southeast Asia's premier amusement industry platform connecting suppliers and operators across 14 ASEAN markets. Strong focus on FEC, water park, and family entertainment solutions.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="tag">SEA Focus</span><span class="tag">FEC</span><span class="tag">Water Park</span></div>
+          </div>
+          <div class="expo-actions">
+            <a href="#register" class="btn btn-primary btn-sm">Pre-Register</a>
+            <a href="news.html" class="btn btn-outline btn-sm">More Info</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="expo-full">
+        <div class="expo-full-inner">
+          <div class="expo-date-col">
+            <div class="expo-day">5–8</div>
+            <div class="expo-month-yr">June 2026</div>
+          </div>
+          <div class="expo-body">
+            <h3>AAMA Annual Conference & Expo 2026</h3>
+            <div class="expo-body-meta"><span>📍 Bellagio Hotel, Las Vegas, NV, USA</span><span>🏛 200+ Attendees</span><span>🎯 Conference + Networking</span></div>
+            <div class="expo-body-desc">The Amusement and Music Operators Association's flagship annual event, bringing together North American FEC and amusement route operators, manufacturers, and distributors.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="tag">North America</span><span class="tag">Conference</span><span class="tag">Networking</span></div>
+          </div>
+          <div class="expo-actions">
+            <a href="#register" class="btn btn-primary btn-sm">Pre-Register</a>
+            <a href="news.html" class="btn btn-outline btn-sm">More Info</a>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="color:var(--text-secondary);font-size:.85rem;text-transform:uppercase;letter-spacing:2px;margin:32px 0 20px;font-family:var(--font-body);font-weight:600;">Q3–Q4 2026</h3>
+
+      <div class="expo-full">
+        <div class="expo-full-inner">
+          <div class="expo-date-col">
+            <div class="expo-day">22–25</div>
+            <div class="expo-month-yr">July 2026</div>
+          </div>
+          <div class="expo-body">
+            <h3>DEAL Expo 2026 — Middle East Amusement & Leisure</h3>
+            <div class="expo-body-meta"><span>📍 Dubai World Trade Centre, UAE</span><span>🏛 300+ Exhibitors</span><span>📐 22,000 sqm</span></div>
+            <div class="expo-body-desc">The Middle East and North Africa region's leading event for the amusement, leisure, and entertainment industry. Key gateway for suppliers targeting the booming Gulf market.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="tag">Middle East</span><span class="tag">MENA</span><span class="tag">FEC</span></div>
+          </div>
+          <div class="expo-actions">
+            <a href="#register" class="btn btn-primary btn-sm">Pre-Register</a>
+            <a href="news.html" class="btn btn-outline btn-sm">More Info</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="expo-full">
+        <div class="expo-full-inner">
+          <div class="expo-date-col">
+            <div class="expo-day">14–17</div>
+            <div class="expo-month-yr">Sep 2026</div>
+          </div>
+          <div class="expo-body">
+            <span class="badge badge-gold" style="margin-bottom:8px;display:inline-flex;">★ PREMIER SHOW</span>
+            <h3>EAG International Expo 2026</h3>
+            <div class="expo-body-meta"><span>📍 ExCeL London, UK</span><span>🏛 400+ Exhibitors</span><span>📐 28,000 sqm</span><span>👥 18,000+ Visitors</span></div>
+            <div class="expo-body-desc">Europe's leading trade show for the amusement, gaming machines, and entertainment industry. Covers arcades, FECs, bowling, and related leisure. Key event for European market entry.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="tag">Europe</span><span class="tag">Arcade</span><span class="tag">FEC</span><span class="tag">Bowling</span></div>
+          </div>
+          <div class="expo-actions">
+            <a href="#register" class="btn btn-primary btn-sm">Pre-Register</a>
+            <a href="news.html" class="btn btn-outline btn-sm">More Info</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="expo-full">
+        <div class="expo-full-inner">
+          <div class="expo-date-col">
+            <div class="expo-day">8–10</div>
+            <div class="expo-month-yr">Oct 2026</div>
+          </div>
+          <div class="expo-body">
+            <h3>IAAPA Expo Europe 2026</h3>
+            <div class="expo-body-meta"><span>📍 Fira de Barcelona, Spain</span><span>🏛 500+ Exhibitors</span><span>📐 35,000 sqm</span><span>👥 24,000+ Visitors</span></div>
+            <div class="expo-body-desc">IAAPA's European flagship event covering theme parks, water parks, FECs, and attractions. Premier networking event for the European and global attractions industry leadership.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="tag">Europe</span><span class="tag">Theme Parks</span><span class="tag">Water Parks</span><span class="tag">IAAPA</span></div>
+          </div>
+          <div class="expo-actions">
+            <a href="#register" class="btn btn-primary btn-sm">Pre-Register</a>
+            <a href="news.html" class="btn btn-outline btn-sm">More Info</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="expo-full">
+        <div class="expo-full-inner">
+          <div class="expo-date-col">
+            <div class="expo-day">18–21</div>
+            <div class="expo-month-yr">Nov 2026</div>
+          </div>
+          <div class="expo-body">
+            <span class="badge badge-gold" style="margin-bottom:8px;display:inline-flex;">★ WORLD'S LARGEST</span>
+            <h3>IAAPA Expo 2026 — Orlando</h3>
+            <div class="expo-body-meta"><span>📍 Orange County Convention Center, Orlando, FL, USA</span><span>🏛 1,200+ Exhibitors</span><span>📐 80,000 sqm</span><span>👥 42,000+ Visitors</span></div>
+            <div class="expo-body-desc">The world's largest trade show for the attractions industry. A must-attend event featuring attractions, rides, technology, food service, retail, and entertainment for parks and FECs of all sizes.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="tag">Global</span><span class="tag">Theme Parks</span><span class="tag">FEC</span><span class="tag">Technology</span><span class="tag">IAAPA</span></div>
+          </div>
+          <div class="expo-actions">
+            <a href="#register" class="btn btn-primary btn-sm">Pre-Register</a>
+            <a href="news.html" class="btn btn-outline btn-sm">More Info</a>
+          </div>
+        </div>
+      </div>
+      </div><!-- /staticCalendar -->
+    </div>
+
+    <!-- Reports Tab -->
+    <div class="tab-content" id="reports-tab">
+      <h3 style="color:#fff;margin-bottom:24px;">Past Show Reports & Highlights</h3>
+      <div class="grid-3 fade-in">
+        <div class="card">
+          <div class="card-image" style="background:linear-gradient(135deg,#1a2540,#0d1530);display:flex;align-items:center;justify-content:center;font-size:3rem;">🎪</div>
+          <div class="card-body"><span class="card-tag">2025 Report</span><div class="card-title">GTI Asia Pacific 2025 — Full Show Report & Highlights</div><div class="card-meta"><span>📅 Nov 2025</span><span>👁 24,500 views</span></div><a href="news.html" class="btn btn-outline btn-sm" style="margin-top:12px;display:inline-flex;">Read Report →</a></div>
+        </div>
+        <div class="card">
+          <div class="card-image" style="background:linear-gradient(135deg,#3b1e1e,#200d0d);display:flex;align-items:center;justify-content:center;font-size:3rem;">🎡</div>
+          <div class="card-body"><span class="card-tag">2025 Report</span><div class="card-title">IAAPA Expo 2025 — Record Attendance, Top Innovations</div><div class="card-meta"><span>📅 Nov 2025</span><span>👁 31,200 views</span></div><a href="news.html" class="btn btn-outline btn-sm" style="margin-top:12px;display:inline-flex;">Read Report →</a></div>
+        </div>
+        <div class="card">
+          <div class="card-image" style="background:linear-gradient(135deg,#1e3b1e,#0d200d);display:flex;align-items:center;justify-content:center;font-size:3rem;">🌍</div>
+          <div class="card-body"><span class="card-tag">2025 Report</span><div class="card-title">EAG International London 2025 — Key Takeaways</div><div class="card-meta"><span>📅 Sep 2025</span><span>👁 18,800 views</span></div><a href="news.html" class="btn btn-outline btn-sm" style="margin-top:12px;display:inline-flex;">Read Report →</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Register Tab -->
+    <div class="tab-content" id="register-tab" id="register">
+      <h3 style="color:#fff;margin-bottom:8px;">Pre-Register for Upcoming Shows</h3>
+      <p style="color:var(--text-secondary);margin-bottom:28px;">Get priority access, early exhibitor introductions, and exclusive show-day content.</p>
+      <div class="reg-box fade-in">
+        <form onsubmit="return false;">
+          <div class="form-2col">
+            <div class="form-group"><label>First Name *</label><input type="text" placeholder="John" required/></div>
+            <div class="form-group"><label>Last Name *</label><input type="text" placeholder="Smith" required/></div>
+          </div>
+          <div class="form-group"><label>Company Name *</label><input type="text" placeholder="Your Company Ltd." required/></div>
+          <div class="form-group"><label>Business Email *</label><input type="email" placeholder="john@company.com" required/></div>
+          <div class="form-group"><label>Job Title</label><input type="text" placeholder="General Manager"/></div>
+          <div class="form-group"><label>Exhibition *</label>
+            <select>
+              <option>GTI Asia Pacific 2026 (March 28–30, Guangzhou)</option>
+              <option>AAE Asia 2026 (April 15–17, Singapore)</option>
+              <option>DEAL Expo 2026 (July 22–25, Dubai)</option>
+              <option>EAG International 2026 (Sep 14–17, London)</option>
+              <option>IAAPA Expo Europe 2026 (Oct 8–10, Barcelona)</option>
+              <option>IAAPA Expo 2026 (Nov 18–21, Orlando)</option>
+            </select>
+          </div>
+          <div class="form-group"><label>I am attending as</label>
+            <select>
+              <option>Buyer / Operator</option>
+              <option>Exhibitor / Manufacturer</option>
+              <option>Distributor / Agent</option>
+              <option>Press / Media</option>
+              <option>Investor</option>
+              <option>Other Industry Professional</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">Submit Pre-Registration →</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="../index.html" class="logo" style="margin-bottom:16px;"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a><p style="color:var(--text-secondary);font-size:.88rem;">The world's premier B2B intelligence platform.</p></div><div class="footer-col"><h4>Shows 2026</h4><ul class="footer-links"><li><a href="#calendar">GTI Asia Pacific</a></li><li><a href="#calendar">EAG London</a></li><li><a href="#calendar">IAAPA Expo</a></li></ul></div><div class="footer-col"><h4>Resources</h4><ul class="footer-links"><li><a href="news.html">News</a></li><li><a href="products.html">Products</a></li><li><a href="magazine.html">Videos</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul class="footer-links"><li><a href="#">About</a></li><li><a href="contact.html">Contact</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 NexAmuse Global. All rights reserved.</p></div></div></footer>
+<button class="scroll-top" id="scrollTop">↑</button>
+<script src="../assets/js/main.js"></script>
+<script>
+function switchTab(id, btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+function switchTabById(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Dynamic Exhibition Rendering from localStorage ────────────────────────
+const PUBLISHED_KEY = 'nexamuse_exhibitions_published';
+let allExpos = [];
+let currentFilter = 'all';
+
+function loadDynamicExpos() {
+  const raw = localStorage.getItem(PUBLISHED_KEY);
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data) || data.length === 0) return;
+    allExpos = data;
+    document.getElementById('dynamicCalendar').style.display = 'block';
+    document.getElementById('staticCalendar').style.display = 'none';
+    renderExpos(data);
+  } catch(e) { console.warn('Dynamic expo load failed', e); }
+}
+
+function filterExpos(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('#dynamicFilterBar .filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  let filtered = allExpos;
+  if(filter !== 'all') {
+    filtered = allExpos.filter(e => e.status === filter || e.region === filter);
+  }
+  renderExpos(filtered);
+}
+
+function renderExpos(list) {
+  const sorted = [...list].sort((a,b) => (a.startDate||'').localeCompare(b.startDate||''));
+  document.getElementById('dynamicCount').textContent = `${sorted.length} exhibitions`;
+
+  const STATUS_COLOR = {upcoming:'#22c55e',ongoing:'#c9a227',ended:'#94a3b8',cancelled:'#ef4444',pending:'#818cf8'};
+  const STATUS_LABEL = {upcoming:'● UPCOMING',ongoing:'● ONGOING',ended:'✓ ENDED',cancelled:'✗ CANCELLED',pending:'⏳ PENDING'};
+
+  let html = '';
+  let lastQuarter = '';
+  sorted.forEach(e => {
+    const q = getQuarter(e.startDate);
+    if(q !== lastQuarter) {
+      html += `<h3 style="color:var(--text-secondary);font-size:.85rem;text-transform:uppercase;letter-spacing:2px;margin:28px 0 18px;font-family:var(--font-body);font-weight:600;">${q}</h3>`;
+      lastQuarter = q;
+    }
+    const day = getDayRange(e.startDate, e.endDate);
+    const monthYr = getMonthYr(e.startDate);
+    const statusColor = STATUS_COLOR[e.status] || '#94a3b8';
+    const statusLabel = STATUS_LABEL[e.status] || e.status?.toUpperCase() || 'UPCOMING';
+    html += `
+    <div class="expo-full fade-in">
+      <div class="expo-full-inner">
+        <div class="expo-date-col">
+          <div style="font-size:2rem;margin-bottom:4px">${e.flag||'🌐'}</div>
+          <div class="expo-day" style="font-size:1.4rem">${day}</div>
+          <div class="expo-month-yr">${monthYr}</div>
+        </div>
+        <div class="expo-body">
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <span class="badge" style="background:rgba(0,0,0,.3);color:${statusColor};border:1px solid ${statusColor}33;font-size:.72rem;font-weight:700;">${statusLabel}</span>
+            ${e.featured?'<span class="badge badge-gold">★ FEATURED</span>':''}
+          </div>
+          <h3>${e.name}</h3>
+          <div class="expo-body-meta">
+            <span>📍 ${e.venue?e.venue+', ':''}${e.city||'—'}</span>
+            ${e.scale?`<span>🏛 ${e.scale}</span>`:''}
+          </div>
+          ${e.desc?`<div class="expo-body-desc">${e.desc}</div>`:''}
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${e.category?`<span class="tag">${e.category}</span>`:''}
+            ${e.region?`<span class="tag">${e.region}</span>`:''}
+          </div>
+        </div>
+        <div class="expo-actions">
+          <button class="btn btn-primary btn-sm" onclick="switchTabById('register-tab')">Pre-Register</button>
+          ${e.url?`<a href="${e.url}" target="_blank" class="btn btn-outline btn-sm">Official Site →</a>`:'<a href="news.html" class="btn btn-outline btn-sm">More Info</a>'}
+        </div>
+      </div>
+    </div>`;
+  });
+  if(!sorted.length) html = '<div style="text-align:center;padding:60px;color:var(--text-secondary)">No exhibitions match the current filter.</div>';
+  document.getElementById('dynamicExpoList').innerHTML = html;
+}
+
+function getDayRange(start, end) {
+  if(!start) return '—';
+  const s = new Date(start), e = new Date(end||start);
+  if(s.getMonth()===e.getMonth()) return `${s.getDate()}–${e.getDate()}`;
+  return `${s.getDate()}/${s.getMonth()+1}–${e.getDate()}/${e.getMonth()+1}`;
+}
+function getMonthYr(d) {
+  if(!d) return '—';
+  const dt = new Date(d);
+  return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()]} ${dt.getFullYear()}`;
+}
+function getQuarter(d) {
+  if(!d) return 'Unknown';
+  const dt = new Date(d), m = dt.getMonth()+1, y = dt.getFullYear();
+  const q = Math.ceil(m/3);
+  return `Q${q} ${y}`;
+}
+
+// Load on page ready
+document.addEventListener('DOMContentLoaded', loadDynamicExpos);
+// Also try immediately
+loadDynamicExpos();
+</script>
+</body>
+</html>
