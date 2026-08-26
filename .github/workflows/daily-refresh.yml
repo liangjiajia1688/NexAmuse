@@ -1,0 +1,22 @@
+name: Daily News & Exhibitions Refresh
+
+on:
+  schedule:
+    # 北京时间 每天 01:00 = UTC 17:00 前一天
+    - cron: '0 17 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh News
+        run: |
+          echo "Triggering news refresh..."
+          curl -fsS "$SITE_URL/api/news-refresh?key=$TOKEN_SECRET"
+          echo ""
+      - name: Refresh Exhibitions
+        run: |
+          echo "Triggering exhibitions refresh..."
+          curl -fsS "$SITE_URL/api/exhibitions-refresh?key=$TOKEN_SECRET"
+          echo ""

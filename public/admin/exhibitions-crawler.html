@@ -624,5 +624,21 @@ initSources();
 initChips('catChips', CATS, selectedCats, v=>CAT_LABELS[v]);
 initChips('regionChips', REGIONS_ALL, selectedRegions, v=>REG_LABELS[v]);
 </script>
+<script>
+// ── Real NexAmuse exhibitions refresh (overrides demo startCrawl) ──
+window.startCrawl = async function() {
+  const key = prompt('Enter refresh secret (TOKEN_SECRET):');
+  if (!key) return;
+  const btn = document.getElementById('startBtn');
+  const old = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Refreshing…'; }
+  try {
+    const res = await fetch('/api/exhibitions-refresh?key=' + encodeURIComponent(key));
+    const data = await res.json();
+    alert((data.ok ? 'Exhibitions refreshed. ' : 'Failed: ') + JSON.stringify(data));
+  } catch (e) { alert('Error: ' + e.message); }
+  finally { if (btn) { btn.disabled = false; btn.innerHTML = old; } }
+};
+</script>
 </body>
 </html>

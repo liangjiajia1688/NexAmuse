@@ -350,16 +350,21 @@ let allExpos = [];
 let currentFilter = 'all';
 
 function loadDynamicExpos() {
-  const raw = localStorage.getItem(PUBLISHED_KEY);
-  if (!raw) return;
   try {
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data) || data.length === 0) return;
-    allExpos = data;
-    document.getElementById('dynamicCalendar').style.display = 'block';
-    document.getElementById('staticCalendar').style.display = 'none';
-    renderExpos(data);
-  } catch(e) { console.warn('Dynamic expo load failed', e); }
+    fetch('../api/exhibitions')
+      .then(r => r.json())
+      .then(data => {
+        const list = (data.exhibitions || []).map(e => ({ ...e, desc: e.description }));
+        if (!list.length) return; // keep static demo fallback
+        allExpos = list;
+        document.getElementById('dynamicCalendar').style.display = 'block';
+        document.getElementById('staticCalendar').style.display = 'none';
+        renderExpos(list);
+      })
+      .catch(e => console.warn('Expo load failed', e));
+  } catch (e) {
+    console.warn('Expo load failed', e);
+  }
 }
 
 function filterExpos(filter, btn) {

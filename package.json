@@ -1,0 +1,14 @@
+{
+  "name": "nexamuse-deploy-baota",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NexAmuse Global - English amusement industry portal (Cloudflare Pages + D1 + ImgBB)",
+  "scripts": {
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public",
+    "db:init": "wrangler d1 execute nexamuse-db --local --file=src/migrations/schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.78.0"
+  }
+}
