@@ -135,9 +135,9 @@
 
       <!-- Hero -->
       <div class="ai-hero">
-        <div class="ai-badge">✨ AI POWERED · DEEPSEEK MODEL</div>
+        <div class="ai-badge">✨ AI POWERED · OPENROUTER FREE MODEL</div>
         <h1>🤖 AI Batch Article Writer</h1>
-        <p>Generates full professional articles via the connected DeepSeek AI model — real content, real structure, real SEO. Falls back to the built-in engine automatically if no API key is configured.</p>
+        <p>Generates full professional articles via the connected OpenRouter free AI model — real content, real structure, real SEO. Falls back to the built-in engine automatically if no API key is configured.</p>
         <div class="stats-row">
           <div class="stat-item"><div class="stat-num" id="statTotal">0</div><div class="stat-lab">Articles Generated</div></div>
           <div class="stat-item"><div class="stat-num" id="statPublished">0</div><div class="stat-lab">Published</div></div>
@@ -274,7 +274,7 @@
           <div class="card" style="margin-top:16px">
             <div class="card-header"><h3>💡 Tips</h3></div>
             <div class="card-body" style="font-size:13px;color:var(--text-muted);line-height:1.9">
-              <p>✅ <strong style="color:#e2e8f0">DeepSeek AI</strong> — real model-generated articles when AI key is set</p>
+              <p>✅ <strong style="color:#e2e8f0">OpenRouter AI</strong> — real model-generated articles when AI key is set</p>
               <p>✅ <strong style="color:#e2e8f0">Real content</strong> — structured sections, statistics & quotes</p>
               <p>✅ <strong style="color:#e2e8f0">SEO-ready</strong> — meta title, description & keywords generated</p>
               <p>✅ <strong style="color:#e2e8f0">Editable</strong> — click Edit to open full editor</p>
@@ -725,7 +725,7 @@ async function finishGeneration(topics,style,length,keywords,brand,options,count
   document.getElementById('livePreview').style.display='none';
   renderResults();
   updateStats();
-  const mode = usedLLM>0 ? ` (${usedLLM} via DeepSeek AI)` : ' (built-in engine — add AI key for real AI)';
+  const mode = usedLLM>0 ? ` (${usedLLM} via OpenRouter AI)` : ' (built-in engine — add AI key for real AI)';
   showToast(`✅ ${count} articles generated${mode}`,'success');
 }
 
