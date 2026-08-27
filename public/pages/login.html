@@ -397,10 +397,10 @@
 
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label>Email Address</label>
+          <label>Email or Username</label>
           <div class="form-input-wrap">
             <span class="input-icon">✉️</span>
-            <input type="email" id="loginEmail" placeholder="your@company.com" required autocomplete="email"/>
+            <input type="text" id="loginEmail" placeholder="your@company.com or username" required autocomplete="username"/>
           </div>
         </div>
         <div class="form-group">
@@ -446,52 +446,56 @@
 </div>
 
 <script>
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
-  const email    = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  const msg      = document.getElementById('authMsg');
+  const identifier = document.getElementById('loginEmail').value.trim();
+  const password  = document.getElementById('loginPassword').value;
+  const msg       = document.getElementById('authMsg');
 
-  if (!email || !password) {
-    showMsg('error', 'Please enter your email and password.');
+  if (!identifier || !password) {
+    showMsg('error', 'Please enter your email/username and password.');
     return;
   }
 
-  // Demo: simulate login
   const btn = e.target.querySelector('.btn-auth');
+  const orig = btn.textContent;
   btn.textContent = 'Signing in…';
   btn.disabled = true;
 
-  setTimeout(() => {
-    // Demo accounts
-    const DEMO_ACCOUNTS = [
-      { email: 'demo@nexamuse.com',  password: 'demo123', name: 'Demo User',  avatar: 'D', role: 'member' },
-      { email: 'admin@nexamuse.com', password: 'demo123', name: 'Admin User', avatar: 'A', role: 'admin'  },
-      { email: 'test@nexamuse.com',  password: 'demo123', name: 'Test User',  avatar: 'T', role: 'member' },
-    ];
-
-    const account = DEMO_ACCOUNTS.find(a => a.email === email && a.password === password);
-
-    if (account) {
-      const session = {
-        name: account.name,
-        email: account.email,
-        avatar: account.avatar,
-        role: account.role,
-        loginTime: Date.now()
-      };
-      localStorage.setItem('nexamuse_user', JSON.stringify(session));
-      showMsg('success', '✅ Login successful! Redirecting…');
-      // Admins → admin dashboard; members → homepage
-      const defaultRedirect = account.role === 'admin' ? '../admin/index.html' : '../index.html';
-      const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || defaultRedirect;
-      setTimeout(() => { window.location.href = redirectUrl; }, 1200);
-    } else {
-      showMsg('error', '✗ Invalid email or password. Try admin@nexamuse.com / demo123');
-      btn.textContent = 'Sign In →';
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showMsg('error', data.error || 'Login failed. Please try again.');
+      btn.textContent = orig;
       btn.disabled = false;
+      return;
     }
-  }, 900);
+    const u = data.user;
+    const session = {
+      token: data.token,
+      id: u.id,
+      name: u.username,
+      email: u.email,
+      username: u.username,
+      role: u.role,
+      avatar: u.avatar || null,
+      loginTime: Date.now()
+    };
+    localStorage.setItem('nexamuse_user', JSON.stringify(session));
+    showMsg('success', '✅ Login successful! Redirecting…');
+    const defaultRedirect = u.role === 'admin' ? '../admin/index.html' : '../index.html';
+    const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || defaultRedirect;
+    setTimeout(() => { window.location.href = redirectUrl; }, 1200);
+  } catch (err) {
+    showMsg('error', 'Network error. Please check your connection and try again.');
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
 }
 
 function showMsg(type, text) {

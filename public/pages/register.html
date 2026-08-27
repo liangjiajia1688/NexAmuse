@@ -376,7 +376,7 @@
         </div>
         <div style="display:flex;gap:10px">
           <button type="button" class="btn-auth" style="background:rgba(255,255,255,.06);color:#9aa0b4;flex:0 0 100px" onclick="goStep(1)">← Back</button>
-          <button type="button" class="btn-auth" style="flex:1" onclick="goStep3()">Complete Registration →</button>
+          <button type="button" id="regSubmitBtn" class="btn-auth" style="flex:1" onclick="goStep3()">Complete Registration →</button>
         </div>
       </div>
 
@@ -493,14 +493,55 @@ function goStep2() {
   hideMsg(); goStep(2);
 }
 
-function goStep3() {
+async function goStep3() {
   const co = document.getElementById('companyName').value.trim();
   const ct = document.getElementById('country').value;
   const bt = document.getElementById('bizType').value;
   if (!co||!ct||!bt) { showMsg('error','Please fill in your company name, country, and business type.'); return; }
-  hideMsg();
-  document.getElementById('confirmEmail').textContent = document.getElementById('regEmail').value;
-  goStep(3);
+
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const fn = document.getElementById('firstName').value.trim();
+  const ln = document.getElementById('lastName').value.trim();
+
+  // Build a username from first+last name (fallback to email local part)
+  let username = (fn + ln).toLowerCase().replace(/[^a-z0-9_]/g, '');
+  if (!username) username = email.split('@')[0].toLowerCase();
+
+  const btn = document.getElementById('regSubmitBtn');
+  const orig = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = 'Creating account…'; btn.disabled = true; }
+
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showMsg('error', data.error || 'Registration failed. Please try again.');
+      if (btn) { btn.textContent = orig; btn.disabled = false; }
+      return;
+    }
+    const u = data.user;
+    const session = {
+      token: data.token,
+      id: u.id,
+      name: u.username,
+      email: u.email,
+      username: u.username,
+      role: u.role,
+      avatar: null,
+      loginTime: Date.now()
+    };
+    localStorage.setItem('nexamuse_user', JSON.stringify(session));
+    document.getElementById('confirmEmail').textContent = email;
+    goStep(3);
+  } catch (err) {
+    showMsg('error', 'Network error. Please check your connection and try again.');
+    if (btn) { btn.textContent = orig; btn.disabled = false; }
+  }
 }
 
 function showMsg(type, text) {
