@@ -849,14 +849,25 @@ function editArticle(){
 // ── API Functions ───────────────────────────────────────────────
 const API_BASE = '/api/articles';
 
-function apiHeaders() {
-  const headers = { 'Content-Type': 'application/json' };
+function getApiToken() {
   try {
     const s = JSON.parse(localStorage.getItem('nexamuse_user') || 'null');
-    const token = s && (s.token || (s.user && s.user.token));
-    if (token) headers['Authorization'] = 'Bearer ' + token;
-  } catch (e) {}
+    return (s && (s.token || (s.user && s.user.token))) || '';
+  } catch (e) { return ''; }
+}
+function apiHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  const token = getApiToken();
+  if (token) headers['Authorization'] = 'Bearer ' + token;
   return headers;
+}
+function requireAuth() {
+  if (!getApiToken()) {
+    showToast('Please sign in again to publish. Redirecting to login…', 'error');
+    setTimeout(() => window.location.href = 'login.html?reason=expired', 1500);
+    return false;
+  }
+  return true;
 }
 
 async function saveArticleToServer(article) {
@@ -907,6 +918,7 @@ async function loadArticlesFromServer() {
 }
 
 async function publishOne(i){
+  if (!requireAuth()) return;
   const article = generatedArticles[i];
   if(!article) return;
   article.status = 'published';
@@ -915,7 +927,12 @@ async function publishOne(i){
   const result = await saveArticleToServer(article);
   if (result && result.error) {
     renderList(); updateStats();
-    showToast('Publish failed: '+result.error+' (kept local). See console (F12) for details.', 'error');
+    if (result.error === 'Unauthorized' || String(result.detail && result.detail.error).toLowerCase().includes('unauthorized')) {
+      showToast('Session expired. Please sign in again.', 'error');
+      setTimeout(() => window.location.href = 'login.html?reason=expired', 1500);
+    } else {
+      showToast('Publish failed: '+result.error+' (kept local). See console (F12) for details.', 'error');
+    }
     return;
   }
   article.serverId = result.id;
@@ -927,21 +944,30 @@ async function publishOne(i){
 
 async function publishAll(){
   if(!generatedArticles.length){ showToast('No articles to publish','error'); return; }
-  let ok=0, fail=0, lastError='';
+  if (!requireAuth()) return;
+  let ok=0, fail=0, lastError='', unauthorized=false;
   for (const a of generatedArticles) {
     a.status='published';
     a.publishedAt = new Date().toISOString();
     const r = await saveArticleToServer(a);
-    if (r && r.error) { fail++; lastError = r.error; console.error('[publish] failed', a.title, r); }
-    else { a.serverId = r.id; ok++; }
+    if (r && r.error) {
+      fail++; lastError = r.error;
+      if (r.error === 'Unauthorized' || String(r.detail && r.detail.error).toLowerCase().includes('unauthorized')) unauthorized = true;
+      console.error('[publish] failed', a.title, r);
+    } else { a.serverId = r.id; ok++; }
   }
   saveArticlesToStorage(generatedArticles);
   renderList();
   updateStats();
-  const msg = fail
-    ? `Published ${ok} article(s), ${fail} failed${lastError ? ': ' + lastError : ''}. Open browser console (F12) for details.`
-    : `Published ${ok} article(s) successfully`;
-  showToast(msg, fail ? 'warning' : 'success');
+  if (unauthorized) {
+    showToast('Session expired. Please sign in again.', 'error');
+    setTimeout(() => window.location.href = 'login.html?reason=expired', 1500);
+  } else {
+    const msg = fail
+      ? `Published ${ok} article(s), ${fail} failed${lastError ? ': ' + lastError : ''}. Open browser console (F12) for details.`
+      : `Published ${ok} article(s) successfully`;
+    showToast(msg, fail ? 'warning' : 'success');
+  }
 }
 function removeArticle(i){
   generatedArticles.splice(i,1);

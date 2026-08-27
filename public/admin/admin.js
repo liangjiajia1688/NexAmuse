@@ -18,7 +18,10 @@ function getApiToken() {
   return s && s.token ? s.token : '';
 }
 function apiHeaders(extra) {
-  return Object.assign({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getApiToken() }, extra || {});
+  const headers = { 'Content-Type': 'application/json' };
+  const token = getApiToken();
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return Object.assign(headers, extra || {});
 }
 async function apiGet(url) {
   const r = await fetch(url, { headers: apiHeaders() });

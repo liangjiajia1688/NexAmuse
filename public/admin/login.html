@@ -154,8 +154,18 @@ function doLogin(){
   },1200);
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-// Auto-redirect if already logged in
-if(localStorage.getItem('ng_admin_logged')==='1'){window.location.href='index.html';}
+// Auto-redirect only if both admin flag and a real API token exist.
+(function checkSession(){
+  try {
+    const logged = localStorage.getItem('ng_admin_logged') === '1';
+    const s = JSON.parse(localStorage.getItem('nexamuse_user') || 'null');
+    if (logged && s && s.token) return;
+    // Clear stale partial session and stay on login page.
+    localStorage.removeItem('ng_admin_logged');
+    localStorage.removeItem('ng_admin_user');
+    localStorage.removeItem('nexamuse_user');
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>

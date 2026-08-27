@@ -222,6 +222,17 @@ function saveDraft(){showToast('Draft saved locally. Use Publish to push live.',
 function publishArticle(){ publishToApi(); }
 function pickImage(){showToast('Image picker opened','info')}
 async function publishToApi(){
+  const token = (function(){
+    try {
+      const s = JSON.parse(localStorage.getItem('nexamuse_user') || 'null');
+      return (s && (s.token || (s.user && s.user.token))) || '';
+    } catch(e){ return ''; }
+  })();
+  if (!token) {
+    showToast('Session expired. Please sign in again.', 'error');
+    setTimeout(() => window.location.href = 'login.html?reason=expired', 1200);
+    return;
+  }
   const titleEl = document.querySelector('.form-input[placeholder="Article Title..."]');
   const excerptEl = document.querySelector('.form-input[placeholder="Subtitle or excerpt (optional)..."]');
   const editor = document.getElementById('editor');
