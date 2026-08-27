@@ -72,58 +72,67 @@ export async function onRequestPost(context) {
   if (!topic || !String(topic).trim()) return fail('Topic is required', 400);
 
   const API_KEY = env.AI_API_KEY;
-  const BASE = env.AI_BASE_URL || 'https://api.openai.com/v1';
-  const MODEL = env.AI_MODEL || 'gpt-4o-mini';
-
-  // Graceful fallback when no key configured
   if (!API_KEY) {
     return json({ ok: false, fallback: true, error: 'AI_API_KEY not configured' }, 200);
   }
+  const BASE = env.AI_BASE_URL || 'https://api.openai.com/v1';
+  const PRIMARY = env.AI_MODEL || 'gpt-4o-mini';
+  // Free-model fallback chain: if the primary (or any) is rate-limited/unavailable,
+  // automatically try the next one. Only falls back to the built-in template if all fail.
+  const FALLBACK_MODELS = [
+    'minimax/minimax-m3:free',
+    'nvidia/nemotron-3-ultra-550b-a55b:free',
+    'z-ai/glm-5.2:free',
+    'google/gemma-4-26b-a4b-it:free',
+  ];
+  const MODELS = Array.from(new Set([PRIMARY, ...FALLBACK_MODELS]));
+  const messages = buildPrompt(body);
 
-  try {
-    const messages = buildPrompt(body);
-    const upstream = await fetch(`${BASE}/chat/completions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}` },
-      body: JSON.stringify({
-        model: MODEL,
-        messages,
-        temperature: 0.7,
-        response_format: { type: 'json_object' },
-      }),
-    });
-    if (!upstream.ok) {
-      const txt = await upstream.text();
-      return json({ ok: false, fallback: true, error: 'LLM error: ' + upstream.status, detail: txt.slice(0, 300) }, 200);
+  let lastErr = '';
+  for (const model of MODELS) {
+    try {
+      const upstream = await fetch(`${BASE}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}` },
+        body: JSON.stringify({ model, messages, temperature: 0.7 }),
+      });
+      if (!upstream.ok) {
+        const txt = await upstream.text();
+        lastErr = `LLM ${model} error: ${upstream.status} ${txt.slice(0, 160)}`;
+        continue; // rate-limited / unavailable -> try next model
+      }
+      const data = await upstream.json();
+      let raw = data?.choices?.[0]?.message?.content || '';
+      raw = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+      const art = JSON.parse(raw);
+
+      const contentHtml = art.content || '<p>' + stripHtml(art.excerpt || '') + '</p>';
+      const wordCount = stripHtml(contentHtml).split(/\s+/).filter(Boolean).length;
+      const title = stripHtml(art.title || topic);
+      const slug = title.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').slice(0, 60);
+
+      const article = {
+        title,
+        slug,
+        excerpt: stripHtml(art.excerpt || '').slice(0, 280),
+        content: contentHtml,
+        category: body.category || art.category || 'Industry News',
+        author: brand_(body),
+        metaTitle: stripHtml(art.metaTitle || title).slice(0, 60),
+        metaDesc: stripHtml(art.metaDesc || '').slice(0, 160),
+        metaKeywords: art.metaKeywords || body.keywords || '',
+        wordCount,
+        seoScore: computeSeo(art),
+        status: 'draft',
+        model,
+      };
+      return json({ ok: true, fallback: false, model, article }, 200);
+    } catch (e) {
+      lastErr = `Gen failed on ${model}: ${e.message}`;
+      continue;
     }
-    const data = await upstream.json();
-    let raw = data?.choices?.[0]?.message?.content || '';
-    raw = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
-    const art = JSON.parse(raw);
-
-    const contentHtml = art.content || '<p>' + stripHtml(art.excerpt || '') + '</p>';
-    const wordCount = stripHtml(contentHtml).split(/\s+/).filter(Boolean).length;
-    const title = stripHtml(art.title || topic);
-    const slug = title.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').slice(0, 60);
-
-    const article = {
-      title,
-      slug,
-      excerpt: stripHtml(art.excerpt || '').slice(0, 280),
-      content: contentHtml,
-      category: body.category || art.category || 'Industry News',
-      author: brand_(body),
-      metaTitle: stripHtml(art.metaTitle || title).slice(0, 60),
-      metaDesc: stripHtml(art.metaDesc || '').slice(0, 160),
-      metaKeywords: art.metaKeywords || body.keywords || '',
-      wordCount,
-      seoScore: computeSeo(art),
-      status: 'draft',
-    };
-    return json({ ok: true, fallback: false, article }, 200);
-  } catch (e) {
-    return json({ ok: false, fallback: true, error: 'Generation failed: ' + e.message }, 200);
   }
+  return json({ ok: false, fallback: true, error: 'All models rate-limited', detail: lastErr }, 200);
 }
 
 function brand_(body) { return body.brand || 'NexAmuse Global'; }

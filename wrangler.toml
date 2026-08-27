@@ -4,7 +4,7 @@ compatibility_date = "2024-09-23"
 
 [vars]
 AI_BASE_URL = "https://openrouter.ai/api/v1"
-AI_MODEL = "meta-llama/llama-3.1-8b-instruct:free"
+AI_MODEL = "minimax/minimax-m3:free"
 SITE_URL = "https://nexamuse.cc.cd"
 
 [[d1_databases]]
