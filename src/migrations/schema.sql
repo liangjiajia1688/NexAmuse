@@ -25,6 +25,17 @@ CREATE TABLE IF NOT EXISTS articles (
   views INTEGER DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  article_id INTEGER NOT NULL,
+  user_id INTEGER,
+  name TEXT,
+  email TEXT,
+  content TEXT NOT NULL,
+  status TEXT DEFAULT 'approved',
+  created_at INTEGER
+);
+
 CREATE TABLE IF NOT EXISTS news (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,

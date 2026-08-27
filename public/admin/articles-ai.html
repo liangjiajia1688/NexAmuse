@@ -135,9 +135,9 @@
 
       <!-- Hero -->
       <div class="ai-hero">
-        <div class="ai-badge">✨ AI POWERED · BUILT-IN ENGINE</div>
+        <div class="ai-badge">✨ AI POWERED · DEEPSEEK MODEL</div>
         <h1>🤖 AI Batch Article Writer</h1>
-        <p>Built-in intelligent content engine — generate full professional articles instantly. Real content, real structure, real SEO. No external API needed.</p>
+        <p>Generates full professional articles via the connected DeepSeek AI model — real content, real structure, real SEO. Falls back to the built-in engine automatically if no API key is configured.</p>
         <div class="stats-row">
           <div class="stat-item"><div class="stat-num" id="statTotal">0</div><div class="stat-lab">Articles Generated</div></div>
           <div class="stat-item"><div class="stat-num" id="statPublished">0</div><div class="stat-lab">Published</div></div>
@@ -274,7 +274,7 @@
           <div class="card" style="margin-top:16px">
             <div class="card-header"><h3>💡 Tips</h3></div>
             <div class="card-body" style="font-size:13px;color:var(--text-muted);line-height:1.9">
-              <p>✅ <strong style="color:#e2e8f0">100% Built-in</strong> — no API key, no internet required</p>
+              <p>✅ <strong style="color:#e2e8f0">DeepSeek AI</strong> — real model-generated articles when AI key is set</p>
               <p>✅ <strong style="color:#e2e8f0">Real content</strong> — structured sections, statistics & quotes</p>
               <p>✅ <strong style="color:#e2e8f0">SEO-ready</strong> — meta title, description & keywords generated</p>
               <p>✅ <strong style="color:#e2e8f0">Editable</strong> — click Edit to open full editor</p>
@@ -674,39 +674,59 @@ function startGeneration(){
   runPhase();
 }
 
-function finishGeneration(topics,style,length,keywords,brand,options,count){
+async function finishGeneration(topics,style,length,keywords,brand,options,count){
   const resultsList=document.getElementById('resultsList');
   resultsList.innerHTML='';
+  document.getElementById('genBtn').disabled=true;
+  document.getElementById('genBtn').textContent='⚙️ Generating...';
 
-  let generated=0;
-  function genNext(){
-    if(generated>=count){
-      // Done
-      document.getElementById('genBtn').disabled=false;
-      document.getElementById('genBtn').textContent='🚀 Generate Articles Now';
-      doneStep();
-      setProgress(100,'✅ Generation complete!');
-      document.getElementById('livePreview').style.display='none';
-      renderResults();
-      updateStats();
-      showToast(`✅ ${count} articles generated successfully!`,'success');
-      return;
-    }
-    const article=ARTICLE_ENGINE.generate(topics[generated],style,length,keywords,brand,options);
-    generatedArticles.push(article);
+  const category=document.getElementById('articleCategory').value;
+  let generated=0, usedLLM=0;
 
-    // Show live preview
+  for(const topic of topics){
+    setProgress(70+Math.round(generated/count*28), `Writing article ${generated+1} of ${count}…`);
     const lp=document.getElementById('livePreview');
     lp.style.display='block';
     document.getElementById('liveNum').textContent=generated+1;
-    document.getElementById('liveTitle').textContent=article.title;
-    document.getElementById('liveText').textContent=article.excerpt.slice(0,140)+'…';
+    document.getElementById('liveTitle').textContent='Thinking…';
+    document.getElementById('liveText').textContent=topic;
 
-    setProgress(70+Math.round(generated/count*28), `Writing article ${generated+1} of ${count}…`);
+    let article;
+    try{
+      const res=await fetch('../api/ai-write',{
+        method:'POST',
+        headers:{'Content-Type':'application/json', ...apiHeaders()},
+        body: JSON.stringify({topic,style,length,keywords,brand,options,category})
+      });
+      const data=await res.json();
+      if(data && data.ok && data.article){
+        article=data.article;
+        article.status='draft';
+        article.createdAt=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+        usedLLM++;
+      } else {
+        throw new Error(data && data.error ? data.error : 'llm-unavailable');
+      }
+    } catch(e){
+      // Graceful fallback to the built-in template engine (no key / offline)
+      article=ARTICLE_ENGINE.generate(topic,style,length,keywords,brand,options);
+    }
+
+    generatedArticles.push(article);
+    document.getElementById('liveTitle').textContent=article.title;
+    document.getElementById('liveText').textContent=(article.excerpt||'').slice(0,140)+'…';
     generated++;
-    setTimeout(genNext, 280+Math.random()*220);
   }
-  genNext();
+
+  document.getElementById('genBtn').disabled=false;
+  document.getElementById('genBtn').textContent='🚀 Generate Articles Now';
+  doneStep();
+  setProgress(100,'✅ Generation complete!');
+  document.getElementById('livePreview').style.display='none';
+  renderResults();
+  updateStats();
+  const mode = usedLLM>0 ? ` (${usedLLM} via DeepSeek AI)` : ' (built-in engine — add AI key for real AI)';
+  showToast(`✅ ${count} articles generated${mode}`,'success');
 }
 
 // ── Progress helpers ──────────────────────────────────────────
