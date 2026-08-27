@@ -863,6 +863,7 @@ async function saveArticleToServer(article) {
         meta_keywords: article.metaKeywords,
         word_count: article.wordCount,
         seo_score: article.seoScore,
+        cover: article.cover || '',
         status: 'published',
         author: 'AI Writer',
         source: 'ai'

@@ -126,6 +126,9 @@ export async function onRequestPost(context) {
         status: 'draft',
         model,
       };
+      // Best-effort AI cover: generate via Pollinations (free), host on ImgBB.
+      // Never blocks the article text — on any failure cover stays empty.
+      try { article.cover = await generateCover(article, env) || ''; } catch { article.cover = ''; }
       return json({ ok: true, fallback: false, model, article }, 200);
     } catch (e) {
       lastErr = `Gen failed on ${model}: ${e.message}`;
@@ -136,3 +139,47 @@ export async function onRequestPost(context) {
 }
 
 function brand_(body) { return body.brand || 'NexAmuse Global'; }
+
+// Safely base64-encode an ArrayBuffer without blowing the call stack on large images.
+function bufToBase64(buf) {
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+}
+
+// Generate a cover image via Pollinations (free, no key), then host it on ImgBB
+// (uses IMGBB_API_KEY secret) for a stable CDN URL. Falls back to the raw
+// Pollinations URL if ImgBB fails, or null if image generation itself fails.
+async function generateCover(article, env) {
+  const theme = (article.category || 'amusement industry').replace(/[^a-z0-9 ]/gi, '').trim();
+  const prompt = `Professional vibrant photograph of a modern family entertainment center and arcade, VR headsets and neon lighting, happy families, cinematic 4k, no text, theme: ${theme}`;
+  const seed = Math.floor(Math.random() * 1000000);
+  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1200&height=630&nologo=true&model=flux&seed=${seed}`;
+  const imgRes = await fetch(imgUrl, { redirect: 'follow' });
+  if (!imgRes.ok) return null;
+  const buf = await imgRes.arrayBuffer();
+
+  const key = env.IMGBB_API_KEY;
+  if (key) {
+    try {
+      const form = new URLSearchParams();
+      form.set('image', bufToBase64(buf));
+      form.set('name', (article.slug || 'cover').slice(0, 60));
+      const up = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: form.toString(),
+      });
+      if (up.ok) {
+        const j = await up.json().catch(() => ({}));
+        const u = j?.data?.url || j?.data?.display_url || (j?.data && j?.data?.image && j?.data?.image?.url);
+        if (u) return u;
+      }
+    } catch { /* fall through to raw pollinations url */ }
+  }
+  return imgUrl;
+}
