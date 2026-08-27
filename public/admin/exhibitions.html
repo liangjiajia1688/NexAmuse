@@ -107,18 +107,18 @@
           </div>
         </div>
         <div style="overflow-x:auto">
-          <table class="data-table" style="min-width:900px">
+          <table class="data-table expo-table" style="width:100%">
             <thead>
               <tr>
-                <th style="width:40px"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
-                <th onclick="sortBy('name')" style="cursor:pointer">Exhibition ↕</th>
-                <th onclick="sortBy('country')" style="cursor:pointer">Location ↕</th>
-                <th onclick="sortBy('startDate')" style="cursor:pointer">Date ↕</th>
-                <th>Scale</th>
-                <th onclick="sortBy('region')" style="cursor:pointer">Region ↕</th>
-                <th>Status</th>
-                <th>Source</th>
-                <th>Actions</th>
+                <th class="col-check"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
+                <th class="col-name" onclick="sortBy('name')" style="cursor:pointer">Exhibition ↕</th>
+                <th class="col-location" onclick="sortBy('country')" style="cursor:pointer">Location ↕</th>
+                <th class="col-date" onclick="sortBy('startDate')" style="cursor:pointer">Date ↕</th>
+                <th class="col-scale">Scale</th>
+                <th class="col-region" onclick="sortBy('region')" style="cursor:pointer">Region ↕</th>
+                <th class="col-status">Status</th>
+                <th class="col-source">Source</th>
+                <th class="col-actions">Actions</th>
               </tr>
             </thead>
             <tbody id="expoTableBody"></tbody>
@@ -325,19 +325,19 @@ function renderTable() {
         <div style="display:flex;align-items:center;gap:10px">
           <div class="expo-thumb">${e.flag||'🌐'}</div>
           <div>
-            <div style="font-weight:600;color:#e2e8f0;font-size:13px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div>
-            <div style="font-size:11px;color:var(--text-muted)">${e.category||''} ${e.featured?'⭐':''}${e.needs_review?'<span style="color:#f7971e"> · review</span>':''}</div>
+            <div style="font-weight:600;color:#e2e8f0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${e.name}">${e.name}</div>
+            <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.category||''} ${e.featured?'⭐':''}${e.needs_review?'<span style="color:#f7971e"> · review</span>':''}</div>
           </div>
         </div>
       </td>
-      <td><div style="font-size:13px;color:#e2e8f0">${e.flag||''} ${location}</div><div style="font-size:11px;color:var(--text-muted)">${e.venue||''}</div></td>
-      <td><div style="font-size:12px;color:#e2e8f0;white-space:nowrap">${fmtDate(e.startDate)}</div><div style="font-size:11px;color:var(--text-muted)">→ ${fmtDate(e.endDate)}</div></td>
-      <td><div style="font-size:12px;color:var(--text-muted);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.scale||'—'}</div></td>
+      <td><div style="font-size:13px;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${e.flag||''} ${location}">${e.flag||''} ${location}</div><div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${e.venue||''}">${e.venue||''}</div></td>
+      <td><div style="font-size:12px;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmtDate(e.startDate)} – ${fmtDate(e.endDate)}</div></td>
+      <td><div style="font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${e.scale||''}">${e.scale||'—'}</div></td>
       <td><span class="region-badge">${regionLabel(e.region)}</span></td>
       <td><span class="expo-status status-${STATUS_MAP[e.status]||'pending'}">${e.status||'—'}</span></td>
       <td style="font-size:18px;text-align:center" title="${e.date_source||'manual'}">${SOURCE_ICON[e.date_source]||'✍️'}</td>
       <td>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:6px;justify-content:flex-end">
           <button class="btn btn-outline btn-sm" onclick="openEdit(${e.id})">✏️</button>
           <button class="btn btn-sm" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3)" onclick="openDelete(${e.id},'${e.name.replace(/'/g,"\\'")}')">🗑</button>
           ${e.url?`<a href="${e.url}" target="_blank" class="btn btn-outline btn-sm">🔗</a>`:''}
