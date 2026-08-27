@@ -635,7 +635,8 @@ window.startCrawl = async function() {
   try {
     const res = await fetch('/api/exhibitions-refresh', { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
-    showToast((data.ok ? 'Exhibitions refreshed (' + (data.added || 0) + ' added).' : 'Failed: ' + JSON.stringify(data)), data.ok ? 'success' : 'error');
+    const refreshed = (data.summary?.inserted || 0) + (data.summary?.updated || 0);
+    showToast((data.ok ? 'Exhibitions refreshed (' + refreshed + ' changed, ' + data.summary?.preserved + ' preserved).' : 'Failed: ' + JSON.stringify(data)), data.ok ? 'success' : 'error');
   } catch (e) { showToast('Error: ' + e.message, 'error'); }
   finally { if (btn) { btn.disabled = false; btn.innerHTML = old; } }
 };

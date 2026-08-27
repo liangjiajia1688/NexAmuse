@@ -157,8 +157,12 @@
           <input type="date" class="form-input" id="f_end">
         </div>
         <div class="form-group">
-          <label class="form-label">Country / City</label>
-          <input class="form-input" id="f_city" placeholder="e.g. Guangzhou, China">
+          <label class="form-label">City</label>
+          <input class="form-input" id="f_city" placeholder="e.g. Guangzhou">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Country</label>
+          <input class="form-input" id="f_country" placeholder="e.g. China">
         </div>
         <div class="form-group">
           <label class="form-label">Venue</label>
@@ -198,6 +202,9 @@
             <option value="animation">Animation / IP</option>
             <option value="vr">VR / XR</option>
             <option value="attractions">Attractions / FEC</option>
+            <option value="betting">Betting / iGaming</option>
+            <option value="conference">Conference</option>
+            <option value="trade-show">Trade Show</option>
           </select>
         </div>
         <div class="form-group" style="grid-column:1/-1">
@@ -213,23 +220,16 @@
           <input class="form-input" id="f_flag" placeholder="🇨🇳" maxlength="4">
         </div>
         <div class="form-group">
-          <label class="form-label">Source</label>
-          <select class="form-input" id="f_source">
+          <label class="form-label">Date Source</label>
+          <select class="form-input" id="f_source" disabled>
             <option value="manual">Manual Entry</option>
             <option value="auto">Auto-Collected</option>
-            <option value="partner">Partner Submission</option>
           </select>
         </div>
         <div class="form-group" style="grid-column:1/-1">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
             <input type="checkbox" id="f_featured" style="width:16px;height:16px">
             <span class="form-label" style="margin:0">⭐ Mark as Featured (show on homepage)</span>
-          </label>
-        </div>
-        <div class="form-group" style="grid-column:1/-1">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="f_published" style="width:16px;height:16px" checked>
-            <span class="form-label" style="margin:0">🌐 Publish to website immediately</span>
           </label>
         </div>
       </div>
@@ -261,37 +261,29 @@
 <script src="admin.js"></script>
 <script>
 // ── Data ─────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'nexamuse_exhibitions';
-
-const DEFAULT_EXPOS = [
-  {id:1,name:"GTI Asia Pacific 2026",startDate:"2026-03-28",endDate:"2026-03-30",city:"Guangzhou, China",venue:"Poly World Trade Center",region:"asia",scale:"800+ Exhibitors · 60,000 sqm",status:"upcoming",category:"amusement",url:"https://www.gtichinaamuse.com",desc:"World's largest amusement equipment trade show.",flag:"🇨🇳",source:"manual",featured:true,published:true},
-  {id:2,name:"IAAPA Expo Europe 2026",startDate:"2026-09-22",endDate:"2026-09-25",city:"Barcelona, Spain",venue:"Fira de Barcelona Gran Via",region:"europe",scale:"500+ Exhibitors · 40,000 sqm",status:"upcoming",category:"attractions",url:"https://www.iaapa.org/expos/iaapa-expo-europe",desc:"Premier European attractions industry event.",flag:"🇪🇸",source:"manual",featured:true,published:true},
-  {id:3,name:"IAAPA Expo 2026",startDate:"2026-11-16",endDate:"2026-11-20",city:"Orlando, USA",venue:"Orange County Convention Center",region:"americas",scale:"1000+ Exhibitors · 500,000 sqft",status:"upcoming",category:"attractions",url:"https://www.iaapa.org/expos/iaapa-expo",desc:"The world's largest international trade show for the attractions industry.",flag:"🇺🇸",source:"manual",featured:true,published:true},
-  {id:4,name:"EAS – Euro Attractions Show 2025",startDate:"2025-09-23",endDate:"2025-09-25",city:"Amsterdam, Netherlands",venue:"RAI Amsterdam",region:"europe",scale:"400+ Exhibitors · 30,000 sqm",status:"ended",category:"attractions",url:"https://www.easexpo.eu",desc:"IAAPA's flagship European event.",flag:"🇳🇱",source:"manual",featured:false,published:true},
-  {id:5,name:"DEAL 2026",startDate:"2026-03-24",endDate:"2026-03-26",city:"Dubai, UAE",venue:"Dubai World Trade Centre",region:"middleeast",scale:"300+ Exhibitors · 20,000 sqm",status:"ongoing",category:"amusement",url:"https://www.dealexpo.com",desc:"Middle East's leading amusement & entertainment exhibition.",flag:"🇦🇪",source:"auto",featured:false,published:true},
-  {id:6,name:"China International Cartoon & Animation Festival",startDate:"2026-04-27",endDate:"2026-05-02",city:"Hangzhou, China",venue:"Hangzhou International Expo Center",region:"asia",scale:"1000+ Exhibitors · 80,000 sqm",status:"upcoming",category:"animation",url:"https://www.ccafest.com",desc:"The world's largest animation and cartoon festival with amusement crossover zone.",flag:"🇨🇳",source:"auto",featured:true,published:true},
-  {id:7,name:"NRAA Amusement Expo International 2026",startDate:"2026-02-24",endDate:"2026-02-26",city:"Las Vegas, USA",venue:"Las Vegas Convention Center",region:"americas",scale:"250+ Exhibitors",status:"ended",category:"arcade",url:"https://www.amusementexpo.org",desc:"North America's premier coin-operated amusement and gaming trade show.",flag:"🇺🇸",source:"manual",featured:false,published:true},
-  {id:8,name:"GTI Taipei Amusement &amp; Gaming Show 2026",startDate:"2026-05-20",endDate:"2026-05-23",city:"Taipei, Taiwan",venue:"Taipei Nangang Exhibition Center",region:"asia",scale:"400+ Exhibitors",status:"upcoming",category:"arcade",url:"https://www.gtichinaamuse.com/taipei",desc:"Leading arcade & amusement trade show in Taiwan.",flag:"🇹🇼",source:"auto",featured:false,published:true},
-  {id:9,name:"ATEI 2026 – Amusements Technology Expo",startDate:"2026-01-21",endDate:"2026-01-23",city:"London, UK",venue:"ExCeL London",region:"europe",scale:"200+ Exhibitors",status:"ended",category:"arcade",url:"https://www.ateionline.com",desc:"UK's largest coin-op & amusement technology exhibition.",flag:"🇬🇧",source:"manual",featured:false,published:true},
-  {id:10,name:"ICE London 2026",startDate:"2026-02-03",endDate:"2026-02-05",city:"London, UK",venue:"ExCeL London",region:"europe",scale:"600+ Exhibitors",status:"ended",category:"arcade",url:"https://www.icelondon.uk.com",desc:"International gaming, amusement and attractions event.",flag:"🇬🇧",source:"manual",featured:false,published:true},
-  {id:11,name:"Fun World 2026 (Spielwarenmesse + FEC Zone)",startDate:"2026-01-28",endDate:"2026-02-01",city:"Nuremberg, Germany",venue:"Nuremberg Exhibition Centre",region:"europe",scale:"3000+ Exhibitors",status:"ended",category:"theme-park",url:"https://www.spielwarenmesse.de",desc:"World's largest toy fair with dedicated FEC and attraction zone.",flag:"🇩🇪",source:"auto",featured:false,published:true},
-  {id:12,name:"IAAPA Expo Asia 2026",startDate:"2026-06-09",endDate:"2026-06-12",city:"Singapore",venue:"Marina Bay Sands Expo",region:"asia",scale:"350+ Exhibitors",status:"upcoming",category:"attractions",url:"https://www.iaapa.org/expos/iaapa-expo-asia",desc:"The premier Asia Pacific event for the global attractions industry.",flag:"🇸🇬",source:"manual",featured:true,published:true},
-];
-
-let expos = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || DEFAULT_EXPOS;
+const API_BASE = '/api/exhibitions';
+let expos = [];
 let currentRegion = 'all', currentStatus = 'all', currentSort = 'startDate', sortAsc = true;
 let currentPage = 1, perPage = 10;
 let deleteTargetId = null;
 
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(expos)); publishToFrontend(); }
-function publishToFrontend() { localStorage.setItem('nexamuse_exhibitions_published', JSON.stringify(expos.filter(e=>e.published))); }
+async function loadExpos() {
+  try {
+    const data = await apiGet(API_BASE);
+    expos = data.exhibitions || [];
+    renderTable();
+  } catch (e) {
+    showToast('Failed to load exhibitions: ' + e.message, 'error');
+    console.error(e);
+  }
+}
 
 // ── Stats ─────────────────────────────────────────────────────────
 function updateStats() {
   document.getElementById('statTotal').textContent = expos.length;
   document.getElementById('statUpcoming').textContent = expos.filter(e=>e.status==='upcoming').length;
   document.getElementById('statOngoing').textContent = expos.filter(e=>e.status==='ongoing').length;
-  const countries = new Set(expos.map(e=>e.city?.split(',')[1]?.trim() || e.city));
+  const countries = new Set(expos.map(e=>e.country?.trim()).filter(Boolean));
   document.getElementById('statCountries').textContent = countries.size;
 }
 
@@ -303,11 +295,11 @@ function getFiltered() {
     if (currentRegion !== 'all' && e.region !== currentRegion) return false;
     if (currentStatus !== 'all' && e.status !== currentStatus) return false;
     if (yr && !e.startDate?.startsWith(yr)) return false;
-    if (q && !e.name.toLowerCase().includes(q) && !e.city?.toLowerCase().includes(q)) return false;
+    if (q && !e.name.toLowerCase().includes(q) && !e.city?.toLowerCase().includes(q) && !e.country?.toLowerCase().includes(q)) return false;
     return true;
   }).sort((a,b)=>{
     let va=a[currentSort]||'', vb=b[currentSort]||'';
-    return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return sortAsc ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
   });
 }
 
@@ -319,12 +311,14 @@ function renderTable() {
   if (currentPage > pages) currentPage = 1;
   const slice = data.slice((currentPage-1)*perPage, currentPage*perPage);
 
-  document.getElementById('pageInfo').textContent = `Showing ${(currentPage-1)*perPage+1}–${Math.min(currentPage*perPage,total)} of ${total}`;
+  document.getElementById('pageInfo').textContent = `Showing ${total ? (currentPage-1)*perPage+1 : 0}–${Math.min(currentPage*perPage,total)} of ${total}`;
 
   const STATUS_MAP = {upcoming:'upcoming',ongoing:'ongoing',ended:'ended',cancelled:'cancelled',pending:'pending'};
-  const SOURCE_ICON = {manual:'✍️',auto:'🤖',partner:'🤝'};
+  const SOURCE_ICON = {manual:'✍️',scraped:'🤖',partner:'🤝'};
 
-  document.getElementById('expoTableBody').innerHTML = slice.map(e => `
+  document.getElementById('expoTableBody').innerHTML = slice.map(e => {
+    const location = [e.city, e.country].filter(Boolean).join(', ') || '—';
+    return `
     <tr class="expo-row">
       <td><input type="checkbox" class="row-check" data-id="${e.id}"></td>
       <td>
@@ -332,16 +326,16 @@ function renderTable() {
           <div class="expo-thumb">${e.flag||'🌐'}</div>
           <div>
             <div style="font-weight:600;color:#e2e8f0;font-size:13px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div>
-            <div style="font-size:11px;color:var(--text-muted)">${e.category||''} ${e.featured?'⭐':''}${e.published?'':'<span style="color:#ef4444">· hidden</span>'}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${e.category||''} ${e.featured?'⭐':''}${e.needs_review?'<span style="color:#f7971e"> · review</span>':''}</div>
           </div>
         </div>
       </td>
-      <td><div style="font-size:13px;color:#e2e8f0">${e.flag||''} ${e.city||'—'}</div><div style="font-size:11px;color:var(--text-muted)">${e.venue||''}</div></td>
+      <td><div style="font-size:13px;color:#e2e8f0">${e.flag||''} ${location}</div><div style="font-size:11px;color:var(--text-muted)">${e.venue||''}</div></td>
       <td><div style="font-size:12px;color:#e2e8f0;white-space:nowrap">${fmtDate(e.startDate)}</div><div style="font-size:11px;color:var(--text-muted)">→ ${fmtDate(e.endDate)}</div></td>
       <td><div style="font-size:12px;color:var(--text-muted);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.scale||'—'}</div></td>
       <td><span class="region-badge">${regionLabel(e.region)}</span></td>
       <td><span class="expo-status status-${STATUS_MAP[e.status]||'pending'}">${e.status||'—'}</span></td>
-      <td style="font-size:18px;text-align:center" title="${e.source||''}">${SOURCE_ICON[e.source]||'✍️'}</td>
+      <td style="font-size:18px;text-align:center" title="${e.date_source||'manual'}">${SOURCE_ICON[e.date_source]||'✍️'}</td>
       <td>
         <div style="display:flex;gap:6px">
           <button class="btn btn-outline btn-sm" onclick="openEdit(${e.id})">✏️</button>
@@ -350,7 +344,7 @@ function renderTable() {
         </div>
       </td>
     </tr>
-  `).join('');
+  `}).join('');
 
   // Pagination
   let pg = '';
@@ -373,13 +367,12 @@ function toggleAll(cb) { document.querySelectorAll('.row-check').forEach(c=>c.ch
 function openAddModal() {
   document.getElementById('editId').value='';
   document.getElementById('modalTitle').textContent='➕ Add Exhibition';
-  ['name','start','end','city','venue','scale','url','desc','flag'].forEach(k=>{ const el=document.getElementById('f_'+k); if(el) el.value=''; });
+  ['name','start','end','city','country','venue','scale','url','desc','flag'].forEach(k=>{ const el=document.getElementById('f_'+k); if(el) el.value=''; });
   document.getElementById('f_region').value='asia';
   document.getElementById('f_status').value='upcoming';
   document.getElementById('f_category').value='amusement';
   document.getElementById('f_source').value='manual';
   document.getElementById('f_featured').checked=false;
-  document.getElementById('f_published').checked=true;
   document.getElementById('expoModal').style.display='flex';
 }
 
@@ -391,52 +384,55 @@ function openEdit(id) {
   document.getElementById('f_start').value=e.startDate||'';
   document.getElementById('f_end').value=e.endDate||'';
   document.getElementById('f_city').value=e.city||'';
+  document.getElementById('f_country').value=e.country||'';
   document.getElementById('f_venue').value=e.venue||'';
   document.getElementById('f_scale').value=e.scale||'';
   document.getElementById('f_url').value=e.url||'';
-  document.getElementById('f_desc').value=e.desc||'';
+  document.getElementById('f_desc').value=e.description||'';
   document.getElementById('f_flag').value=e.flag||'';
   document.getElementById('f_region').value=e.region||'asia';
   document.getElementById('f_status').value=e.status||'upcoming';
   document.getElementById('f_category').value=e.category||'amusement';
-  document.getElementById('f_source').value=e.source||'manual';
+  document.getElementById('f_source').value=(e.date_source==='scraped'?'auto':'manual');
   document.getElementById('f_featured').checked=!!e.featured;
-  document.getElementById('f_published').checked=!!e.published;
   document.getElementById('expoModal').style.display='flex';
 }
 
 function closeModal() { document.getElementById('expoModal').style.display='none'; }
 
-function saveExhibition() {
+async function saveExhibition() {
   const name=document.getElementById('f_name').value.trim();
-  if(!name){ alert('Exhibition name is required!'); return; }
+  if(!name){ showToast('Exhibition name is required!','error'); return; }
   const obj = {
-    name, startDate:document.getElementById('f_start').value,
+    name,
+    startDate:document.getElementById('f_start').value,
     endDate:document.getElementById('f_end').value,
-    city:document.getElementById('f_city').value,
-    venue:document.getElementById('f_venue').value,
-    scale:document.getElementById('f_scale').value,
-    url:document.getElementById('f_url').value,
-    desc:document.getElementById('f_desc').value,
-    flag:document.getElementById('f_flag').value||'🌐',
+    city:document.getElementById('f_city').value.trim(),
+    country:document.getElementById('f_country').value.trim(),
+    venue:document.getElementById('f_venue').value.trim(),
+    scale:document.getElementById('f_scale').value.trim(),
+    url:document.getElementById('f_url').value.trim(),
+    description:document.getElementById('f_desc').value.trim(),
+    flag:document.getElementById('f_flag').value.trim()||'🌐',
     region:document.getElementById('f_region').value,
     status:document.getElementById('f_status').value,
     category:document.getElementById('f_category').value,
-    source:document.getElementById('f_source').value,
-    featured:document.getElementById('f_featured').checked,
-    published:document.getElementById('f_published').checked,
+    featured:document.getElementById('f_featured').checked
   };
   const editId=parseInt(document.getElementById('editId').value);
-  if(editId) {
-    const idx=expos.findIndex(e=>e.id===editId);
-    if(idx>-1){ expos[idx]={...expos[idx],...obj}; }
-    showToast('Exhibition updated!');
-  } else {
-    obj.id = Date.now();
-    expos.unshift(obj);
-    showToast('Exhibition added!');
+  try {
+    if(editId) {
+      await apiSend(API_BASE+'/'+editId, 'PUT', obj);
+      showToast('Exhibition updated!','success');
+    } else {
+      await apiSend(API_BASE, 'POST', obj);
+      showToast('Exhibition added!','success');
+    }
+    closeModal();
+    await loadExpos();
+  } catch(e) {
+    showToast('Save failed: ' + e.message, 'error');
   }
-  saveData(); closeModal(); renderTable();
 }
 
 // ── Delete ─────────────────────────────────────────────────────────
@@ -445,35 +441,30 @@ function openDelete(id,name) {
   document.getElementById('deleteExpoName').textContent=name;
   document.getElementById('deleteModal').style.display='flex';
 }
-function confirmDelete() {
-  expos=expos.filter(e=>e.id!==deleteTargetId);
-  saveData(); renderTable();
+async function confirmDelete() {
+  try {
+    await apiSend(API_BASE+'/'+deleteTargetId, 'DELETE');
+    showToast('Exhibition deleted.','success');
+    await loadExpos();
+  } catch(e) {
+    showToast('Delete failed: ' + e.message, 'error');
+  }
   document.getElementById('deleteModal').style.display='none';
-  showToast('Exhibition deleted.');
 }
 
 // ── Export ─────────────────────────────────────────────────────────
 function exportCSV() {
   const data=getFiltered();
-  const header=['ID','Name','Start','End','City','Venue','Region','Scale','Status','Category','URL'];
-  const rows=data.map(e=>[e.id,e.name,e.startDate,e.endDate,e.city,e.venue,regionLabel(e.region),e.scale,e.status,e.category,e.url].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+  const header=['ID','Name','Start','End','City','Country','Venue','Region','Scale','Status','Category','URL'];
+  const rows=data.map(e=>[e.id,e.name,e.startDate,e.endDate,e.city,e.country,e.venue,regionLabel(e.region),e.scale,e.status,e.category,e.url].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
   const csv=[header.join(','),...rows].join('\n');
   const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='exhibitions.csv'; a.click();
-}
-
-// ── Toast ─────────────────────────────────────────────────────────
-function showToast(msg) {
-  let t=document.getElementById('toast');
-  if(!t){t=document.createElement('div');t.id='toast';t.style='position:fixed;bottom:30px;right:30px;background:#22c55e;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:9999;transition:.3s;box-shadow:0 4px 16px rgba(0,0,0,.4)';document.body.appendChild(t);}
-  t.textContent=msg; t.style.opacity='1';
-  setTimeout(()=>t.style.opacity='0',2500);
 }
 
 function openCrawlerPage() { window.location.href='exhibitions-crawler.html'; }
 
 // ── Init ─────────────────────────────────────────────────────────
-publishToFrontend();
-renderTable();
+loadExpos();
 </script>
 </body>
 </html>

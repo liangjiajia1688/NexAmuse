@@ -1,43 +1,54 @@
-import { json, fail, now } from '../_lib/db.js';
-import { authUser } from '../_lib/auth.js';
+import { json, fail, now } from '../../_lib/db.js';
+import { authUser } from '../../_lib/auth.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type,Authorization'
 };
 
 export async function onRequest(context) {
-  const { request, env } = context;
+  const { request, env, params } = context;
+  const id = params.id;
 
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
-  // GET — public list
+  // GET — public single exhibition
   if (request.method === 'GET') {
-    const rows = await env.DB.prepare('SELECT * FROM exhibitions ORDER BY startDate ASC').all();
-    return json({ exhibitions: rows.results || [] });
+    const row = await env.DB.prepare('SELECT * FROM exhibitions WHERE id = ?').bind(id).first();
+    if (!row) return fail('Not found', 404);
+    return json({ exhibition: row });
   }
 
-  // POST — admin create
-  if (request.method === 'POST') {
-    const user = await authUser(request, env);
-    if (!user || user.role !== 'admin') return fail('Unauthorized', 403);
+  // Everything below requires an admin token.
+  const user = await authUser(request, env);
+  if (!user || user.role !== 'admin') return fail('Unauthorized', 403);
+
+  if (request.method === 'DELETE') {
+    await env.DB.prepare('DELETE FROM exhibitions WHERE id = ?').bind(id).run();
+    return json({ ok: true });
+  }
+
+  if (request.method === 'PUT') {
     let body;
     try { body = await request.json(); } catch (e) { return fail('Invalid JSON'); }
-    const name = (body.name || '').trim();
-    if (!name) return fail('Name is required');
+    const existing = await env.DB.prepare('SELECT id FROM exhibitions WHERE id = ?').bind(id).first();
+    if (!existing) return fail('Not found', 404);
 
     const startDate = (body.startDate || '').trim() || null;
     const endDate = (body.endDate || '').trim() || null;
     const status = (body.status || '').trim() || statusFor(startDate, endDate);
 
-    const res = await env.DB.prepare(
-      `INSERT INTO exhibitions (name,city,venue,country,startDate,endDate,status,category,region,flag,scale,description,url,featured,updated_at,date_source,needs_review)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+    await env.DB.prepare(
+      `UPDATE exhibitions SET
+        name=?, city=?, venue=?, country=?, startDate=?, endDate=?, status=?,
+        category=?, region=?, flag=?, scale=?, description=?, url=?,
+        featured=?, updated_at=?, date_source=?, needs_review=?
+       WHERE id=?`
     ).bind(
-      name,
+      (body.name || '').trim(),
       (body.city || '').trim(),
       (body.venue || '').trim(),
       (body.country || '').trim(),
@@ -53,10 +64,10 @@ export async function onRequest(context) {
       body.featured ? 1 : 0,
       now(),
       'manual',
-      0
+      0,
+      id
     ).run();
-    const id = res.meta && res.meta.last_row_id;
-    return json({ ok: true, id, name }, 201);
+    return json({ ok: true, id });
   }
 
   return fail('Method not allowed', 405);
