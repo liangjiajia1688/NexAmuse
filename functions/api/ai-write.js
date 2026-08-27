@@ -63,7 +63,7 @@ function computeSeo(a) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const user = authUser(request, env);
+  const user = await authUser(request, env);
   if (!user) return fail('Unauthorized', 401);
 
   let body;

@@ -112,7 +112,7 @@ async function loadArticles(){
   const body = document.getElementById('articleBody');
   body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted)">Loading articles…</td></tr>';
   try {
-    const data = await apiGet('../api/articles?limit=200');
+    const data = await apiGet('/api/articles?limit=200');
     articles = data.articles || [];
     // Populate category filter
     const cats = [...new Set(articles.map(a=>a.category).filter(Boolean))].sort();
@@ -168,7 +168,7 @@ function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.chec
 function deleteArticle(id){
   if(!confirm('Delete this article?')) return;
   (async()=>{
-    try { await apiSend('../api/articles/'+id,'DELETE'); showToast('Article deleted','success'); loadArticles(); }
+    try { await apiSend('/api/articles/'+id,'DELETE'); showToast('Article deleted','success'); loadArticles(); }
     catch(e){ alert('Delete failed: '+e.message); }
   })();
 }
@@ -179,8 +179,8 @@ async function bulkAction(act){
   if(act==='delete' && !confirm('Delete '+ids.length+' article(s)?')) return;
   try {
     await Promise.all(ids.map(id=> act==='delete'
-      ? apiSend('../api/articles/'+id,'DELETE')
-      : apiSend('../api/articles/'+id,'PUT',{status:act})));
+      ? apiSend('/api/articles/'+id,'DELETE')
+      : apiSend('/api/articles/'+id,'PUT',{status:act})));
     showToast(act.charAt(0).toUpperCase()+act.slice(1)+' applied to '+ids.length+' items','success');
     loadArticles();
   } catch(e){ alert('Bulk action failed: '+e.message); }

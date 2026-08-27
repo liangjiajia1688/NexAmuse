@@ -93,7 +93,7 @@ async function loadMembers(){
   const body = document.getElementById('membersBody');
   body.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-muted)">Loading members…</td></tr>';
   try {
-    const data = await apiGet('../api/users');
+    const data = await apiGet('/api/users');
     members = (data.users || []).map(u => ({
       id: u.id,
       name: u.username,
@@ -165,7 +165,7 @@ function editMember(id){
   if(r!=='user'&&r!=='admin'){ alert('Role must be "user" or "admin"'); return; }
   (async ()=>{
     try {
-      await apiSend('../api/users/'+id, 'PUT', { role: r });
+      await apiSend('/api/users/'+id, 'PUT', { role: r });
       showToast('Member updated', 'success');
       loadMembers();
     } catch(e){ alert('Update failed: '+e.message); }
@@ -176,7 +176,7 @@ function deleteMember(id){
   if(!confirm('Delete member "'+(m?m.name:id)+'"? This cannot be undone.')) return;
   (async ()=>{
     try {
-      await apiSend('../api/users/'+id, 'DELETE');
+      await apiSend('/api/users/'+id, 'DELETE');
       showToast('Member deleted', 'success');
       loadMembers();
     } catch(e){ alert('Delete failed: '+e.message); }

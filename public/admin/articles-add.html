@@ -225,7 +225,7 @@ async function publishToApi(){
   const btn = document.querySelector('button.btn-gold');
   try {
     if(btn){ btn.disabled = true; btn.textContent = 'Publishing…'; }
-    const r = await fetch('../api/articles', { method:'POST', headers: apiHeaders(), body: JSON.stringify({ title, excerpt, content, category, author:'NexAmuse Editorial' }) });
+    const r = await fetch('/api/articles', { method:'POST', headers: apiHeaders(), body: JSON.stringify({ title, excerpt, content, category, author:'NexAmuse Editorial' }) });
     const data = await r.json().catch(()=>({}));
     if(!r.ok){ showToast('Publish failed: '+(data.error||r.status),'error'); return; }
     showToast('Article published successfully!','success');

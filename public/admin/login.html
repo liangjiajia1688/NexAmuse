@@ -131,10 +131,20 @@ function doLogin(){
       localStorage.setItem('ng_admin_user', u);
       // Also obtain a real API token so admin pages/crawlers can call authenticated endpoints.
       try {
-        const r = await fetch('../api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ identifier:'dinice', password:'dinice123' }) });
+        const r = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ identifier:'dinice', password:'dinice123' }) });
         if (r.ok) {
           const data = await r.json();
-          localStorage.setItem('nexamuse_user', JSON.stringify({ token: data.token, user: data.user }));
+          const u = data.user;
+          localStorage.setItem('nexamuse_user', JSON.stringify({
+            token: data.token,
+            id: u.id,
+            name: u.username || u.name || u.email,
+            email: u.email,
+            username: u.username,
+            role: u.role,
+            avatar: u.avatar || null,
+            loginTime: Date.now()
+          }));
         }
       } catch (e) { console.warn('Admin token fetch failed', e); }
       window.location.href='index.html';

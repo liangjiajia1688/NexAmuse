@@ -320,13 +320,15 @@
   try{
     const s=JSON.parse(localStorage.getItem('nexamuse_user')||'null');
     if(s){
-      const ini=s.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const name = s.name || s.username || (s.user && (s.user.name || s.user.username)) || 'Admin';
+      const email = s.email || (s.user && s.user.email) || '';
+      const ini=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       document.getElementById('adminAvatarLetter').textContent=ini;
-      document.getElementById('adminNameLabel').textContent=s.name.split(' ')[0];
-      document.getElementById('dropdownName').textContent=s.name;
-      document.getElementById('dropdownEmail').textContent=s.email;
+      document.getElementById('adminNameLabel').textContent=name.split(' ')[0];
+      document.getElementById('dropdownName').textContent=name;
+      document.getElementById('dropdownEmail').textContent=email;
     }
-  }catch(e){}
+  }catch(e){ console.warn('initHeader error', e); }
 })();
 
 // ── Topic Chips ──────────────────────────────────────────────
@@ -693,7 +695,7 @@ async function finishGeneration(topics,style,length,keywords,brand,options,count
 
     let article;
     try{
-      const res=await fetch('../api/ai-write',{
+      const res=await fetch('/api/ai-write',{
         method:'POST',
         headers:{'Content-Type':'application/json', ...apiHeaders()},
         body: JSON.stringify({topic,style,length,keywords,brand,options,category})
@@ -845,32 +847,37 @@ function editArticle(){
 }
 
 // ── API Functions ───────────────────────────────────────────────
-const API_BASE = '../api/articles';
+const API_BASE = '/api/articles';
 
 async function saveArticleToServer(article) {
   try {
+    const payload = {
+      title: article.title,
+      slug: article.slug,
+      excerpt: article.excerpt,
+      content: article.content,
+      category: article.category,
+      meta_title: article.metaTitle,
+      meta_desc: article.metaDesc,
+      meta_keywords: article.metaKeywords,
+      word_count: article.wordCount,
+      seo_score: article.seoScore,
+      cover: article.cover || '',
+      status: 'published',
+      author: 'AI Writer',
+      source: 'ai'
+    };
+    console.log('[publish] POST', API_BASE, payload);
     const response = await fetch(API_BASE, {
       method: 'POST',
       headers: apiHeaders(),
-      body: JSON.stringify({
-        title: article.title,
-        slug: article.slug,
-        excerpt: article.excerpt,
-        content: article.content,
-        category: article.category,
-        meta_title: article.metaTitle,
-        meta_desc: article.metaDesc,
-        meta_keywords: article.metaKeywords,
-        word_count: article.wordCount,
-        seo_score: article.seoScore,
-        cover: article.cover || '',
-        status: 'published',
-        author: 'AI Writer',
-        source: 'ai'
-      })
+      body: JSON.stringify(payload)
     });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) return { error: result.error || ('HTTP ' + response.status) };
+    const text = await response.text();
+    let result = {};
+    try { result = text ? JSON.parse(text) : {}; } catch (e) { result = { raw: text }; }
+    console.log('[publish] response', response.status, result);
+    if (!response.ok) return { error: result.error || ('HTTP ' + response.status), detail: result };
     return result;
   } catch (e) {
     console.error('Failed to save to server:', e);
@@ -898,7 +905,7 @@ async function publishOne(i){
   const result = await saveArticleToServer(article);
   if (result && result.error) {
     renderList(); updateStats();
-    showToast('Publish failed: '+result.error+' (kept local)', 'error');
+    showToast('Publish failed: '+result.error+' (kept local). See console (F12) for details.', 'error');
     return;
   }
   article.serverId = result.id;
@@ -910,17 +917,21 @@ async function publishOne(i){
 
 async function publishAll(){
   if(!generatedArticles.length){ showToast('No articles to publish','error'); return; }
-  let ok=0, fail=0;
+  let ok=0, fail=0, lastError='';
   for (const a of generatedArticles) {
     a.status='published';
     a.publishedAt = new Date().toISOString();
     const r = await saveArticleToServer(a);
-    if (r && r.error) { fail++; } else { a.serverId = r.id; ok++; }
+    if (r && r.error) { fail++; lastError = r.error; console.error('[publish] failed', a.title, r); }
+    else { a.serverId = r.id; ok++; }
   }
   saveArticlesToStorage(generatedArticles);
   renderList();
   updateStats();
-  showToast(`Published ${ok} article(s)${fail?', '+fail+' failed':''}`, fail ? 'warning' : 'success');
+  const msg = fail
+    ? `Published ${ok} article(s), ${fail} failed${lastError ? ': ' + lastError : ''}. Open browser console (F12) for details.`
+    : `Published ${ok} article(s) successfully`;
+  showToast(msg, fail ? 'warning' : 'success');
 }
 function removeArticle(i){
   generatedArticles.splice(i,1);
