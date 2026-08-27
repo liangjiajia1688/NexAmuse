@@ -204,6 +204,15 @@
 </div>
 <script src="admin.js"></script>
 <script>
+function apiHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  try {
+    const s = JSON.parse(localStorage.getItem('nexamuse_user') || 'null');
+    const token = s && (s.token || (s.user && s.user.token));
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+  } catch (e) {}
+  return headers;
+}
 const cats=['Industry News','Product Release','Exhibition','Technology','Business','Interview'];
 document.getElementById('catList').innerHTML=cats.map(c=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" class="cat-cb" data-cat="${c}"> ${c}</label>`).join('');
 function fmt(cmd,val){document.execCommand(cmd,false,val||null)}
