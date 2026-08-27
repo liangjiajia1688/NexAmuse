@@ -14,11 +14,11 @@ export async function onRequest(context) {
   let rows;
   if (q) {
     rows = await env.DB.prepare(
-      'SELECT id,email,username,role,avatar,created_at FROM users WHERE email LIKE ? OR username LIKE ? ORDER BY created_at DESC'
+      'SELECT id,email,username,role,avatar,level,points,status,created_at FROM users WHERE email LIKE ? OR username LIKE ? ORDER BY created_at DESC'
     ).bind('%' + q + '%', '%' + q + '%').all();
   } else {
     rows = await env.DB.prepare(
-      'SELECT id,email,username,role,avatar,created_at FROM users ORDER BY created_at DESC'
+      'SELECT id,email,username,role,avatar,level,points,status,created_at FROM users ORDER BY created_at DESC'
     ).all();
   }
   return json({ users: rows.results || [] });

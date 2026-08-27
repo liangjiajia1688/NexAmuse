@@ -56,6 +56,6 @@ export async function authUser(request, env) {
   if (!token) return null;
   const uid = await verifyToken(token, env.TOKEN_SECRET);
   if (!uid) return null;
-  const row = await env.DB.prepare('SELECT id,email,username,role,avatar FROM users WHERE id=?').bind(uid).first();
+  const row = await env.DB.prepare('SELECT id,email,username,role,avatar,level,points,status,is_super FROM users WHERE id=?').bind(uid).first();
   return row || null;
 }

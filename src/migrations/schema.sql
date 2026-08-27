@@ -8,6 +8,10 @@ CREATE TABLE IF NOT EXISTS users (
   password TEXT NOT NULL,
   role TEXT DEFAULT 'user',
   avatar TEXT,
+  level TEXT DEFAULT 'Standard',
+  points INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'active',
+  is_super INTEGER DEFAULT 0,
   created_at INTEGER
 );
 

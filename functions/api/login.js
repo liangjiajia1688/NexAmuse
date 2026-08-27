@@ -19,6 +19,16 @@ export async function onRequest(context) {
   const token = await makeToken(row.id, env.TOKEN_SECRET);
   return json({
     token,
-    user: { id: row.id, email: row.email, username: row.username, role: row.role, avatar: row.avatar }
+    user: {
+      id: row.id,
+      email: row.email,
+      username: row.username,
+      role: row.role,
+      avatar: row.avatar,
+      level: row.level,
+      points: row.points,
+      status: row.status,
+      is_super: row.is_super
+    }
   });
 }
