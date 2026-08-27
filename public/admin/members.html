@@ -58,7 +58,7 @@
         </div>
         <div class="toolbar-right">
           <button class="btn-primary" onclick="location.href='members-add.html'">+ Add Member</button>
-          <button class="btn-secondary">Export CSV</button>
+          <button class="btn-secondary" onclick="exportCSV()">Export CSV</button>
         </div>
       </div>
       <div class="form-section" style="padding:0;overflow:hidden">
@@ -78,19 +78,40 @@
 </div>
 <script src="admin.js"></script>
 <script>
-const members = [
-  {id:1,name:'James Lawson',email:'j.lawson@globalfun.com',company:'Global Fun Ltd.',country:'🇺🇸 USA',level:'Gold',points:4820,joined:'2026-01-15',status:'Active'},
-  {id:2,name:'Sofia Kramer',email:'sofia@amusement-gmbh.de',company:'Amusement GmbH',country:'🇩🇪 Germany',level:'Silver',points:1230,joined:'2026-01-20',status:'Active'},
-  {id:3,name:'Takeshi Noda',email:'t.noda@playworld.jp',company:'Play World Co.',country:'🇯🇵 Japan',level:'Platinum',points:9870,joined:'2025-09-10',status:'Active'},
-  {id:4,name:'Ahmed Mansour',email:'ahmed@funzone.ae',company:'FunZone AE',country:'🇦🇪 UAE',level:'Gold',points:3340,joined:'2025-11-05',status:'Active'},
-  {id:5,name:'Laura Chen',email:'laura@arcadesg.com',company:'Arcade Masters SG',country:'🇸🇬 Singapore',level:'Gold',points:5100,joined:'2025-10-22',status:'Active'},
-  {id:6,name:'Carlos Silva',email:'carlos@entertain.br',company:'Entertainment BR',country:'🇧🇷 Brazil',level:'Standard',points:320,joined:'2026-02-14',status:'Inactive'},
-  {id:7,name:'Emma Wilson',email:'emma@funpark.uk',company:'FunPark UK',country:'🇬🇧 UK',level:'Silver',points:1850,joined:'2026-01-03',status:'Active'},
-  {id:8,name:'Ravi Patel',email:'ravi@games.in',company:'GameZone India',country:'🇮🇳 India',level:'Standard',points:560,joined:'2026-03-01',status:'Active'},
-];
-let page=1,perPage=6;
-function levelClass(l){return l==='Platinum'?'level-platinum':l==='Gold'?'level-gold':l==='Silver'?'level-silver':'level-standard';}
-function filterMembers(){page=1;renderTable();}
+// Auth guard — admin token required to call the users API.
+if(!getApiToken()){ window.location.href='login.html'; }
+
+let members = [];
+let page=1, perPage=6;
+
+const AV_COLORS = ['#667eea','#d4af37','#11998e','#ee0979','#4facfe'];
+function avatarText(name){ return (name||'?').trim().split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase(); }
+function esc(s){ return (s==null?'':String(s)).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function levelCls(l){ return l==='Platinum'?'level-platinum':l==='Gold'?'level-gold':l==='Silver'?'level-silver':'level-standard'; }
+
+async function loadMembers(){
+  const body = document.getElementById('membersBody');
+  body.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-muted)">Loading members…</td></tr>';
+  try {
+    const data = await apiGet('../api/users');
+    members = (data.users || []).map(u => ({
+      id: u.id,
+      name: u.username,
+      email: u.email,
+      company: u.role === 'admin' ? 'NexAmuse (Admin)' : '—',
+      country: '🌐',
+      level: u.role === 'admin' ? 'Platinum' : 'Standard',
+      points: 0,
+      joined: u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB') : '—',
+      status: 'Active'
+    }));
+    renderTable();
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:#ff6b6b">Failed to load members: '+esc(e.message)+'</td></tr>';
+  }
+}
+
+function filterMembers(){ page=1; renderTable(); }
 function renderTable(){
   const q=document.getElementById('searchInput').value.toLowerCase();
   const lf=document.getElementById('levelFilter').value;
@@ -101,16 +122,17 @@ function renderTable(){
     const smatch=!sf||m.status===sf;
     return match&&lmatch&&smatch;
   });
-  const total=data.length,pages=Math.ceil(total/perPage);
+  const total=data.length, pages=Math.max(1,Math.ceil(total/perPage));
+  if(page>pages) page=pages;
   const slice=data.slice((page-1)*perPage,page*perPage);
-  document.getElementById('membersBody').innerHTML=slice.map(m=>`
+  document.getElementById('membersBody').innerHTML = slice.length ? slice.map(m=>`
     <tr>
       <td><input type="checkbox" class="row-check"></td>
-      <td><div class="cell-avatar"><div class="av" style="background:${['#667eea','#d4af37','#11998e','#ee0979','#4facfe'][m.id%5]}">${m.name.split(' ').map(x=>x[0]).join('')}</div><div><div>${m.name}</div><div style="font-size:11px;color:var(--text-muted)">#${1000+m.id}</div></div></div></td>
-      <td style="color:var(--text-muted)">${m.email}</td>
-      <td>${m.company}</td>
+      <td><div class="cell-avatar"><div class="av" style="background:${AV_COLORS[m.id%5]}">${avatarText(m.name)}</div><div><div>${esc(m.name)}</div><div style="font-size:11px;color:var(--text-muted)">#${1000+m.id}</div></div></div></td>
+      <td style="color:var(--text-muted)">${esc(m.email)}</td>
+      <td>${esc(m.company)}</td>
       <td>${m.country}</td>
-      <td><span class="level-badge ${levelClass(m.level)}">${m.level}</span></td>
+      <td><span class="level-badge ${levelCls(m.level)}">${m.level}</span></td>
       <td style="color:var(--gold)">${m.points.toLocaleString()}</td>
       <td style="color:var(--text-muted)">${m.joined}</td>
       <td><span class="tag ${m.status==='Active'?'active':'inactive'}">${m.status}</span></td>
@@ -118,17 +140,49 @@ function renderTable(){
         <button class="btn-secondary" style="padding:4px 10px;font-size:12px" onclick="editMember(${m.id})">Edit</button>
         <button class="btn-danger" style="padding:4px 10px;font-size:12px;margin-left:4px" onclick="deleteMember(${m.id})">Del</button>
       </td>
-    </tr>`).join('');
-  // Pagination
+    </tr>`).join('') : '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-muted)">No members found.</td></tr>';
   let pg='';
   for(let i=1;i<=pages;i++) pg+=`<div class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</div>`;
   document.getElementById('pagination').innerHTML=`<div class="page-btn" onclick="goPage(${Math.max(1,page-1)})">‹</div>${pg}<div class="page-btn" onclick="goPage(${Math.min(pages,page+1)})">›</div>`;
 }
 function goPage(p){page=p;renderTable();}
 function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked);}
-function editMember(id){alert('Edit member #'+id+'\n(In production: opens edit modal or page)');}
-function deleteMember(id){if(confirm('Delete member #'+id+'?'))alert('Deleted (demo mode)');}
-renderTable();
+function exportCSV(){
+  if(!members.length){ showToast('No members to export','info'); return; }
+  const rows=[['ID','Username','Email','Role','Joined']].concat(members.map(m=>[m.id,m.name,m.email,m.level==='Platinum'?'admin':'user',m.joined]));
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  const a=document.createElement('a'); a.href=url; a.download='members.csv'; a.click();
+  showToast('Exported '+members.length+' members','success');
+}
+
+function editMember(id){
+  const m = members.find(x=>x.id===id);
+  if(!m) return;
+  const role = prompt('Edit role for "'+m.name+'" (user / admin):', m.level==='Platinum'?'admin':'user');
+  if(role===null) return;
+  const r = role.trim().toLowerCase();
+  if(r!=='user'&&r!=='admin'){ alert('Role must be "user" or "admin"'); return; }
+  (async ()=>{
+    try {
+      await apiSend('../api/users/'+id, 'PUT', { role: r });
+      showToast('Member updated', 'success');
+      loadMembers();
+    } catch(e){ alert('Update failed: '+e.message); }
+  })();
+}
+function deleteMember(id){
+  const m = members.find(x=>x.id===id);
+  if(!confirm('Delete member "'+(m?m.name:id)+'"? This cannot be undone.')) return;
+  (async ()=>{
+    try {
+      await apiSend('../api/users/'+id, 'DELETE');
+      showToast('Member deleted', 'success');
+      loadMembers();
+    } catch(e){ alert('Delete failed: '+e.message); }
+  })();
+}
+loadMembers();
 </script>
 
 <style id="user-dropdown-style">

@@ -1,4 +1,5 @@
 import { json, fail, now } from '../_lib/db.js';
+import { authUser } from '../_lib/auth.js';
 
 // Curated global amusement / gaming / anime trade shows.
 // Refreshed daily: re-validates dates and keeps the calendar current.
@@ -34,7 +35,13 @@ export async function onRequest(context) {
   const { request, env } = context;
   if (request.method !== 'GET') return fail('Method not allowed', 405);
   const key = new URL(request.url).searchParams.get('key');
-  if (!env.TOKEN_SECRET || key !== env.TOKEN_SECRET) return fail('Unauthorized', 401);
+  const keyOk = !!(env.TOKEN_SECRET && key === env.TOKEN_SECRET);
+  let adminOk = false;
+  try {
+    const u = await authUser(request, env);
+    adminOk = !!(u && u.role === 'admin');
+  } catch (e) {}
+  if (!keyOk && !adminOk) return fail('Unauthorized', 401);
 
   // Refresh from curated list (delete then re-insert keeps it current).
   await env.DB.prepare('DELETE FROM exhibitions').run();

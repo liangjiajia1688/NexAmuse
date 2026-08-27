@@ -209,9 +209,30 @@ document.getElementById('catList').innerHTML=cats.map(c=>`<label style="display:
 function fmt(cmd,val){document.execCommand(cmd,false,val||null)}
 function insertLink(){const url=prompt('Enter URL:');if(url)document.execCommand('createLink',false,url)}
 function insertImage(){const url=prompt('Image URL:');if(url)document.execCommand('insertImage',false,url)}
-function saveDraft(){showToast('Draft saved!','success')}
-function publishArticle(){showToast('Article published successfully!','success')}
+function saveDraft(){showToast('Draft saved locally. Use Publish to push live.','info')}
+function publishArticle(){ publishToApi(); }
 function pickImage(){showToast('Image picker opened','info')}
+async function publishToApi(){
+  const titleEl = document.querySelector('.form-input[placeholder="Article Title..."]');
+  const excerptEl = document.querySelector('.form-input[placeholder="Subtitle or excerpt (optional)..."]');
+  const editor = document.getElementById('editor');
+  const title = titleEl ? titleEl.value.trim() : '';
+  const excerpt = excerptEl ? excerptEl.value.trim() : '';
+  const content = editor ? editor.innerHTML.trim() : '';
+  if(!title){ showToast('Title is required','error'); return; }
+  const catCb = document.querySelector('.cat-cb:checked');
+  const category = catCb ? catCb.dataset.cat : 'Industry News';
+  const btn = document.querySelector('button.btn-gold');
+  try {
+    if(btn){ btn.disabled = true; btn.textContent = 'Publishing…'; }
+    const r = await fetch('../api/articles', { method:'POST', headers: apiHeaders(), body: JSON.stringify({ title, excerpt, content, category, author:'NexAmuse Editorial' }) });
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok){ showToast('Publish failed: '+(data.error||r.status),'error'); return; }
+    showToast('Article published successfully!','success');
+    setTimeout(()=>{ window.location.href='articles.html'; }, 900);
+  } catch(e){ showToast('Publish error: '+e.message,'error'); }
+  finally { if(btn){ btn.disabled=false; btn.textContent='Publish'; } }
+}
 
 // ── Load AI-generated article if coming from AI writer ──────
 (function loadAIArticle(){

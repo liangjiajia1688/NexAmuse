@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Articles & Insights — NexAmuse Global</title>
+  <meta name="description" content="Expert articles, guides and insights for the global amusement, attractions & entertainment industry."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .news-layout{display:grid;grid-template-columns:1fr 320px;gap:32px;align-items:start;}
+    .news-main{}
+    .news-sidebar-col{position:sticky;top:88px;}
+    .sidebar-widget{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;}
+    .widget-header{padding:16px 20px;border-bottom:1px solid var(--border);font-size:.85rem;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:1px;}
+    .widget-body{padding:16px 20px;}
+    .news-list-full{display:flex;flex-direction:column;gap:20px;}
+    .news-item-full{display:flex;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+    .news-item-full:last-child{border-bottom:none;padding-bottom:0;}
+    .news-item-full .thumb{width:160px;flex-shrink:0;aspect-ratio:16/10;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:2.4rem;background-size:cover;background-position:center;}
+    .news-item-full .body{}
+    .news-item-full .title{font-size:1.05rem;font-weight:600;color:#fff;line-height:1.45;margin-bottom:6px;}
+    .news-item-full .excerpt{font-size:.85rem;color:var(--text-secondary);line-height:1.6;margin-bottom:8px;}
+    .news-item-full .meta{font-size:.75rem;color:var(--text-secondary);display:flex;gap:12px;flex-wrap:wrap;}
+    @media(max-width:900px){.news-layout{grid-template-columns:1fr}.news-sidebar-col{position:static}.news-item-full .thumb{width:110px}}
+  </style>
+</head>
+<body>
+<div class="top-bar"><div class="container"><div class="top-bar-left"><span><span class="live-badge"><span class="live-dot"></span>LIVE</span>&nbsp;GTI Asia Pacific 2026 — March 28–30, Guangzhou</span></div><div class="top-bar-right"><a href="#">Industry Report 2026</a><a href="contact.html">Contact</a></div></div></div>
+<nav class="navbar"><div class="container">
+  <a href="../index.html" class="logo"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li>
+      <a href="products.html">Products ▾</a>
+      <div class="dropdown-menu">
+        <a href="products.html?cat=arcade">Arcade Machines</a>
+        <a href="products.html?cat=vr">VR / XR Attractions</a>
+        <a href="products.html?cat=kids">Kids &amp; Family Rides</a>
+        <a href="products.html?cat=redemption">Redemption &amp; Prize</a>
+        <a href="products.html?cat=simulation">Simulation Rides</a>
+        <a href="products.html?cat=outdoor">Outdoor Attractions</a>
+        <a href="products.html?cat=waterpark">Water Park Equipment</a>
+        <a href="products.html?cat=accessories">Accessories &amp; Parts</a>
+      </div>
+    </li>
+    <li>
+      <a href="news.html">News ▾</a>
+      <div class="dropdown-menu">
+        <a href="news.html?cat=industry">Industry Dynamics</a>
+        <a href="news.html?cat=companies">Company News</a>
+        <a href="news.html?cat=interviews">Executive Interviews</a>
+        <a href="news.html?cat=newproducts">New Product Releases</a>
+        <a href="news.html?cat=regulations">Regulations &amp; Compliance</a>
+      </div>
+    </li>
+    <li><a href="suppliers.html">Suppliers</a></li>
+    <li>
+      <a href="exhibitions.html">Exhibitions ▾</a>
+      <div class="dropdown-menu">
+        <a href="exhibitions.html#calendar">Exhibition Calendar</a>
+        <a href="exhibitions.html#reports">Show Reports</a>
+        <a href="exhibitions.html#register">Pre-Register</a>
+      </div>
+    </li>
+    <li><a href="articles.html" class="active">Articles</a></li>
+    <li><a href="forum.html">Forum</a></li>
+      <li><a href="member-points.html">Points</a></li>
+    <li><a href="magazine.html">Videos</a></li>
+  </ul>
+  <div class="nav-actions">
+      <button class="search-btn js-open-search">🔍 Search</button>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button></div>
+</div></nav>
+<div class="mobile-menu" id="mobileMenu"><button class="mobile-menu-close" id="mobileClose">✕</button><ul class="mobile-nav-links"><li><a href="../index.html">🏠 Home</a></li><li><a href="products.html">🎮 Products</a></li><li><a href="news.html">📰 News &amp; Articles</a></li><li><a href="suppliers.html">🏭 Suppliers</a></li><li><a href="exhibitions.html">🎪 Exhibitions</a></li><li><a href="articles.html">📝 Articles</a></li><li><a href="forum.html">💬 Forum</a></li><li><a href="member-points.html">⭐ Points</a></li><li><a href="magazine.html">🎬 Videos</a></li><li><a href="contact.html">📩 Contact</a></li></ul><div class="mobile-auth-wrap" style="margin-top:32px;display:flex;flex-direction:column;gap:12px;"></div></div>
+<div class="search-overlay" id="searchOverlay"><button class="search-close" id="searchClose">✕</button><div class="search-box"><h2>Search NexAmuse Global</h2><div class="search-input-wrap"><input type="text" placeholder="Search articles, topics, companies..." autofocus/><button>Search</button></div></div></div>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="../index.html">Home</a><span>/</span><span class="current">Articles</span></div>
+    <h1 style="color:#fff;">Expert <em style="color:var(--accent);font-style:normal;">Articles</em> & Insights</h1>
+    <p style="color:var(--text-secondary);max-width:540px;margin-top:12px;">In-depth guides, market analysis and playbooks for operators, suppliers and investors in the global amusement industry.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="filter-bar" style="margin-bottom:28px;" id="catFilterBar">
+      <button class="filter-btn active" data-cat="">All Articles</button>
+    </div>
+    <div class="news-layout">
+      <div class="news-main">
+        <div class="news-list-full" id="articleList">
+          <div style="color:var(--text-secondary);padding:24px;">Loading articles…</div>
+        </div>
+        <div class="pagination" style="margin-top:32px;" id="pagination"></div>
+      </div>
+      <aside class="news-sidebar-col">
+        <div class="sidebar-widget">
+          <div class="widget-header">🔥 Most Read</div>
+          <div class="widget-body" id="sideTop" style="display:flex;flex-direction:column;gap:14px;"></div>
+        </div>
+        <div style="background:linear-gradient(135deg,#1a1505,#2a1c00);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;">
+          <div style="font-size:2rem;margin-bottom:10px;">🤖</div>
+          <div style="font-size:.75rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Powered by AI</div>
+          <h4 style="color:#fff;margin-bottom:8px;">Weekly Industry Articles</h4>
+          <p style="color:var(--text-secondary);font-size:.8rem;margin-bottom:14px;">Fresh, SEO-optimized insights published every week by our editorial AI.</p>
+          <a href="news.html" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">Read News →</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<footer><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="../index.html" class="logo" style="margin-bottom:16px;"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a><p style="color:var(--text-secondary);font-size:.88rem;">The world's premier B2B intelligence platform for the global amusement industry.</p></div><div class="footer-col"><h4>News</h4><ul class="footer-links"><li><a href="news.html">Industry Dynamics</a></li><li><a href="news.html">Company News</a></li><li><a href="news.html">Interviews</a></li><li><a href="news.html">Regulations</a></li></ul></div><div class="footer-col"><h4>Resources</h4><ul class="footer-links"><li><a href="products.html">Products</a></li><li><a href="exhibitions.html">Exhibitions</a></li><li><a href="magazine.html">Videos</a></li><li><a href="suppliers.html">Suppliers</a></li></div><div class="footer-col"><h4>Company</h4><ul class="footer-links"><li><a href="#">About Us</a></li><li><a href="contact.html">Contact</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 NexAmuse Global. All rights reserved.</p></div></div></footer>
+<button class="scroll-top" id="scrollTop">↑</button>
+<script src="../assets/js/main.js"></script>
+<script>
+(async function loadArticles(){
+  const list = document.getElementById('articleList');
+  const params = new URLSearchParams(window.location.search);
+  const catParam = params.get('cat') || '';
+  let page = 1; const perPage = 8;
+  let all = [];
+
+  function esc(s){ return (s==null?'':String(s)).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtDate(ts){ return ts ? new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Recent'; }
+  function emojiFor(cat){ return ({'Technology':'🤖','Business':'📊','Industry News':'📰','Exhibition':'🎪','Product Release':'🛠️','Interview':'🎙️'})[cat] || '📝'; }
+
+  try {
+    const r = await fetch('../api/articles?limit=200');
+    const data = await r.json();
+    all = data.articles || [];
+  } catch(e){
+    list.innerHTML = '<div style="color:var(--text-secondary);padding:24px;">Failed to load articles.</div>';
+    return;
+  }
+
+  // Build category filter
+  const cats = [...new Set(all.map(a=>a.category).filter(Boolean))].sort();
+  const bar = document.getElementById('catFilterBar');
+  bar.innerHTML = '<button class="filter-btn'+(catParam===''?' active':'')+'" data-cat="">All Articles</button>' +
+    cats.map(c=>'<button class="filter-btn'+(catParam===c?' active':'')+'" data-cat="'+esc(c)+'">'+esc(c)+'</button>').join('');
+  bar.querySelectorAll('.filter-btn').forEach(b=>b.onclick=()=>{ page=1; render(b.dataset.cat); });
+
+  function render(cat){
+    const data = cat ? all.filter(a=>a.category===cat) : all;
+    const slice = data.slice((page-1)*perPage, page*perPage);
+    list.innerHTML = slice.length ? slice.map(a=>{
+      const cover = a.cover ? `style="background-image:url('${esc(a.cover)}')"` : '';
+      const emoji = a.cover ? '' : emojiFor(a.category);
+      return `<a class="news-item-full fade-in" href="article.html?id=${a.id}" style="text-decoration:none;color:inherit">
+        <div class="thumb" ${cover}>${emoji}</div>
+        <div class="body">
+          <span class="card-tag">${esc(a.category||'Article')}</span>
+          <div class="title">${esc(a.title)}</div>
+          <div class="excerpt">${esc(a.excerpt || '').slice(0,160)}</div>
+          <div class="meta"><span>📅 ${fmtDate(a.published_at)}</span><span>✍️ ${esc(a.author||'Editorial')}</span><span>👁 ${(a.views||0).toLocaleString()}</span></div>
+        </div>
+      </a>`;
+    }).join('') : '<div style="color:var(--text-secondary);padding:24px;">No articles in this category yet.</div>';
+
+    const pages = Math.max(1, Math.ceil(data.length/perPage));
+    let pg='';
+    for(let i=1;i<=pages;i++) pg += `<div class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</div>`;
+    document.getElementById('pagination').innerHTML = `<div class="page-btn" onclick="goPage(${Math.max(1,page-1)})">‹</div>${pg}<div class="page-btn" onclick="goPage(${Math.min(pages,page+1)})">›</div>`;
+
+    // Sidebar top reads
+    document.getElementById('sideTop').innerHTML = data.slice(0,5).map(a=>`<div><div class="title" style="font-size:.85rem;font-weight:600;color:#fff">${esc(a.title)}</div><div class="meta" style="font-size:.72rem;color:var(--text-secondary)">${fmtDate(a.published_at)} · ${(a.views||0).toLocaleString()} views</div></div>`).join('');
+  }
+  window.goPage = function(p){ page=p; render(currentCat()); };
+  function currentCat(){ const b=bar.querySelector('.filter-btn.active'); return b?b.dataset.cat:''; }
+  render(catParam);
+})();
+</script>
+</body>
+</html>

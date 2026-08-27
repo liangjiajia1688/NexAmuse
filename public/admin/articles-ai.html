@@ -825,13 +825,13 @@ function editArticle(){
 }
 
 // ── API Functions ───────────────────────────────────────────────
-const API_BASE = '../api/articles.php';
+const API_BASE = '../api/articles';
 
 async function saveArticleToServer(article) {
   try {
     const response = await fetch(API_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: apiHeaders(),
       body: JSON.stringify({
         title: article.title,
         slug: article.slug,
@@ -848,7 +848,8 @@ async function saveArticleToServer(article) {
         source: 'ai'
       })
     });
-    const result = await response.json();
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) return { error: result.error || ('HTTP ' + response.status) };
     return result;
   } catch (e) {
     console.error('Failed to save to server:', e);
@@ -858,7 +859,7 @@ async function saveArticleToServer(article) {
 
 async function loadArticlesFromServer() {
   try {
-    const response = await fetch(API_BASE + '?status=all&limit=100');
+    const response = await fetch(API_BASE + '?limit=200', { headers: apiHeaders() });
     const result = await response.json();
     return result.articles || [];
   } catch (e) {
@@ -867,49 +868,38 @@ async function loadArticlesFromServer() {
   }
 }
 
-function publishOne(i){
+async function publishOne(i){
   const article = generatedArticles[i];
+  if(!article) return;
   article.status = 'published';
   article.publishedAt = new Date().toISOString();
-  
-  // Save to localStorage first
   saveArticlesToStorage(generatedArticles);
-  
-  // Try to save to server
-  saveArticleToServer(article).then(result => {
-    if (result.error) {
-      console.log('Server save failed, using local only');
-    } else {
-      article.serverId = result.id;
-      saveArticlesToStorage(generatedArticles);
-    }
-  });
-  
+  const result = await saveArticleToServer(article);
+  if (result && result.error) {
+    renderList(); updateStats();
+    showToast('Publish failed: '+result.error+' (kept local)', 'error');
+    return;
+  }
+  article.serverId = result.id;
+  saveArticlesToStorage(generatedArticles);
   renderList();
   updateStats();
-  showToast('Article published to News section!','success');
+  showToast('Article published to live site!', 'success');
 }
 
-function publishAll(){
-  generatedArticles.forEach(a=>{
+async function publishAll(){
+  if(!generatedArticles.length){ showToast('No articles to publish','error'); return; }
+  let ok=0, fail=0;
+  for (const a of generatedArticles) {
     a.status='published';
     a.publishedAt = new Date().toISOString();
-  });
+    const r = await saveArticleToServer(a);
+    if (r && r.error) { fail++; } else { a.serverId = r.id; ok++; }
+  }
   saveArticlesToStorage(generatedArticles);
-  
-  // Try to save all to server
-  Promise.all(generatedArticles.map(a => saveArticleToServer(a))).then(results => {
-    results.forEach((result, idx) => {
-      if (result && result.id) {
-        generatedArticles[idx].serverId = result.id;
-      }
-    });
-    saveArticlesToStorage(generatedArticles);
-  });
-  
   renderList();
   updateStats();
-  showToast(`All ${generatedArticles.length} articles published!`,'success');
+  showToast(`Published ${ok} article(s)${fail?', '+fail+' failed':''}`, fail ? 'warning' : 'success');
 }
 function removeArticle(i){
   generatedArticles.splice(i,1);

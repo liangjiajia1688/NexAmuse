@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="initial-scale=1.0">
 <title>Manage Articles — NexAmuse Admin</title>
 <link rel="stylesheet" href="admin.css">
 </head>
@@ -48,44 +48,29 @@
         <h1 class="title-h1">Manage Articles</h1>
         <p class="title-sub">Create and manage industry news, insights and features</p>
       </div>
-      <!-- Stats Row -->
-      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
-        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-value">156</div><div class="stat-label">Total Articles</div></div>
-        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">132</div><div class="stat-label">Published</div></div>
-        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value">18</div><div class="stat-label">Drafts</div></div>
-        <div class="stat-card"><div class="stat-icon">👁</div><div class="stat-value">84.2K</div><div class="stat-label">Total Views</div></div>
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px" id="statsRow">
+        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-value" id="stTotal">0</div><div class="stat-label">Total Articles</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" id="stPublished">0</div><div class="stat-label">Published</div></div>
+        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value" id="stDrafts">0</div><div class="stat-label">Drafts</div></div>
+        <div class="stat-card"><div class="stat-icon">👁</div><div class="stat-value" id="stViews">0</div><div class="stat-label">Total Views</div></div>
       </div>
-      <!-- Filters -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-body" style="padding:16px">
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-            <input type="text" class="form-input" placeholder="🔍 Search articles..." style="width:240px">
-            <select class="form-select" style="width:160px">
-              <option>All Categories</option>
-              <option>Industry News</option>
-              <option>Product Release</option>
-              <option>Exhibition Report</option>
-              <option>Technology</option>
-              <option>Business</option>
+            <input type="text" class="form-input" id="searchInput" placeholder="🔍 Search articles..." style="width:240px" oninput="filterArticles()">
+            <select class="form-select" id="catFilter" style="width:160px" onchange="filterArticles()">
+              <option value="">All Categories</option>
             </select>
-            <select class="form-select" style="width:140px">
-              <option>All Status</option>
-              <option>Published</option>
-              <option>Draft</option>
-              <option>Scheduled</option>
+            <select class="form-select" style="width:140px" id="statusFilter" onchange="filterArticles()">
+              <option value="">All Status</option>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
             </select>
-            <select class="form-select" style="width:160px">
-              <option>Date: Newest First</option>
-              <option>Date: Oldest First</option>
-              <option>Views: High to Low</option>
-              <option>Title A-Z</option>
-            </select>
-            <button class="btn btn-gold">Filter</button>
+            <button class="btn btn-gold" onclick="filterArticles()">Filter</button>
             <button class="btn btn-outline" onclick="window.location='articles-ai.html'">🤖 AI Batch Write</button>
           </div>
         </div>
       </div>
-      <!-- Table -->
       <div class="card">
         <div class="card-body" style="padding:0">
           <table class="data-table">
@@ -104,14 +89,7 @@
             <button class="btn btn-outline btn-sm" onclick="bulkAction('draft')">Set to Draft</button>
             <button class="btn btn-danger btn-sm" onclick="bulkAction('delete')">Delete Selected</button>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:13px">
-            <span>Showing 1–10 of 156</span>
-            <button class="btn btn-outline btn-sm">‹</button>
-            <button class="btn btn-gold btn-sm">1</button>
-            <button class="btn btn-outline btn-sm">2</button>
-            <button class="btn btn-outline btn-sm">3</button>
-            <button class="btn btn-outline btn-sm">›</button>
-          </div>
+          <div id="tableInfo" style="color:var(--text-muted);font-size:13px"></div>
         </div>
       </div>
     </div>
@@ -119,36 +97,95 @@
 </div>
 <script src="admin.js"></script>
 <script>
-const articles = [
-  {id:1,title:'IAAPA Expo Asia 2026: Record Attendance Expected',category:'Exhibition',author:'Editorial',status:'Published',views:4820,date:'2026-03-20'},
-  {id:2,title:'Top 10 VR Arcade Machines Reshaping Entertainment Centers',category:'Technology',author:'Staff Writer',status:'Published',views:3910,date:'2026-03-18'},
-  {id:3,title:'Global Amusement Market Report Q1 2026',category:'Business',author:'Research',status:'Published',views:2750,date:'2026-03-15'},
-  {id:4,title:'New Safety Standards for Outdoor Play Equipment 2026',category:'Industry News',author:'Editorial',status:'Published',views:1980,date:'2026-03-12'},
-  {id:5,title:'Interview: Leading Supplier Expands to European Market',category:'Business',author:'J. Thompson',status:'Draft',views:0,date:'—'},
-  {id:6,title:'Best Practices for FEC Layout Design',category:'Technology',author:'Design Team',status:'Scheduled',views:0,date:'2026-03-28'},
-  {id:7,title:'2026 Trends in Kids Entertainment Zones',category:'Industry News',author:'Editorial',status:'Published',views:3120,date:'2026-03-10'},
-  {id:8,title:'GTI China Expo Preview: What to Expect',category:'Exhibition',author:'Staff Writer',status:'Published',views:2400,date:'2026-03-08'},
-  {id:9,title:'Sustainable Materials in Modern Playground Equipment',category:'Industry News',author:'Editorial',status:'Draft',views:0,date:'—'},
-  {id:10,title:'Revenue Optimization for Redemption Arcades',category:'Business',author:'Analyst',status:'Published',views:1650,date:'2026-03-05'},
-];
-const statusBadge = {Published:'<span style="background:rgba(86,171,47,.15);color:#56ab2f;padding:3px 8px;border-radius:12px;font-size:11px">Published</span>',Draft:'<span style="background:rgba(255,255,255,.08);color:#aaa;padding:3px 8px;border-radius:12px;font-size:11px">Draft</span>',Scheduled:'<span style="background:rgba(0,201,255,.12);color:#00c9ff;padding:3px 8px;border-radius:12px;font-size:11px">Scheduled</span>'};
-document.getElementById('articleBody').innerHTML = articles.map(a=>`
-  <tr>
-    <td><input type="checkbox" class="row-check"></td>
-    <td style="max-width:280px"><a href="articles-add.html" style="color:var(--gold);font-weight:500">${a.title}</a></td>
-    <td><span style="background:rgba(212,175,55,.1);color:var(--gold);padding:2px 8px;border-radius:10px;font-size:11px">${a.category}</span></td>
-    <td>${a.author}</td>
-    <td>${statusBadge[a.status]||a.status}</td>
-    <td>${a.views>0?a.views.toLocaleString():'—'}</td>
-    <td style="color:var(--text-muted);font-size:12px">${a.date}</td>
-    <td>
-      <a href="articles-add.html" class="btn-sm btn-outline">Edit</a>
-      <button class="btn-sm btn-danger" onclick="deleteArticle(${a.id})">Del</button>
-    </td>
-  </tr>`).join('');
-function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked)}
-function bulkAction(act){const checked=document.querySelectorAll('.row-check:checked');showToast(`${act.charAt(0).toUpperCase()+act.slice(1)} applied to ${checked.length} items`,'success')}
-function deleteArticle(id){if(confirm('Delete this article?')){showToast('Article deleted','warning')}}
+if(!getApiToken()){ window.location.href='login.html'; }
+
+let articles = [];
+
+const STATUS_BADGE = {
+  published:'<span style="background:rgba(86,171,47,.15);color:#56ab2f;padding:3px 8px;border-radius:12px;font-size:11px">Published</span>',
+  draft:'<span style="background:rgba(255,255,255,.08);color:#aaa;padding:3px 8px;border-radius:12px;font-size:11px">Draft</span>'
+};
+function esc(s){ return (s==null?'':String(s)).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(ts){ return ts ? new Date(ts).toLocaleDateString('en-GB') : '—'; }
+
+async function loadArticles(){
+  const body = document.getElementById('articleBody');
+  body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted)">Loading articles…</td></tr>';
+  try {
+    const data = await apiGet('../api/articles?limit=200');
+    articles = data.articles || [];
+    // Populate category filter
+    const cats = [...new Set(articles.map(a=>a.category).filter(Boolean))].sort();
+    document.getElementById('catFilter').innerHTML = '<option value="">All Categories</option>' + cats.map(c=>'<option>'+esc(c)+'</option>').join('');
+    updateStats();
+    renderTable();
+  } catch(e){
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:#ff6b6b">Failed to load: '+esc(e.message)+'</td></tr>';
+  }
+}
+
+function updateStats(){
+  const total = articles.length;
+  const published = articles.filter(a=>a.status==='published').length;
+  const drafts = total - published;
+  const views = articles.reduce((s,a)=>s+(a.views||0),0);
+  document.getElementById('stTotal').textContent = total;
+  document.getElementById('stPublished').textContent = published;
+  document.getElementById('stDrafts').textContent = drafts;
+  document.getElementById('stViews').textContent = views>999 ? Math.round(views/1000)+'K' : views;
+}
+
+function filterArticles(){ renderTable(); }
+function renderTable(){
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const cf = document.getElementById('catFilter').value;
+  const sf = document.getElementById('statusFilter').value;
+  const data = articles.filter(a=>{
+    const match = !q || (a.title||'').toLowerCase().includes(q);
+    const cmatch = !cf || a.category === cf;
+    const smatch = !sf || a.status === sf;
+    return match && cmatch && smatch;
+  });
+  const body = document.getElementById('articleBody');
+  body.innerHTML = data.length ? data.map(a=>`
+    <tr>
+      <td><input type="checkbox" class="row-check" value="${a.id}"></td>
+      <td style="max-width:280px"><a href="../pages/article.html?id=${a.id}" target="_blank" style="color:var(--gold);font-weight:500">${esc(a.title)}</a></td>
+      <td><span style="background:rgba(212,175,55,.1);color:var(--gold);padding:2px 8px;border-radius:10px;font-size:11px">${esc(a.category||'—')}</span></td>
+      <td>${esc(a.author||'—')}</td>
+      <td>${STATUS_BADGE[a.status]||a.status}</td>
+      <td>${a.views>0?a.views.toLocaleString():'—'}</td>
+      <td style="color:var(--text-muted);font-size:12px">${fmtDate(a.published_at)}</td>
+      <td>
+        <a href="articles-add.html?edit=${a.id}" class="btn-sm btn-outline">Edit</a>
+        <button class="btn-sm btn-danger" onclick="deleteArticle(${a.id})">Del</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted)">No articles found.</td></tr>';
+  document.getElementById('tableInfo').textContent = 'Showing '+data.length+' of '+articles.length;
+}
+function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked);}
+
+function deleteArticle(id){
+  if(!confirm('Delete this article?')) return;
+  (async()=>{
+    try { await apiSend('../api/articles/'+id,'DELETE'); showToast('Article deleted','success'); loadArticles(); }
+    catch(e){ alert('Delete failed: '+e.message); }
+  })();
+}
+
+async function bulkAction(act){
+  const ids = [...document.querySelectorAll('.row-check:checked')].map(c=>parseInt(c.value,10)).filter(Boolean);
+  if(!ids.length){ showToast('No articles selected','info'); return; }
+  if(act==='delete' && !confirm('Delete '+ids.length+' article(s)?')) return;
+  try {
+    await Promise.all(ids.map(id=> act==='delete'
+      ? apiSend('../api/articles/'+id,'DELETE')
+      : apiSend('../api/articles/'+id,'PUT',{status:act})));
+    showToast(act.charAt(0).toUpperCase()+act.slice(1)+' applied to '+ids.length+' items','success');
+    loadArticles();
+  } catch(e){ alert('Bulk action failed: '+e.message); }
+}
+loadArticles();
 </script>
 
 <style id="user-dropdown-style">

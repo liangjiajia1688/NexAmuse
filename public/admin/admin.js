@@ -12,6 +12,25 @@ function setSession(data) {
 function clearSession() {
   localStorage.removeItem(SESSION_KEY);
 }
+// API token helpers (admin pages call authenticated endpoints with these).
+function getApiToken() {
+  const s = getSession();
+  return s && s.token ? s.token : '';
+}
+function apiHeaders(extra) {
+  return Object.assign({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getApiToken() }, extra || {});
+}
+async function apiGet(url) {
+  const r = await fetch(url, { headers: apiHeaders() });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+async function apiSend(url, method, body) {
+  const r = await fetch(url, { method, headers: apiHeaders(), body: body ? JSON.stringify(body) : undefined });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+  return data;
+}
 function adminLogout() {
   clearSession();
   showToast('You have been signed out.', 'info');

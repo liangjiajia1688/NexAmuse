@@ -122,13 +122,21 @@ function doLogin(){
   txt.style.display='none';
   spin.style.display='block';
   btn.classList.add('loading');
-  setTimeout(()=>{
+  setTimeout(async ()=>{
     spin.style.display='none';
     txt.style.display='block';
     btn.classList.remove('loading');
     if(u==='dinice'&&p==='dinice123'){
       localStorage.setItem('ng_admin_logged','1');
       localStorage.setItem('ng_admin_user', u);
+      // Also obtain a real API token so admin pages/crawlers can call authenticated endpoints.
+      try {
+        const r = await fetch('../api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ identifier:'dinice', password:'dinice123' }) });
+        if (r.ok) {
+          const data = await r.json();
+          localStorage.setItem('nexamuse_user', JSON.stringify({ token: data.token, user: data.user }));
+        }
+      } catch (e) { console.warn('Admin token fetch failed', e); }
       window.location.href='index.html';
     } else {
       err.style.display='block';
