@@ -29,7 +29,7 @@ export async function onRequest(context) {
 
     if (role && role !== 'user' && role !== 'admin') return fail('Invalid role');
     if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail('Invalid email');
-    const LEVELS = ['Platinum', 'Gold', 'Silver', 'Standard'];
+    const LEVELS = ['Standard', 'Premium', 'VIP'];
     if (level && !LEVELS.includes(level)) return fail('Invalid level');
     const STATUSES = ['active', 'inactive', 'banned'];
     if (status && !STATUSES.includes(status)) return fail('Invalid status');

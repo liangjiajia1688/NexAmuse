@@ -1,5 +1,6 @@
 import { json, fail, now } from '../_lib/db.js';
 import { authUser } from '../_lib/auth.js';
+import { requireLevel } from '../_lib/permissions.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -22,10 +23,12 @@ export async function onRequest(context) {
     return json({ articles: rows.results || [] });
   }
 
-  // POST — create (auth required)
+  // POST — create (Premium+ required)
   if (request.method === 'POST') {
     const user = await authUser(request, env);
     if (!user) return fail('Unauthorized', 401);
+    const perm = requireLevel(user, 'Premium', 'Publish articles');
+    if (!perm.ok) return fail(perm.message, perm.code);
     let body;
     try { body = await request.json(); } catch (e) { return fail('Invalid JSON'); }
     const title = (body.title || '').trim();

@@ -153,10 +153,9 @@ button{cursor:pointer;font-family:inherit}
 
 /* Level badges */
 .level-badge{padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600}
-.level-platinum{background:rgba(200,200,200,.15);color:#e0e0e0}
-.level-gold{background:rgba(212,175,55,.15);color:var(--gold)}
-.level-silver{background:rgba(150,150,150,.15);color:#aaa}
-.level-standard{background:rgba(255,255,255,.05);color:var(--text-muted)}
+.level-vip{background:linear-gradient(90deg,rgba(139,92,246,.25),rgba(236,72,153,.15));color:#c084fc;border:1px solid rgba(139,92,246,.3)}
+.level-premium{background:rgba(201,162,39,.15);color:var(--gold)}
+.level-standard{background:rgba(100,116,139,.15);color:#94a3b8}
 
 /* Rich text toolbar mock */
 .editor-toolbar{display:flex;gap:4px;padding:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;flex-wrap:wrap}

@@ -1,5 +1,6 @@
 import { json, fail, now } from '../../../_lib/db.js';
 import { authUser } from '../../../_lib/auth.js';
+import { canCommentUnlimited } from '../../../_lib/permissions.js';
 
 export async function onRequestGet(context) {
   const { params, env } = context;
@@ -30,11 +31,22 @@ export async function onRequestPost(context) {
   const email = String(body.email || '').trim();
 
   // Optional: attach logged-in user (frontend token from /api/login)
-  const user = authUser(request, env);
+  const user = await authUser(request, env);
   let userId = null;
   if (user && user.id) {
     userId = user.id;
     if (!name) name = user.username || 'Member';
+
+    // Standard members are limited to 1 comment per account total.
+    // Premium/VIP members have unlimited comments.
+    if (!canCommentUnlimited(user)) {
+      const existing = await env.DB.prepare(
+        'SELECT id FROM comments WHERE user_id=? AND status=? LIMIT 1'
+      ).bind(userId, 'approved').first();
+      if (existing) {
+        return fail('Standard members may leave one comment. Upgrade to Premium for unlimited comments.', 403);
+      }
+    }
   }
 
   if (content.length < 2) return fail('Comment cannot be empty', 400);

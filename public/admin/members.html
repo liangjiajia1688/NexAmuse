@@ -49,7 +49,7 @@
           <div class="search-box"><span>🔍</span><input type="text" placeholder="Search by name, email or company..." id="searchInput" oninput="filterMembers()"></div>
           <select class="filter-select" id="levelFilter" onchange="filterMembers()">
             <option value="">All Levels</option>
-            <option>Platinum</option><option>Gold</option><option>Silver</option><option>Standard</option>
+            <option>Standard</option><option>Premium</option><option>VIP</option>
           </select>
           <select class="filter-select" id="statusFilter" onchange="filterMembers()">
             <option value="">All Status</option>
@@ -101,10 +101,9 @@
       <div class="form-group">
         <label>Membership Level（等级）</label>
         <select id="emLevel">
-          <option value="Platinum">Platinum</option>
-          <option value="Gold">Gold</option>
-          <option value="Silver">Silver</option>
-          <option value="Standard">Standard</option>
+          <option value="Standard">🥉 Standard Member</option>
+          <option value="Premium">⭐ Premium Member</option>
+          <option value="VIP">👑 VIP Member</option>
         </select>
       </div>
       <div class="form-group">
@@ -153,7 +152,7 @@ let currentUser = { is_super: 0 };
 const AV_COLORS = ['#667eea','#d4af37','#11998e','#ee0979','#4facfe'];
 function avatarText(name){ return (name||'?').trim().split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase(); }
 function esc(s){ return (s==null?'':String(s)).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function levelCls(l){ return l==='Platinum'?'level-platinum':l==='Gold'?'level-gold':l==='Silver'?'level-silver':'level-standard'; }
+function levelCls(l){ return l==='VIP'?'level-vip':l==='Premium'?'level-premium':'level-standard'; }
 function statusDisp(s){ const v=s||'active'; return v==='active'?'Active':v==='inactive'?'Inactive':'Banned'; }
 function statusCls(s){ const v=s||'active'; return v==='active'?'active':v==='inactive'?'inactive':'banned'; }
 

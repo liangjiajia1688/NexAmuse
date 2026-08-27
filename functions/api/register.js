@@ -20,9 +20,9 @@ export async function onRequest(context) {
 
   const hash = await hashPassword(password);
   const res = await env.DB.prepare(
-    'INSERT INTO users (email,username,password,role,created_at) VALUES (?,?,?,?,?)'
-  ).bind(email, username, hash, 'user', now()).run();
+    'INSERT INTO users (email,username,password,role,level,status,points,created_at) VALUES (?,?,?,?,?,?,?,?)'
+  ).bind(email, username, hash, 'user', 'Standard', 'active', 1, now()).run();
   const userId = res.meta && res.meta.last_row_id;
   const token = await makeToken(userId, env.TOKEN_SECRET);
-  return json({ token, user: { id: userId, email, username, role: 'user' } }, 201);
+  return json({ token, user: { id: userId, email, username, role: 'user', level: 'Standard', status: 'active', points: 1 } }, 201);
 }
