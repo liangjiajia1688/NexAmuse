@@ -90,11 +90,6 @@
       <span id="btnText">Sign In to Admin</span>
       <div class="spinner" id="spinner"></div>
     </button>
-    <div class="divider"><span></span><p>DEMO CREDENTIALS</p><span></span></div>
-    <div class="demo-creds">
-      <p>Use these credentials to explore the admin panel:</p>
-      <div class="cred">Username: <strong>admin</strong> &nbsp;|&nbsp; Password: <strong>admin123</strong></div>
-    </div>
     <div class="security-note">
       <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
       <span>This is a secured admin area. All activities are logged.</span>
@@ -131,9 +126,9 @@ function doLogin(){
     spin.style.display='none';
     txt.style.display='block';
     btn.classList.remove('loading');
-    if(u==='admin'&&p==='admin123'){
+    if(u==='dinice'&&p==='dinice123'){
       localStorage.setItem('ng_admin_logged','1');
-      localStorage.setItem('ng_admin_user','Administrator');
+      localStorage.setItem('ng_admin_user', u);
       window.location.href='index.html';
     } else {
       err.style.display='block';
