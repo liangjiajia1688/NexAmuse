@@ -398,7 +398,7 @@
           <button class="filter-btn" data-group="news" data-filter="regulation">Regulation</button>
         </div>
         <!-- Featured News -->
-        <div class="card news-card featured" style="margin-bottom:20px;">
+        <div class="card news-card featured" id="homeNewsFeatured" style="margin-bottom:20px;">
           <div class="card-image" style="background:linear-gradient(135deg,#1a2540,#0d1530);display:flex;align-items:center;justify-content:center;font-size:4rem;aspect-ratio:16/8;">🎪</div>
           <div class="card-body">
             <span class="card-tag">Exhibition</span>
@@ -407,7 +407,7 @@
           </div>
         </div>
         <!-- List News -->
-        <div style="display:flex;flex-direction:column;gap:16px;">
+        <div id="homeNewsList" class="filterable-grid" style="display:flex;flex-direction:column;gap:16px;">
           <div class="card news-card list-item">
             <div class="card-image" style="width:100px;aspect-ratio:4/3;border-radius:8px;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#1a2540,#0d1530);display:flex;align-items:center;justify-content:center;font-size:2rem;">🥽</div>
             <div class="card-body">
@@ -1122,5 +1122,50 @@
 <button class="scroll-top" id="scrollTop">↑</button>
 
 <script src="assets/js/main.js"></script>
+<script>
+// Populate the homepage "Latest News & Insights" section with live data from D1.
+// Falls back to the static demo cards if the API is unreachable.
+(async function loadHomeNews(){
+  const listEl = document.getElementById('homeNewsList');
+  const featEl = document.getElementById('homeNewsFeatured');
+  if (!listEl) return;
+  try {
+    const r = await fetch('/api/news?limit=12');
+    const data = await r.json();
+    const items = (data.news || []);
+    if (!items.length) return; // keep static demo fallback
+    const EMOJI = { exhibitions:'🎪', companies:'🏢', regulation:'⚖️', technology:'🤖', interviews:'🎙️', industry:'📊', news:'📰' };
+    const fmt = (ts) => { try { return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); } catch(e){ return 'Recent'; } };
+    const esc = (s) => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    // Featured (first item)
+    if (featEl && items[0]) {
+      const n = items[0];
+      const cat = n.category || 'industry';
+      const img = featEl.querySelector('.card-image'); if (img) img.textContent = EMOJI[cat] || '📰';
+      const tag = featEl.querySelector('.card-tag'); if (tag) tag.textContent = n.source || 'News';
+      const t = featEl.querySelector('.card-title'); if (t) t.textContent = n.title || '';
+      const m = featEl.querySelector('.card-meta'); if (m) m.innerHTML = '<span>📅 ' + fmt(n.published_at) + '</span><span>⏱ 3 min read</span>';
+      featEl.style.cursor = 'pointer';
+      featEl.onclick = () => { if (n.url) window.open(n.url, '_blank', 'noopener'); };
+    }
+    // List (remaining items)
+    listEl.innerHTML = items.slice(1, 9).map(n => {
+      const cat = n.category || 'industry';
+      const emoji = EMOJI[cat] || '📰';
+      return '<div class="card news-card list-item filterable-item" data-category="' + cat + '" data-url="' + (esc(n.url) || '#') + '" style="cursor:pointer">'
+        + '<div class="card-image" style="width:100px;aspect-ratio:4/3;border-radius:8px;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#1a2540,#0d1530);display:flex;align-items:center;justify-content:center;font-size:2rem;">' + emoji + '</div>'
+        + '<div class="card-body">'
+        + '<span class="card-tag">' + (esc(n.source) || 'News') + '</span>'
+        + '<div class="card-title">' + esc(n.title) + '</div>'
+        + '<div class="card-meta"><span>📅 ' + fmt(n.published_at) + '</span><span>⏱ 3 min read</span></div>'
+        + '</div></div>';
+    }).join('');
+    listEl.querySelectorAll('.news-card').forEach(card => card.addEventListener('click', () => {
+      const u = card.getAttribute('data-url');
+      if (u && u !== '#') window.open(u, '_blank', 'noopener');
+    }));
+  } catch (e) { console.warn('Home news load failed', e); }
+})();
+</script>
 </body>
 </html>

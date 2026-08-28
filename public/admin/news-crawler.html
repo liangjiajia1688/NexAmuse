@@ -328,12 +328,8 @@ async function startScan() {
 
 // ── Publish / Sync ─────────────────────────────────────────────────────────
 async function syncToSite() {
-  // Publishes the stories added in the most recent scan
-  if (!lastScanResult || !lastScanResult.added) {
-    showToast('No fresh stories to sync. Run a refresh first.', 'warning');
-    return;
-  }
-  await publishBatch('last-scan');
+  // Publishes all pending (freshly crawled) stories to the public news page
+  await publishBatch('all');
 }
 
 async function publishAll() {
