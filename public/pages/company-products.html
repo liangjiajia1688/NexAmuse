@@ -124,7 +124,7 @@ function formatBytes(b){ if(b===0) return '0 B'; const k=1024, s=['B','KB','MB',
 
 async function readFile(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(file); }); }
 
-async function compressImage(dataUrl, fileType, maxSize=1024*1024){
+async function compressImage(dataUrl, fileType, maxSize=10*1024*1024){
   return new Promise((resolve,reject)=>{
     const img=new Image();
     img.onload=()=>{
