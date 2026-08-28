@@ -175,7 +175,7 @@ async function doCrawl(env, request, body) {
   }
 
   const stats = await getStats(env);
-  return json({ ok: true, added, bySource, errors, cronAutoPublish: fromCron && added > 0, ...stats });
+  return json({ ok: true, added, bySource, errors, cronAutoPublish: fromCron && added > 0, ...stats, bySource });
 }
 
 export async function onRequest(context) {
