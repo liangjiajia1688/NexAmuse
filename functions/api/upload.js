@@ -1,7 +1,7 @@
 import { json, fail } from '../_lib/db.js';
 import { authUser } from '../_lib/auth.js';
 import { requireLevel } from '../_lib/permissions.js';
-import { uploadToImgBB } from '../_lib/imgbb.js';
+import { uploadToTutu } from '../_lib/tutu.js';
 
 function toBase64(buf) {
   const bytes = new Uint8Array(buf);
@@ -38,7 +38,7 @@ export async function onRequest(context) {
   }
 
   try {
-    const url = await uploadToImgBB(b64, env.IMGBB_API_KEY);
+    const url = await uploadToTutu(b64, env.TUTU_API_KEY);
     return json({ url });
   } catch (e) {
     return fail(e.message || 'Upload failed', 500);

@@ -1,5 +1,6 @@
 import { json, fail } from '../_lib/db.js';
 import { authUser } from '../_lib/auth.js';
+import { uploadToTutu } from '../_lib/tutu.js';
 
 const LENGTH_GUIDE = {
   short:   { words: 350,  sections: 2 },
@@ -151,9 +152,9 @@ function bufToBase64(buf) {
   return btoa(bin);
 }
 
-// Generate a cover image via Pollinations (free, no key), then host it on ImgBB
-// (uses IMGBB_API_KEY secret) for a stable CDN URL. Falls back to the raw
-// Pollinations URL if ImgBB fails, or null if image generation itself fails.
+// Generate a cover image via Pollinations (free, no key), then host it on tutu.to
+// (uses TUTU_API_KEY secret) for a stable CDN URL. Falls back to the raw
+// Pollinations URL if tutu.to fails, or null if image generation itself fails.
 async function generateCover(article, env) {
   const theme = (article.category || 'amusement industry').replace(/[^a-z0-9 ]/gi, '').trim();
   const prompt = `Professional vibrant photograph of a modern family entertainment center and arcade, VR headsets and neon lighting, happy families, cinematic 4k, no text, theme: ${theme}`;
@@ -163,22 +164,10 @@ async function generateCover(article, env) {
   if (!imgRes.ok) return null;
   const buf = await imgRes.arrayBuffer();
 
-  const key = env.IMGBB_API_KEY;
+  const key = env.TUTU_API_KEY;
   if (key) {
     try {
-      const form = new URLSearchParams();
-      form.set('image', bufToBase64(buf));
-      form.set('name', (article.slug || 'cover').slice(0, 60));
-      const up = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: form.toString(),
-      });
-      if (up.ok) {
-        const j = await up.json().catch(() => ({}));
-        const u = j?.data?.url || j?.data?.display_url || (j?.data && j?.data?.image && j?.data?.image?.url);
-        if (u) return u;
-      }
+      return await uploadToTutu(bufToBase64(buf), key);
     } catch { /* fall through to raw pollinations url */ }
   }
   return imgUrl;
