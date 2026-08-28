@@ -188,7 +188,6 @@
 </div>
 <script src="admin.js"></script>
 <script>
-const SESSION_KEY='nexamuse_user';
 function getSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
 function getApiToken(){ const s=getSession(); return s&&s.token?s.token:''; }
 const params=new URLSearchParams(location.search);
