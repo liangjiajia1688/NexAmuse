@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Directory — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" id="mobileToggle">☰</button>
+        <div class="breadcrumb">Directory › <span>Company Directory</span></div>
+      </div>
+      <div class="header-right">
+        <div class="header-search"><input type="text" placeholder="Search companies..." id="searchInput" oninput="loadCompanies()"><span>🔍</span></div>
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info"><div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div><div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div></div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title"><h1>Company Directory</h1><p>Review, approve and manage company listings created by Premium and VIP members.</p></div>
+
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(201,162,39,.12);font-size:20px;">🏭</div><div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(212,175,55,.15);font-size:20px;">⏳</div><div><div class="stat-value" id="statPending">0</div><div class="stat-label">Pending</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(86,171,47,.12);font-size:20px;">✅</div><div><div class="stat-value" id="statApproved">0</div><div class="stat-label">Approved</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(56,189,248,.12);font-size:20px;">📦</div><div><div class="stat-value" id="statProducts">0</div><div class="stat-label">Products</div></div></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <select class="filter-select" id="statusFilter" onchange="loadCompanies()">
+            <option value="">All Status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section" style="padding:0;overflow:hidden">
+        <table class="admin-table" id="companiesTable">
+          <thead>
+            <tr>
+              <th>Company</th><th>Country</th><th>Category</th><th>Contact</th><th>Owner</th><th>Products</th><th>Status</th><th>Joined</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="companiesBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal" style="display:none;">
+  <div class="modal-box" style="width:560px;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <h3 style="margin:0;font-size:17px;color:#e2e8f0;">Edit Company — <span id="ecName" style="color:var(--gold);"></span></h3>
+      <button onclick="closeEditModal()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;">×</button>
+    </div>
+    <input type="hidden" id="ecId">
+    <div class="form-row">
+      <div class="form-group"><label>Company Name</label><input type="text" id="ecNameInput"></div>
+      <div class="form-group"><label>Status</label><select id="ecStatus"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Country</label><input type="text" id="ecCountry"></div>
+      <div class="form-group"><label>Primary Category</label><input type="text" id="ecCategory"></div>
+    </div>
+    <div class="form-group"><label>Website</label><input type="text" id="ecWebsite"></div>
+    <div class="form-group"><label>Logo URL</label><input type="text" id="ecLogo"></div>
+    <div class="form-group"><label>Description</label><textarea id="ecDescription"></textarea></div>
+    <div class="form-actions">
+      <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveCompany()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+let companies = [], page = 1, limit = 50, total = 0;
+
+function statusTag(status){
+  const map = { pending: ['⏳ Pending','rgba(201,162,39,.15)','#f5d06e'], approved: ['✅ Approved','rgba(86,171,47,.15)','#86efac'], rejected: ['❌ Rejected','rgba(220,53,69,.15)','#ff6b6b'] };
+  const [label,bg,color] = map[status] || map.pending;
+  return `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${bg};color:${color};">${label}</span>`;
+}
+
+async function loadCompanies(){
+  try{
+    const status = document.getElementById('statusFilter').value;
+    const q = document.getElementById('searchInput').value.trim();
+    const params = new URLSearchParams({ limit, offset: (page-1)*limit });
+    if(status) params.set('status', status);
+    if(q) params.set('q', q);
+    const data = await apiGet('/api/admin/companies?' + params.toString());
+    companies = data.companies || [];
+    total = data.total || 0;
+    document.getElementById('statTotal').textContent = total;
+    const pending = await apiGet('/api/admin/companies?status=pending&limit=1');
+    document.getElementById('statPending').textContent = pending.total || 0;
+    const approved = await apiGet('/api/admin/companies?status=approved&limit=1');
+    document.getElementById('statApproved').textContent = approved.total || 0;
+    renderTable();
+  }catch(e){ showToast(e.message,'error'); }
+}
+
+function renderTable(){
+  const tb = document.getElementById('companiesBody');
+  tb.innerHTML = companies.map(c=>`
+    <tr>
+      <td>
+        <div class="cell-avatar">
+          <div class="av" style="background:linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a;">${c.name ? c.name[0].toUpperCase() : 'C'}</div>
+          <div><div class="m-name">${c.name}</div><div class="m-meta">${c.email || ''}</div></div>
+        </div>
+      </td>
+      <td>${c.country || '-'}${c.city ? ', '+c.city : ''}</td>
+      <td>${c.primary_category || '-'}</td>
+      <td>${c.contact_name || '-'}</td>
+      <td>ID ${c.owner_id}</td>
+      <td>${c.products_count || 0}</td>
+      <td>${statusTag(c.status)}</td>
+      <td>${new Date(c.created_at).toLocaleDateString()}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-xs" onclick="editCompany(${c.id})">Edit</button>
+          ${c.status === 'pending' ? `<button class="btn-xs" style="color:#86efac;border-color:rgba(86,171,47,.4);" onclick="setStatus(${c.id},'approved')">Approve</button>` : ''}
+          ${c.status !== 'rejected' ? `<button class="btn-xs" style="color:#ff6b6b;border-color:rgba(220,53,69,.4);" onclick="setStatus(${c.id},'rejected')">Reject</button>` : ''}
+          <button class="btn-danger" onclick="deleteCompany(${c.id})">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:24px;">No companies found</td></tr>';
+
+  const pg = document.getElementById('pagination');
+  const pages = Math.ceil(total/limit);
+  let html = '';
+  for(let i=1;i<=pages;i++){
+    html += `<button class="page-btn ${i===page?'active':''}" onclick="page=${i};loadCompanies()">${i}</button>`;
+  }
+  pg.innerHTML = html;
+}
+
+async function setStatus(id, status){
+  try{
+    await apiSend('/api/admin/companies?id='+id, 'PUT', { status });
+    showToast('Status updated','success');
+    loadCompanies();
+  }catch(e){ showToast(e.message,'error'); }
+}
+
+async function deleteCompany(id){
+  if(!confirm('Delete this company and all its products?')) return;
+  try{
+    await apiSend('/api/admin/companies?id='+id, 'DELETE');
+    showToast('Company deleted','success');
+    loadCompanies();
+  }catch(e){ showToast(e.message,'error'); }
+}
+
+function editCompany(id){
+  const c = companies.find(x=>x.id===id); if(!c) return;
+  document.getElementById('ecId').value = c.id;
+  document.getElementById('ecName').textContent = c.name;
+  document.getElementById('ecNameInput').value = c.name;
+  document.getElementById('ecStatus').value = c.status;
+  document.getElementById('ecCountry').value = c.country || '';
+  document.getElementById('ecCategory').value = c.primary_category || '';
+  document.getElementById('ecWebsite').value = c.website || '';
+  document.getElementById('ecLogo').value = c.logo || '';
+  document.getElementById('ecDescription').value = c.description || '';
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal(){ document.getElementById('editModal').style.display = 'none'; }
+
+async function saveCompany(){
+  const id = document.getElementById('ecId').value;
+  const payload = {
+    name: document.getElementById('ecNameInput').value.trim(),
+    status: document.getElementById('ecStatus').value,
+    country: document.getElementById('ecCountry').value.trim(),
+    primary_category: document.getElementById('ecCategory').value.trim(),
+    website: document.getElementById('ecWebsite').value.trim(),
+    logo: document.getElementById('ecLogo').value.trim(),
+    description: document.getElementById('ecDescription').value.trim()
+  };
+  try{
+    await apiSend('/api/admin/companies?id='+id, 'PUT', payload);
+    closeEditModal();
+    showToast('Company saved','success');
+    loadCompanies();
+  }catch(e){ showToast(e.message,'error'); }
+}
+
+loadCompanies();
+</script>
+</body>
+</html>

@@ -73,6 +73,9 @@ const NAV = [
     { href: 'articles-categories.html', icon: '📁', label: 'Article Categories',page:'articles-categories' },
     { href: 'news-crawler.html',        icon: '📡', label: 'News Management',  page: 'news-crawler', badge:'NEW' },
   ]},
+  { section: 'Directory', items: [
+    { href: 'companies.html',     icon: '🏭', label: 'Company Directory', page: 'companies', badge:'NEW' },
+  ]},
   { section: 'Forum', items: [
     { href: 'forum.html',         icon: '💬', label: 'Forum Posts',      page: 'forum' },
     { href: 'forum-sections.html',icon: '📂', label: 'Forum Sections',   page: 'forum-sections' },

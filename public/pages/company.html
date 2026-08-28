@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Company Profile — NexAmuse Global</title>
+<meta name="description" content="View company profile and products on NexAmuse Global."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<style>
+  .cp-hero{background:linear-gradient(135deg,#0a0e1a 0%,#12192e 60%,#1a1208 100%);border-bottom:1px solid rgba(201,162,39,.2);padding:52px 0 40px;}
+  .cp-hero h1{font-family:'Playfair Display',serif;font-size:2.4rem;color:#fff;margin-bottom:10px}
+  .cp-hero p{color:#9aa0b4;font-size:1rem;max-width:560px}
+  .company-head{display:flex;gap:24px;align-items:flex-start;margin-bottom:32px;flex-wrap:wrap;}
+  .company-logo{width:100px;height:100px;border-radius:16px;background:linear-gradient(135deg,#c9a227,#f5d06e);display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700;color:#0a0e1a;font-family:'Playfair Display',serif;flex-shrink:0;overflow:hidden;}
+  .company-logo img{width:100%;height:100%;object-fit:cover;}
+  .company-meta{color:var(--text-secondary);font-size:.9rem;margin-top:8px;}
+  .company-meta span{margin-right:16px;}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:32px;}
+  .info-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .info-card h4{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);margin-bottom:6px;}
+  .info-card p{color:#fff;font-size:.95rem;font-weight:500;}
+  .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
+  .product-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:.2s;}
+  .product-card:hover{border-color:rgba(201,162,39,.4);}
+  .product-img{height:160px;border-radius:8px;background:var(--secondary);background-size:cover;background-position:center;margin-bottom:14px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:.8rem;}
+  .product-name{font-weight:700;color:#fff;margin-bottom:4px;}
+  .product-desc{font-size:.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:12px;}
+  .product-meta{font-size:.8rem;color:var(--accent);margin-bottom:4px;}
+  .not-found{text-align:center;padding:80px 20px;color:var(--text-secondary);}
+  @media(max-width:600px){.cp-hero h1{font-size:1.8rem}.company-head{flex-direction:column;align-items:center;text-align:center;}}
+</style>
+</head>
+<body>
+<div class="top-bar"><div class="container"><div class="top-bar-left"><span><span class="live-badge"><span class="live-dot"></span>LIVE</span>&nbsp;GTI Asia Pacific 2026 — March 28–30, Guangzhou</span></div><div class="top-bar-right"><a href="#">Media Kit</a><a href="contact.html">Contact</a></div></div></div>
+<nav class="navbar"><div class="container">
+  <a href="../index.html" class="logo"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="products.html">Products ▾</a>
+      <div class="dropdown-menu">
+        <a href="products.html?cat=arcade">Arcade Machines</a><a href="products.html?cat=vr">VR / XR Attractions</a><a href="products.html?cat=kids">Kids &amp; Family Rides</a><a href="products.html?cat=redemption">Redemption &amp; Prize</a><a href="products.html?cat=simulation">Simulation Rides</a><a href="products.html?cat=outdoor">Outdoor Attractions</a><a href="products.html?cat=waterpark">Water Park Equipment</a><a href="products.html?cat=accessories">Accessories &amp; Parts</a>
+      </div></li>
+    <li><a href="news.html">News ▾</a>
+      <div class="dropdown-menu">
+        <a href="news.html?cat=industry">Industry Dynamics</a><a href="news.html?cat=companies">Company News</a><a href="news.html?cat=interviews">Executive Interviews</a><a href="news.html?cat=newproducts">New Product Releases</a><a href="news.html?cat=regulations">Regulations &amp; Compliance</a>
+      </div></li>
+    <li><a href="suppliers.html">Suppliers</a></li>
+    <li><a href="exhibitions.html">Exhibitions ▾</a>
+      <div class="dropdown-menu">
+        <a href="exhibitions.html#calendar">Exhibition Calendar</a><a href="exhibitions.html#reports">Show Reports</a><a href="exhibitions.html#register">Pre-Register</a>
+      </div></li>
+    <li><a href="news.html">Articles</a></li>
+    <li><a href="forum.html">Forum</a></li>
+    <li><a href="member-points.html">Points</a></li>
+    <li><a href="magazine.html">Videos</a></li>
+  </ul>
+  <div class="nav-actions"><button class="search-btn js-open-search">🔍 Search</button><a href="company-profile.html" class="btn btn-primary btn-sm">List Your Company</a><button class="hamburger" id="hamburger"><span></span><span></span><span></span></button></div>
+</div></nav>
+
+<div class="cp-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="../index.html">Home</a><span>/</span><a href="suppliers.html">Suppliers</a><span>/</span><span class="current">Company Profile</span></div>
+    <h1 id="cName">Loading...</h1>
+    <p id="cTagline">Premium supplier on NexAmuse Global.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container" id="profileWrap">
+    <div id="loading" style="text-align:center;padding:60px;color:var(--text-secondary);">Loading company profile...</div>
+  </div>
+</section>
+
+<footer><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="../index.html" class="logo" style="margin-bottom:16px;"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a><p style="color:var(--text-secondary);font-size:.88rem;">The world's premier B2B intelligence platform.</p></div><div class="footer-col"><h4>Products</h4><ul class="footer-links"><li><a href="products.html">All Products</a></li><li><a href="products.html">By Category</a></li></ul></div><div class="footer-col"><h4>Resources</h4><ul class="footer-links"><li><a href="news.html">News</a></li><li><a href="exhibitions.html">Exhibitions</a></li><li><a href="magazine.html">Videos</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul class="footer-links"><li><a href="#">About</a></li><li><a href="contact.html">Contact</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 NexAmuse Global. All rights reserved.</p></div></div></footer>
+<script src="../assets/js/main.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const slug = params.get('slug');
+
+async function loadCompany(){
+  const wrap = document.getElementById('profileWrap');
+  if(!slug){
+    wrap.innerHTML = '<div class="not-found"><h2>Company not found</h2></div>';
+    return;
+  }
+  try{
+    const r = await fetch('/api/companies/' + encodeURIComponent(slug));
+    if(!r.ok) throw new Error('Not found');
+    const data = await r.json();
+    const c = data.company;
+    const products = data.products || [];
+    document.getElementById('cName').textContent = c.name;
+    document.getElementById('cTagline').textContent = c.primary_category ? c.primary_category + ' supplier' : 'Verified supplier';
+
+    const logo = c.logo ? `<img src="${c.logo}" alt="${c.name}">` : (c.name ? c.name[0].toUpperCase() : 'C');
+    const loc = [c.country, c.city].filter(Boolean).join(', ');
+
+    let info = '';
+    if(loc) info += `<div class="info-card"><h4>Location</h4><p>${loc}</p></div>`;
+    if(c.established_year) info += `<div class="info-card"><h4>Established</h4><p>${c.established_year}</p></div>`;
+    if(c.company_size) info += `<div class="info-card"><h4>Company Size</h4><p>${c.company_size}</p></div>`;
+    if(c.certifications) info += `<div class="info-card"><h4>Certifications</h4><p>${c.certifications}</p></div>`;
+    if(c.email) info += `<div class="info-card"><h4>Email</h4><p>${c.email}</p></div>`;
+    if(c.phone) info += `<div class="info-card"><h4>Phone</h4><p>${c.phone}</p></div>`;
+
+    const productHtml = products.length ? `
+      <h2 style="color:#fff;margin:40px 0 20px;font-family:'Playfair Display',serif;">Products</h2>
+      <div class="product-grid">${products.map(p=>`
+        <div class="product-card">
+          ${p.image ? `<div class="product-img" style="background-image:url('${p.image}')"></div>` : `<div class="product-img">No Image</div>`}
+          <div class="product-name">${p.name}</div>
+          <div class="product-desc">${(p.description||'').slice(0,120)}${(p.description||'').length>120?'...':''}</div>
+          ${p.price ? `<div class="product-meta">Price: ${p.price}</div>` : ''}
+          ${p.moq ? `<div class="product-meta">MOQ: ${p.moq}</div>` : ''}
+        </div>
+      `).join('')}</div>
+    ` : '';
+
+    wrap.innerHTML = `
+      <div class="company-head">
+        <div class="company-logo">${logo}</div>
+        <div>
+          <h1 style="color:#fff;font-size:2rem;margin-bottom:8px;">${c.name}</h1>
+          <div class="company-meta">
+            ${loc ? `<span>📍 ${loc}</span>` : ''}
+            ${c.website ? `<span>🌐 <a href="${c.website}" target="_blank" style="color:var(--accent);">${c.website}</a></span>` : ''}
+          </div>
+          ${c.description ? `<p style="color:var(--text-secondary);margin-top:14px;line-height:1.6;max-width:700px;">${c.description.replace(/\n/g,'<br>')}</p>` : ''}
+          <div style="margin-top:18px;">
+            ${c.email ? `<a href="mailto:${c.email}" class="btn btn-primary" style="justify-content:center;">Contact Supplier</a>` : ''}
+          </div>
+        </div>
+      </div>
+      ${info ? `<div class="info-grid">${info}</div>` : ''}
+      ${productHtml}
+    `;
+  }catch(e){
+    wrap.innerHTML = '<div class="not-found"><h2>Company not found or not yet approved</h2><a href="suppliers.html" class="btn btn-primary" style="margin-top:20px;">Back to Suppliers</a></div>';
+  }
+}
+loadCompany();
+</script>
+</body>
+</html>

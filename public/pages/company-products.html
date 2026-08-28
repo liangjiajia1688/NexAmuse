@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Company Products — NexAmuse Global</title>
+<meta name="description" content="Manage your company product catalog on NexAmuse Global."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<style>
+  .cp-hero{background:linear-gradient(135deg,#0a0e1a 0%,#12192e 60%,#1a1208 100%);border-bottom:1px solid rgba(201,162,39,.2);padding:52px 0 40px;}
+  .cp-hero h1{font-family:'Playfair Display',serif;font-size:2.4rem;color:#fff;margin-bottom:10px}
+  .cp-hero p{color:#9aa0b4;font-size:1rem;max-width:560px}
+  .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin-top:24px;}
+  .product-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:.2s;}
+  .product-card:hover{border-color:rgba(201,162,39,.4);}
+  .product-img{height:140px;border-radius:8px;background:var(--secondary);background-size:cover;background-position:center;margin-bottom:14px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:.8rem;}
+  .product-name{font-weight:700;color:#fff;margin-bottom:4px;}
+  .product-cat{font-size:.78rem;color:var(--text-secondary);margin-bottom:10px;}
+  .product-desc{font-size:.82rem;color:var(--text-secondary);line-height:1.5;margin-bottom:12px;min-height:50px;}
+  .product-meta{font-size:.8rem;color:var(--accent);margin-bottom:12px;}
+  .product-actions{display:flex;gap:8px;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .modal-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-group{margin-bottom:16px;}
+  .form-group label{display:block;font-size:.8rem;color:#9aa0b4;margin-bottom:6px;font-weight:500;}
+  .form-group input,.form-group textarea,.form-group select{width:100%;background:var(--secondary);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:#e8eaf0;font-size:.9rem;outline:none;transition:.3s;font-family:inherit;}
+  .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--accent);}
+  .form-group textarea{resize:vertical;min-height:100px;}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--text-secondary);}
+  .status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:16px;}
+  .status-pending{background:rgba(201,162,39,.15);color:#f5d06e;}
+  .status-approved{background:rgba(86,171,47,.15);color:#86efac;}
+  .upgrade-card{max-width:600px;margin:0 auto;text-align:center;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:40px 32px;}
+  @media(max-width:600px){.form-row{grid-template-columns:1fr}.cp-hero h1{font-size:1.8rem}}
+</style>
+</head>
+<body>
+<div class="top-bar"><div class="container"><div class="top-bar-left"><span><span class="live-badge"><span class="live-dot"></span>LIVE</span>&nbsp;GTI Asia Pacific 2026 — March 28–30, Guangzhou</span></div><div class="top-bar-right"><a href="#">Media Kit</a><a href="contact.html">Contact</a></div></div></div>
+<nav class="navbar"><div class="container">
+  <a href="../index.html" class="logo"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="products.html">Products ▾</a>
+      <div class="dropdown-menu">
+        <a href="products.html?cat=arcade">Arcade Machines</a><a href="products.html?cat=vr">VR / XR Attractions</a><a href="products.html?cat=kids">Kids &amp; Family Rides</a><a href="products.html?cat=redemption">Redemption &amp; Prize</a><a href="products.html?cat=simulation">Simulation Rides</a><a href="products.html?cat=outdoor">Outdoor Attractions</a><a href="products.html?cat=waterpark">Water Park Equipment</a><a href="products.html?cat=accessories">Accessories &amp; Parts</a>
+      </div></li>
+    <li><a href="news.html">News ▾</a>
+      <div class="dropdown-menu">
+        <a href="news.html?cat=industry">Industry Dynamics</a><a href="news.html?cat=companies">Company News</a><a href="news.html?cat=interviews">Executive Interviews</a><a href="news.html?cat=newproducts">New Product Releases</a><a href="news.html?cat=regulations">Regulations &amp; Compliance</a>
+      </div></li>
+    <li><a href="suppliers.html">Suppliers</a></li>
+    <li><a href="exhibitions.html">Exhibitions ▾</a>
+      <div class="dropdown-menu">
+        <a href="exhibitions.html#calendar">Exhibition Calendar</a><a href="exhibitions.html#reports">Show Reports</a><a href="exhibitions.html#register">Pre-Register</a>
+      </div></li>
+    <li><a href="news.html">Articles</a></li>
+    <li><a href="forum.html">Forum</a></li>
+    <li><a href="member-points.html">Points</a></li>
+    <li><a href="magazine.html">Videos</a></li>
+  </ul>
+  <div class="nav-actions"><button class="search-btn js-open-search">🔍 Search</button><a href="company-profile.html" class="btn btn-primary btn-sm">My Company</a><button class="hamburger" id="hamburger"><span></span><span></span><span></span></button></div>
+</div></nav>
+
+<div class="cp-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="../index.html">Home</a><span>/</span><a href="suppliers.html">Suppliers</a><span>/</span><a href="company-profile.html">My Company</a><span>/</span><span class="current">Products</span></div>
+    <h1>Manage <em style="color:var(--accent);">Company Products</em></h1>
+    <p>Add, edit and showcase your products to global buyers.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div id="upgradeGate" class="upgrade-card" style="display:none;">
+      <h2>Unlock Product Catalog</h2>
+      <p style="color:var(--text-secondary);margin-bottom:24px;">Product management is available to Premium and VIP members. Create your company profile first to start adding products.</p>
+      <a href="member-points.html" class="btn btn-primary" style="justify-content:center;">View Membership Levels →</a>
+    </div>
+
+    <div id="mainWrap" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
+        <div id="companyStatus"></div>
+        <button class="btn btn-primary" onclick="openModal()" id="addBtn">+ Add Product</button>
+      </div>
+      <div id="productList" class="product-grid"></div>
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <div style="font-size:2.5rem;margin-bottom:12px;">📦</div>
+        <h3>No products yet</h3>
+        <p>Add your first product to appear in the supplier directory.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="modal-overlay" id="productModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <h3 style="margin:0;color:#e2e8f0;" id="modalTitle">Add Product</h3>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;">×</button>
+    </div>
+    <form id="productForm">
+      <input type="hidden" id="productId"/>
+      <div class="form-group"><label>Product Name *</label><input type="text" id="pName" required/></div>
+      <div class="form-row">
+        <div class="form-group"><label>Category</label><select id="pCategory">
+          <option value="">Same as company</option><option>Arcade Machines</option><option>VR / XR Attractions</option><option>Kids &amp; Family Rides</option><option>Redemption Games</option><option>Simulation Rides</option><option>Outdoor Attractions</option><option>Water Park Equipment</option><option>Payment Technology</option><option>Accessories &amp; Parts</option>
+        </select></div>
+        <div class="form-group"><label>Featured</label><select id="pFeatured"><option value="0">No</option><option value="1">Yes</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Price / Unit</label><input type="text" id="pPrice" placeholder="e.g. $5,000 - $8,000"/></div>
+        <div class="form-group"><label>MOQ</label><input type="text" id="pMoq" placeholder="e.g. 1 set"/></div>
+      </div>
+      <div class="form-group"><label>Product Image URL</label><input type="url" id="pImage" placeholder="https://example.com/product.jpg"/></div>
+      <div class="form-group"><label>Description</label><textarea id="pDesc" placeholder="Key features, specifications, applications..."></textarea></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;">
+        <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="saveBtn">Save Product</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="../index.html" class="logo" style="margin-bottom:16px;"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a><p style="color:var(--text-secondary);font-size:.88rem;">The world's premier B2B intelligence platform.</p></div><div class="footer-col"><h4>Products</h4><ul class="footer-links"><li><a href="products.html">All Products</a></li><li><a href="products.html">By Category</a></li></ul></div><div class="footer-col"><h4>Resources</h4><ul class="footer-links"><li><a href="news.html">News</a></li><li><a href="exhibitions.html">Exhibitions</a></li><li><a href="magazine.html">Videos</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul class="footer-links"><li><a href="#">About</a></li><li><a href="contact.html">Contact</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 NexAmuse Global. All rights reserved.</p></div></div></footer>
+<script src="../assets/js/main.js"></script>
+<script>
+const LEVELS={Standard:1,Premium:2,VIP:3};
+function levelRank(u){ if(!u) return 0; if(u.role==='admin'||u.is_super) return 99; return LEVELS[u.level]||1; }
+let company=null, products=[], token='';
+
+async function init(){
+  await syncUser();
+  const s=getSession();
+  if(!s){ location.href='login.html?redirect='+encodeURIComponent(location.pathname); return; }
+  token=s.token;
+  if(levelRank(s) < LEVELS.Premium){ document.getElementById('upgradeGate').style.display='block'; return; }
+
+  try{
+    const r=await fetch('/api/company-products',{headers:{'Authorization':'Bearer '+token}});
+    if(!r.ok) throw new Error('Failed to load products');
+    const data=await r.json();
+    company=data.company;
+    products=data.products||[];
+  }catch(e){ console.error(e); }
+
+  document.getElementById('mainWrap').style.display='block';
+  const statusEl=document.getElementById('companyStatus');
+  if(!company){
+    statusEl.innerHTML='<span class="status-badge status-pending">Create your company profile first</span>';
+    document.getElementById('addBtn').style.display='none';
+    return;
+  }
+  const statusClass = company.status==='approved'?'status-approved':'status-pending';
+  const statusText = company.status==='approved'?'Approved':'Pending Review';
+  statusEl.innerHTML=`<span class="status-badge ${statusClass}">${statusText}</span>`;
+  if(company.status!=='approved') document.getElementById('addBtn').style.display='none';
+  renderProducts();
+}
+
+function renderProducts(){
+  const list=document.getElementById('productList');
+  const empty=document.getElementById('emptyState');
+  list.innerHTML='';
+  if(!products.length){ empty.style.display='block'; return; }
+  empty.style.display='none';
+  products.forEach(p=>{
+    const img = p.image ? `<div class="product-img" style="background-image:url('${p.image}')"></div>` : `<div class="product-img">No Image</div>`;
+    list.innerHTML+=`
+      <div class="product-card">
+        ${img}
+        <div class="product-name">${p.name}</div>
+        <div class="product-cat">${p.category||'Uncategorized'} ${p.featured?'· ⭐ Featured':''}</div>
+        <div class="product-desc">${(p.description||'').slice(0,120)}${(p.description||'').length>120?'...':''}</div>
+        ${p.price?`<div class="product-meta">Price: ${p.price}</div>`:''}
+        ${p.moq?`<div class="product-meta">MOQ: ${p.moq}</div>`:''}
+        <div class="product-actions">
+          <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id})">Edit</button>
+          <button class="btn btn-primary btn-sm" onclick="deleteProduct(${p.id})">Delete</button>
+        </div>
+      </div>`;
+  });
+}
+
+function openModal(){ document.getElementById('productId').value=''; document.getElementById('productForm').reset(); document.getElementById('modalTitle').textContent='Add Product'; document.getElementById('productModal').classList.add('open'); }
+function closeModal(){ document.getElementById('productModal').classList.remove('open'); }
+function editProduct(id){
+  const p=products.find(x=>x.id===id); if(!p) return;
+  document.getElementById('productId').value=p.id;
+  document.getElementById('pName').value=p.name||'';
+  document.getElementById('pCategory').value=p.category||'';
+  document.getElementById('pFeatured').value=p.featured?1:0;
+  document.getElementById('pPrice').value=p.price||'';
+  document.getElementById('pMoq').value=p.moq||'';
+  document.getElementById('pImage').value=p.image||'';
+  document.getElementById('pDesc').value=p.description||'';
+  document.getElementById('modalTitle').textContent='Edit Product';
+  document.getElementById('productModal').classList.add('open');
+}
+
+async function deleteProduct(id){
+  if(!confirm('Delete this product?')) return;
+  try{
+    const r=await fetch('/api/company-products?id='+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+    if(!r.ok) throw new Error('Delete failed');
+    products=products.filter(x=>x.id!==id);
+    renderProducts();
+  }catch(e){ alert(e.message); }
+}
+
+document.getElementById('productForm').addEventListener('submit', async function(ev){
+  ev.preventDefault();
+  if(!company || company.status!=='approved') return alert('Company must be approved before adding products.');
+  const btn=document.getElementById('saveBtn'); btn.textContent='Saving...'; btn.disabled=true;
+
+  const id=document.getElementById('productId').value;
+  const payload={
+    name: document.getElementById('pName').value.trim(),
+    category: document.getElementById('pCategory').value || null,
+    featured: document.getElementById('pFeatured').value==='1',
+    price: document.getElementById('pPrice').value.trim() || null,
+    moq: document.getElementById('pMoq').value.trim() || null,
+    image: document.getElementById('pImage').value.trim() || null,
+    description: document.getElementById('pDesc').value.trim() || null
+  };
+
+  try{
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? '/api/company-products?id='+id : '/api/company-products';
+    const r=await fetch(url,{method,headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(data.error || 'Save failed');
+    if(id){ const i=products.findIndex(x=>x.id===parseInt(id,10)); products[i]=data.product; }
+    else { products.unshift(data.product); }
+    closeModal(); renderProducts();
+  }catch(e){ alert(e.message); }
+  finally{ btn.textContent='Save Product'; btn.disabled=false; }
+});
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Company Profile — NexAmuse Global</title>
+<meta name="description" content="Create and manage your company listing on NexAmuse Global. Premium and VIP members can publish a company profile and product catalog."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<style>
+  .cp-hero{background:linear-gradient(135deg,#0a0e1a 0%,#12192e 60%,#1a1208 100%);border-bottom:1px solid rgba(201,162,39,.2);padding:52px 0 40px;}
+  .cp-hero h1{font-family:'Playfair Display',serif;font-size:2.4rem;color:#fff;margin-bottom:10px}
+  .cp-hero p{color:#9aa0b4;font-size:1rem;max-width:560px}
+  .cp-form{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:820px;margin:0 auto;}
+  .cp-form .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:0;}
+  .cp-form .form-group{margin-bottom:16px;}
+  .cp-form label{display:block;font-size:.8rem;color:#9aa0b4;margin-bottom:6px;font-weight:500;}
+  .cp-form input,.cp-form textarea,.cp-form select{width:100%;background:var(--secondary);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:#e8eaf0;font-size:.9rem;outline:none;transition:all .3s;font-family:inherit;}
+  .cp-form input:focus,.cp-form textarea:focus,.cp-form select:focus{border-color:var(--accent);}
+  .cp-form textarea{resize:vertical;min-height:120px;}
+  .cp-form select option{background:var(--secondary);}
+  .status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:16px;}
+  .status-pending{background:rgba(201,162,39,.15);color:#f5d06e;}
+  .status-approved{background:rgba(86,171,47,.15);color:#86efac;}
+  .status-rejected{background:rgba(238,9,121,.15);color:#fca5a5;}
+  .actions-row{display:flex;gap:12px;justify-content:flex-end;margin-top:24px;flex-wrap:wrap;}
+  .upgrade-card{max-width:600px;margin:0 auto;text-align:center;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:40px 32px;}
+  .upgrade-card h2{font-family:'Playfair Display',serif;font-size:1.8rem;color:#fff;margin-bottom:12px;}
+  @media(max-width:600px){.cp-form .form-row{grid-template-columns:1fr}.cp-hero h1{font-size:1.8rem}}
+</style>
+</head>
+<body>
+<div class="top-bar"><div class="container"><div class="top-bar-left"><span><span class="live-badge"><span class="live-dot"></span>LIVE</span>&nbsp;GTI Asia Pacific 2026 — March 28–30, Guangzhou</span></div><div class="top-bar-right"><a href="#">Media Kit</a><a href="contact.html">Contact</a></div></div></div>
+<nav class="navbar"><div class="container">
+  <a href="../index.html" class="logo"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="products.html">Products ▾</a>
+      <div class="dropdown-menu">
+        <a href="products.html?cat=arcade">Arcade Machines</a><a href="products.html?cat=vr">VR / XR Attractions</a><a href="products.html?cat=kids">Kids &amp; Family Rides</a><a href="products.html?cat=redemption">Redemption &amp; Prize</a><a href="products.html?cat=simulation">Simulation Rides</a><a href="products.html?cat=outdoor">Outdoor Attractions</a><a href="products.html?cat=waterpark">Water Park Equipment</a><a href="products.html?cat=accessories">Accessories &amp; Parts</a>
+      </div></li>
+    <li><a href="news.html">News ▾</a>
+      <div class="dropdown-menu">
+        <a href="news.html?cat=industry">Industry Dynamics</a><a href="news.html?cat=companies">Company News</a><a href="news.html?cat=interviews">Executive Interviews</a><a href="news.html?cat=newproducts">New Product Releases</a><a href="news.html?cat=regulations">Regulations &amp; Compliance</a>
+      </div></li>
+    <li><a href="suppliers.html">Suppliers</a></li>
+    <li><a href="exhibitions.html">Exhibitions ▾</a>
+      <div class="dropdown-menu">
+        <a href="exhibitions.html#calendar">Exhibition Calendar</a><a href="exhibitions.html#reports">Show Reports</a><a href="exhibitions.html#register">Pre-Register</a>
+      </div></li>
+    <li><a href="news.html">Articles</a></li>
+    <li><a href="forum.html">Forum</a></li>
+    <li><a href="member-points.html">Points</a></li>
+    <li><a href="magazine.html">Videos</a></li>
+  </ul>
+  <div class="nav-actions"><button class="search-btn js-open-search">🔍 Search</button><a href="#" class="btn btn-primary btn-sm">List Your Company</a><button class="hamburger" id="hamburger"><span></span><span></span><span></span></button></div>
+</div></nav>
+
+<div class="cp-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="../index.html">Home</a><span>/</span><a href="suppliers.html">Suppliers</a><span>/</span><span class="current">My Company Profile</span></div>
+    <h1>Manage Your <em style="color:var(--accent);">Company Profile</em></h1>
+    <p>Premium and VIP members can create a public company listing and manage products.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div id="upgradeGate" class="upgrade-card" style="display:none;">
+      <h2>Unlock Company Listings</h2>
+      <p style="color:var(--text-secondary);margin-bottom:24px;">Company profiles and product catalogs are available to Premium and VIP members. Upgrade to reach buyers from 180+ countries.</p>
+      <a href="member-points.html" class="btn btn-primary" style="justify-content:center;">View Membership Levels →</a>
+    </div>
+
+    <div id="formWrap" style="display:none;">
+      <div class="cp-form">
+        <div id="statusRow"></div>
+        <form id="companyForm">
+          <input type="hidden" id="companyId"/>
+          <div class="form-row">
+            <div class="form-group"><label>Company Name *</label><input type="text" id="name" placeholder="Your Company Ltd." required/></div>
+            <div class="form-group"><label>Country *</label><select id="country" required>
+              <option value="">Select country</option><option>China</option><option>USA</option><option>Germany</option><option>Japan</option><option>South Korea</option><option>UK</option><option>Italy</option><option>Belgium</option><option>Turkey</option><option>UAE</option><option>Other</option>
+            </select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>City</label><input type="text" id="city" placeholder="Guangzhou"/></div>
+            <div class="form-group"><label>Established Year</label><input type="number" id="established_year" placeholder="2010" min="1900" max="2099"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Contact Name *</label><input type="text" id="contact_name" placeholder="John Smith" required/></div>
+            <div class="form-group"><label>Business Email *</label><input type="email" id="email" placeholder="contact@company.com" required/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Phone / WhatsApp</label><input type="text" id="phone" placeholder="+1 234 567 8900"/></div>
+            <div class="form-group"><label>Website</label><input type="url" id="website" placeholder="https://yourcompany.com"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Primary Product Category *</label><select id="primary_category" required>
+              <option value="">Select category</option><option>Arcade Machines</option><option>VR / XR Attractions</option><option>Kids &amp; Family Rides</option><option>Redemption Games</option><option>Simulation Rides</option><option>Outdoor Attractions</option><option>Water Park Equipment</option><option>Payment Technology</option><option>Accessories &amp; Parts</option>
+            </select></div>
+            <div class="form-group"><label>Company Size</label><select id="company_size">
+              <option value="">Select size</option><option>Enterprise (500+)</option><option>Large (100–500)</option><option>Mid-Size (20–100)</option><option>Small (&lt;20)</option>
+            </select></div>
+          </div>
+          <div class="form-group"><label>Company Logo URL</label><input type="url" id="logo" placeholder="https://example.com/logo.png"/></div>
+          <div class="form-group"><label>Certifications (comma separated)</label><input type="text" id="certifications" placeholder="CE, TUV, ISO 9001, ASTM F24"/></div>
+          <div class="form-group"><label>Company Description</label><textarea id="description" placeholder="Briefly describe your company, products, and experience..."></textarea></div>
+          <div class="actions-row">
+            <a href="company-products.html" class="btn btn-ghost" id="productsLink" style="display:none;">Manage Products</a>
+            <button type="submit" class="btn btn-primary" id="submitBtn" style="justify-content:center;">Save Company Profile</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="../index.html" class="logo" style="margin-bottom:16px;"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a><p style="color:var(--text-secondary);font-size:.88rem;">The world's premier B2B intelligence platform.</p></div><div class="footer-col"><h4>Products</h4><ul class="footer-links"><li><a href="products.html">All Products</a></li><li><a href="products.html">By Category</a></li></ul></div><div class="footer-col"><h4>Resources</h4><ul class="footer-links"><li><a href="news.html">News</a></li><li><a href="exhibitions.html">Exhibitions</a></li><li><a href="magazine.html">Videos</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul class="footer-links"><li><a href="#">About</a></li><li><a href="contact.html">Contact</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 NexAmuse Global. All rights reserved.</p></div></div></footer>
+<script src="../assets/js/main.js"></script>
+<script>
+const LEVELS = { Standard:1, Premium:2, VIP:3 };
+function levelRank(u){ if(!u) return 0; if(u.role==='admin' || u.is_super) return 99; return LEVELS[u.level]||1; }
+function canCreate(u){ return levelRank(u) >= LEVELS.Premium; }
+
+function setMsg(el, text, type){
+  el.style.display = 'block';
+  el.className = 'auth-msg ' + type;
+  el.textContent = text;
+}
+
+async function init(){
+  await syncUser();
+  const s = getSession();
+  if(!s){ location.href='login.html?redirect='+encodeURIComponent(location.pathname); return; }
+  if(!canCreate(s)){ document.getElementById('upgradeGate').style.display='block'; return; }
+
+  document.getElementById('formWrap').style.display='block';
+  try{
+    const r = await fetch('/api/companies?mine=1', { headers:{ 'Authorization':'Bearer '+s.token } });
+    if(r.ok){
+      const data = await r.json();
+      if(data.company) fillForm(data.company);
+    }
+  }catch(e){ console.error(e); }
+
+  document.getElementById('companyForm').addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const old = btn.textContent;
+    btn.textContent = 'Saving...'; btn.disabled = true;
+
+    const payload = {
+      name: document.getElementById('name').value.trim(),
+      country: document.getElementById('country').value,
+      city: document.getElementById('city').value.trim() || null,
+      contact_name: document.getElementById('contact_name').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim() || null,
+      website: document.getElementById('website').value.trim() || null,
+      logo: document.getElementById('logo').value.trim() || null,
+      primary_category: document.getElementById('primary_category').value,
+      description: document.getElementById('description').value.trim() || null,
+      established_year: document.getElementById('established_year').value ? parseInt(document.getElementById('established_year').value,10) : null,
+      company_size: document.getElementById('company_size').value || null,
+      certifications: document.getElementById('certifications').value.trim() || null
+    };
+
+    try{
+      const r = await fetch('/api/companies', { method:'POST', headers:{ 'Authorization':'Bearer '+s.token, 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+      const data = await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(data.error || 'Save failed');
+      fillForm(data.company);
+      alert(data.message || 'Saved');
+    }catch(err){ alert(err.message); }
+    finally{ btn.textContent = old; btn.disabled = false; }
+  });
+}
+
+function fillForm(c){
+  if(!c) return;
+  document.getElementById('companyId').value = c.id || '';
+  document.getElementById('name').value = c.name || '';
+  document.getElementById('country').value = c.country || '';
+  document.getElementById('city').value = c.city || '';
+  document.getElementById('contact_name').value = c.contact_name || '';
+  document.getElementById('email').value = c.email || '';
+  document.getElementById('phone').value = c.phone || '';
+  document.getElementById('website').value = c.website || '';
+  document.getElementById('logo').value = c.logo || '';
+  document.getElementById('primary_category').value = c.primary_category || '';
+  document.getElementById('description').value = c.description || '';
+  document.getElementById('established_year').value = c.established_year || '';
+  document.getElementById('company_size').value = c.company_size || '';
+  document.getElementById('certifications').value = c.certifications || '';
+
+  const statusRow = document.getElementById('statusRow');
+  if(c.status === 'approved'){
+    statusRow.innerHTML = '<span class="status-badge status-approved">✅ Approved</span>';
+    const link = document.getElementById('productsLink');
+    link.style.display = 'inline-flex';
+  } else if(c.status === 'pending'){
+    statusRow.innerHTML = '<span class="status-badge status-pending">⏳ Pending Review</span>';
+  } else if(c.status === 'rejected'){
+    statusRow.innerHTML = '<span class="status-badge status-rejected">❌ Rejected</span>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

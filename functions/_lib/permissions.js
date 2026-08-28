@@ -17,7 +17,11 @@ export function canPublishArticle(user) {
 }
 
 export function canCreateCompanyPage(user) {
-  return levelRank(user) >= LEVELS.VIP;
+  return levelRank(user) >= LEVELS.Premium;
+}
+
+export function canManageCompanyProducts(user) {
+  return levelRank(user) >= LEVELS.Premium;
 }
 
 export function canPostForumUnlimited(user) {
