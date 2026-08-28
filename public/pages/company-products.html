@@ -104,9 +104,9 @@
 
 <div class="modal-overlay" id="productModal" style="padding:0;">
   <div class="modal-box" style="max-width:960px;width:95%;height:92vh;padding:0;background:var(--card-bg);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--card-bg);">
       <h3 style="margin:0;color:#e2e8f0;" id="modalTitle">Add Product</h3>
-      <button onclick="closeModal()" style="background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;">×</button>
+      <button onclick="closeModal()" title="Close" style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);font-size:20px;line-height:1;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.12)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.color='var(--text-secondary)'">×</button>
     </div>
     <iframe id="productFrame" style="flex:1;width:100%;border:none;background:var(--bg);" src=""></iframe>
   </div>
@@ -303,6 +303,8 @@ function closeModal(){
   document.getElementById('productModal').classList.remove('open');
   document.getElementById('productFrame').src='';
 }
+document.getElementById('productModal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
 function editProduct(id){
   document.getElementById('modalTitle').textContent='Edit Product';
   document.getElementById('productFrame').src='../admin/products-add.html?id='+id+'&modal=1';

@@ -85,7 +85,27 @@
                   <button type="button" class="editor-btn" onclick="exec('insertUnorderedList')">• List</button>
                 </div>
                 <div class="editor-area" id="pDesc" contenteditable="true" data-placeholder="Enter full product description here..."></div>
+                <div style="margin-top:16px">
+                  <label style="display:block;margin-bottom:8px;font-size:13px;color:var(--text-secondary)">Detail Images <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 10, &gt;1MB auto-compressed to WebP)</span></label>
+                  <div class="image-drop" onclick="document.getElementById('pDetailImages').click()">
+                    <div style="font-size:28px;margin-bottom:6px">🖼</div>
+                    <div>Click to upload detail images</div>
+                    <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP</div>
+                    <input type="file" id="pDetailImages" multiple accept="image/*" style="display:none" onchange="addFiles(this.files,'detail')">
+                  </div>
+                  <div id="pDetailPreview" class="img-preview-grid"></div>
+                </div>
               </div>
+            </div>
+            <div class="form-section">
+              <h3>Product Images <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 5, &gt;1MB auto-compressed to WebP)</span></h3>
+              <div class="image-drop" onclick="document.getElementById('pProductImages').click()">
+                <div style="font-size:28px;margin-bottom:6px">🖼</div>
+                <div>Click to upload product images</div>
+                <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP</div>
+                <input type="file" id="pProductImages" multiple accept="image/*" style="display:none" onchange="addFiles(this.files,'product')">
+              </div>
+              <div id="pProductPreview" class="img-preview-grid"></div>
             </div>
             <div class="form-section">
               <h3>Technical Specifications</h3>
@@ -159,26 +179,6 @@
               </div>
               <div class="form-group" style="margin-top:12px"><label>MOQ</label><input type="text" id="pMoq" placeholder="e.g. 1 set"></div>
               <div class="form-group" style="margin-top:12px"><label>Display Price</label><input type="text" id="pPrice" placeholder="e.g. $5,000 - $8,000"></div>
-            </div>
-            <div class="form-section">
-              <h3>Product Images <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 5, &gt;1MB auto-compressed)</span></h3>
-              <div class="image-drop" onclick="document.getElementById('pProductImages').click()">
-                <div style="font-size:28px;margin-bottom:6px">🖼</div>
-                <div>Click to upload product images</div>
-                <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP</div>
-                <input type="file" id="pProductImages" multiple accept="image/*" style="display:none" onchange="addFiles(this.files,'product')">
-              </div>
-              <div id="pProductPreview" class="img-preview-grid"></div>
-            </div>
-            <div class="form-section">
-              <h3>Detail Images <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 10, &gt;1MB auto-compressed)</span></h3>
-              <div class="image-drop" onclick="document.getElementById('pDetailImages').click()">
-                <div style="font-size:28px;margin-bottom:6px">🖼</div>
-                <div>Click to upload detail images</div>
-                <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP</div>
-                <input type="file" id="pDetailImages" multiple accept="image/*" style="display:none" onchange="addFiles(this.files,'detail')">
-              </div>
-              <div id="pDetailPreview" class="img-preview-grid"></div>
             </div>
           </div>
         </div>
