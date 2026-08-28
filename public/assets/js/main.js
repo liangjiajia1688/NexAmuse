@@ -257,6 +257,19 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Currency converter hint ── */
   const currencyEl = document.getElementById('currencyDisplay');
   const rates = { USD: 1, EUR: 0.93, GBP: 0.79, CNY: 7.24, JPY: 149.5, AED: 3.67 };
+
+  /* ── Analytics beacon ── */
+  (function sendBeacon(){
+    try{
+      if(location.hostname==='localhost' || location.protocol==='file:') return;
+      fetch('/api/track', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({path: location.pathname + location.search}),
+        keepalive: true
+      }).catch(()=>{});
+    }catch(e){}
+  })();
   const symbols = { USD:'$', EUR:'€', GBP:'£', CNY:'¥', JPY:'¥', AED:'د.إ' };
   let currentCurrency = 'USD';
   document.querySelectorAll('.js-currency').forEach(btn => {

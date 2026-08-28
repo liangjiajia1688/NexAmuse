@@ -45,6 +45,9 @@ const NAV = [
   { section: 'Overview', items: [
     { href: 'index.html', icon: '📊', label: 'Dashboard', page: 'dashboard' },
   ]},
+  { section: 'Analytics', items: [
+    { href: 'analytics.html', icon: '📈', label: 'Statistics', page: 'analytics', badge:'NEW' },
+  ]},
   { section: 'Members', items: [
     { href: 'members.html',           icon: '👥', label: 'Manage Members',   page: 'members' },
     { href: 'members-add.html',       icon: '➕', label: 'Add Member',       page: 'members-add' },

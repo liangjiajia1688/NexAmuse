@@ -53,40 +53,39 @@
         <div class="form-section" style="padding:20px;display:flex;align-items:center;gap:16px">
           <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">👥</div>
           <div>
-            <div style="font-size:26px;font-weight:700;color:#e2e8f0">1,284</div>
+            <div style="font-size:26px;font-weight:700;color:#e2e8f0" id="kpiMembers">—</div>
             <div style="font-size:12px;color:var(--text-muted)">Total Members</div>
-            <div style="font-size:11px;color:#56ab2f;margin-top:2px">▲ +24 this week</div>
+            <div style="font-size:11px;color:#56ab2f;margin-top:2px" id="kpiMembersGrowth">▲ +0 this week</div>
           </div>
         </div>
         <div class="form-section" style="padding:20px;display:flex;align-items:center;gap:16px">
           <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#d4af37,#f5d06e);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎮</div>
           <div>
-            <div style="font-size:26px;font-weight:700;color:#e2e8f0">368</div>
+            <div style="font-size:26px;font-weight:700;color:#e2e8f0" id="kpiProducts">—</div>
             <div style="font-size:12px;color:var(--text-muted)">Products Listed</div>
-            <div style="font-size:11px;color:#56ab2f;margin-top:2px">▲ +12 this month</div>
+            <div style="font-size:11px;color:#56ab2f;margin-top:2px" id="kpiProductsGrowth">▲ +0 this month</div>
           </div>
         </div>
         <div class="form-section" style="padding:20px;display:flex;align-items:center;gap:16px">
           <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#11998e,#38ef7d);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📰</div>
           <div>
-            <div style="font-size:26px;font-weight:700;color:#e2e8f0">94</div>
+            <div style="font-size:26px;font-weight:700;color:#e2e8f0" id="kpiArticles">—</div>
             <div style="font-size:12px;color:var(--text-muted)">Published Articles</div>
-            <div style="font-size:11px;color:#56ab2f;margin-top:2px">▲ +6 this week</div>
+            <div style="font-size:11px;color:#56ab2f;margin-top:2px" id="kpiArticlesGrowth">▲ +0 this week</div>
           </div>
         </div>
         <div class="form-section" style="padding:20px;display:flex;align-items:center;gap:16px">
           <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#ee0979,#ff6a00);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📩</div>
           <div>
-            <div style="font-size:26px;font-weight:700;color:#e2e8f0">47</div>
-            <div style="font-size:12px;color:var(--text-muted)">Pending Inquiries</div>
-            <div style="font-size:11px;color:#ee0979;margin-top:2px">● 12 urgent</div>
+            <div style="font-size:26px;font-weight:700;color:#e2e8f0" id="kpiComments">—</div>
+            <div style="font-size:12px;color:var(--text-muted)">Pending Comments</div>
+            <div style="font-size:11px;color:#ee0979;margin-top:2px" id="kpiCommentsSub">awaiting review</div>
           </div>
         </div>
       </div>
 
-      <!-- Two-column layout -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
-
+      <!-- Live lists -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:24px">
         <!-- Recent Members -->
         <div class="form-section" style="padding:0;overflow:hidden">
           <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
@@ -97,7 +96,6 @@
             <tbody id="recentMembersBody"></tbody>
           </table>
         </div>
-
         <!-- Recent Articles -->
         <div class="form-section" style="padding:0;overflow:hidden">
           <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
@@ -106,6 +104,39 @@
           </div>
           <table style="width:100%;border-collapse:collapse">
             <tbody id="recentArticlesBody"></tbody>
+          </table>
+        </div>
+        <!-- Recent News -->
+        <div class="form-section" style="padding:0;overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <h3 style="font-size:14px;color:#e2e8f0">🗞️ Recent News</h3>
+            <a href="news-list.html" style="font-size:12px;color:var(--gold)">View all →</a>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <tbody id="recentNewsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+        <!-- Recent Companies -->
+        <div class="form-section" style="padding:0;overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <h3 style="font-size:14px;color:#e2e8f0">🏭 Recent Companies</h3>
+            <a href="companies.html" style="font-size:12px;color:var(--gold)">View all →</a>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <tbody id="recentCompaniesBody"></tbody>
+          </table>
+        </div>
+        <!-- Recent Exhibitions -->
+        <div class="form-section" style="padding:0;overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <h3 style="font-size:14px;color:#e2e8f0">🎪 Recent Exhibitions</h3>
+            <a href="exhibitions.html" style="font-size:12px;color:var(--gold)">View all →</a>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <tbody id="recentExhibitionsBody"></tbody>
           </table>
         </div>
       </div>
@@ -213,52 +244,82 @@
 
 <script src="admin.js"></script>
 <script>
-// Recent Members data
-const recentMembers = [
-  { name:'James Lawson',   company:'Global Fun Ltd.',    level:'Gold',     joined:'2026-03-24' },
-  { name:'Sofia Kramer',   company:'Amusement GmbH',     level:'Silver',   joined:'2026-03-22' },
-  { name:'Takeshi Noda',   company:'Play World Co.',     level:'Platinum', joined:'2026-03-20' },
-  { name:'Ahmed Mansour',  company:'FunZone AE',         level:'Gold',     joined:'2026-03-18' },
-  { name:'Laura Chen',     company:'Arcade Masters SG',  level:'Gold',     joined:'2026-03-15' },
-];
-const levelColors = { Platinum:'#a78bfa', Gold:'#d4af37', Silver:'#94a3b8', Standard:'#64748b' };
-document.getElementById('recentMembersBody').innerHTML = recentMembers.map(m => `
-  <tr style="border-bottom:1px solid var(--border)">
-    <td style="padding:10px 16px">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:30px;height:30px;border-radius:50%;background:var(--card-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--gold);flex-shrink:0">
-          ${m.name.split(' ').map(x=>x[0]).join('')}
-        </div>
-        <div>
-          <div style="font-size:13px;color:#e2e8f0">${m.name}</div>
-          <div style="font-size:11px;color:var(--text-muted)">${m.company}</div>
-        </div>
-      </div>
-    </td>
-    <td style="padding:10px 8px;font-size:11px;color:${levelColors[m.level]||'#94a3b8'}">${m.level}</td>
-    <td style="padding:10px 16px;font-size:11px;color:var(--text-muted)">${m.joined}</td>
-  </tr>
-`).join('');
+const levelColors = { Platinum:'#a78bfa', Gold:'#d4af37', Silver:'#94a3b8', Standard:'#64748b', VIP:'#f59e0b', Premium:'#38bdf8', user:'#94a3b8' };
+function initials(name){ return String(name||'G').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(); }
+function fmtDate(ts){ return ts ? new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—'; }
+function setText(id, v){ const el=document.getElementById(id); if(el) el.textContent=v; }
 
-// Recent Articles data
-const recentArticles = [
-  { title:'2026 Global Amusement Industry Outlook',    cat:'Industry News',  date:'2026-03-24', status:'Published' },
-  { title:'Top 10 VR Attractions of 2026',             cat:'Product Review', date:'2026-03-22', status:'Published' },
-  { title:'Safety Standards for Indoor Theme Parks',   cat:'Regulations',    date:'2026-03-20', status:'Published' },
-  { title:'How AI is Reshaping Arcade Gaming',         cat:'Technology',     date:'2026-03-18', status:'Draft' },
-  { title:'GTI China 2026 Exhibitor Preview',          cat:'Exhibitions',    date:'2026-03-15', status:'Published' },
-];
-document.getElementById('recentArticlesBody').innerHTML = recentArticles.map(a => `
-  <tr style="border-bottom:1px solid var(--border)">
-    <td style="padding:10px 16px">
-      <div style="font-size:13px;color:#e2e8f0;margin-bottom:3px">${a.title}</div>
-      <div style="font-size:11px;color:var(--text-muted)">${a.cat} · ${a.date}</div>
-    </td>
-    <td style="padding:10px 16px;font-size:11px;white-space:nowrap">
-      <span style="padding:2px 8px;border-radius:4px;background:${a.status==='Published'?'rgba(86,171,47,.15)':'rgba(255,255,255,.06)'};color:${a.status==='Published'?'#56ab2f':'var(--text-muted)'}">${a.status}</span>
-    </td>
-  </tr>
-`).join('');
+async function loadDashboard(){
+  try{
+    const d = await apiGet('/api/admin/dashboard');
+    if(!d.ok) throw new Error('dashboard error');
+    const c = d.counts || {};
+    const g = d.growth || {};
+    const r = d.recent || {};
+
+    setText('kpiMembers', (c.members||0).toLocaleString());
+    setText('kpiMembersGrowth', '▲ +' + (g.membersThisWeek||0) + ' this week');
+    setText('kpiProducts', (c.products||0).toLocaleString());
+    setText('kpiProductsGrowth', '▲ +' + (g.productsThisMonth||0) + ' this month');
+    setText('kpiArticles', (c.articles||0).toLocaleString());
+    setText('kpiArticlesGrowth', '▲ +' + (g.articlesThisWeek||0) + ' this week');
+    setText('kpiComments', (c.commentsPending||0).toLocaleString());
+    setText('kpiCommentsSub', (c.commentsPending||0) ? 'awaiting review' : 'all caught up');
+
+    document.getElementById('recentMembersBody').innerHTML = (r.members||[]).map(m => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 16px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--card-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--gold);flex-shrink:0">${initials(m.username)}</div>
+            <div>
+              <div style="font-size:13px;color:#e2e8f0">${m.username||m.email}</div>
+              <div style="font-size:11px;color:var(--text-muted)">${m.email||''}</div>
+            </div>
+          </div>
+        </td>
+        <td style="padding:10px 8px;font-size:11px;color:${levelColors[m.level]||levelColors[m.role]||'#94a3b8'};white-space:nowrap">${m.level||m.role||'—'}</td>
+        <td style="padding:10px 16px;font-size:11px;color:var(--text-muted);white-space:nowrap">${fmtDate(m.created_at)}</td>
+      </tr>`).join('') || '<tr><td style="padding:16px;color:var(--text-muted);font-size:13px">No members yet.</td></tr>';
+
+    document.getElementById('recentArticlesBody').innerHTML = (r.articles||[]).map(a => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 16px">
+          <div style="font-size:13px;color:#e2e8f0;margin-bottom:3px">${a.title}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${a.category||'—'} · ${fmtDate(a.published_at)}</div>
+        </td>
+        <td style="padding:10px 16px;font-size:11px;white-space:nowrap">
+          <span style="padding:2px 8px;border-radius:4px;background:${a.status==='published'?'rgba(86,171,47,.15)':'rgba(255,255,255,.06)'};color:${a.status==='published'?'#56ab2f':'var(--text-muted)'}">${a.status||'—'}</span>
+        </td>
+      </tr>`).join('') || '<tr><td style="padding:16px;color:var(--text-muted);font-size:13px">No articles yet.</td></tr>';
+
+    document.getElementById('recentNewsBody').innerHTML = (r.news||[]).map(n => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 16px">
+          <div style="font-size:13px;color:#e2e8f0;margin-bottom:3px">${n.title}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${n.source||n.category||'—'} · ${fmtDate(n.published_at)}</div>
+        </td>
+      </tr>`).join('') || '<tr><td style="padding:16px;color:var(--text-muted);font-size:13px">No news yet.</td></tr>';
+
+    document.getElementById('recentCompaniesBody').innerHTML = (r.companies||[]).map(c => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 16px">
+          <div style="font-size:13px;color:#e2e8f0;margin-bottom:3px">${c.name}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${[c.city,c.country].filter(Boolean).join(', ')||'—'}</div>
+        </td>
+      </tr>`).join('') || '<tr><td style="padding:16px;color:var(--text-muted);font-size:13px">No companies yet.</td></tr>';
+
+    document.getElementById('recentExhibitionsBody').innerHTML = (r.exhibitions||[]).map(e => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 16px">
+          <div style="font-size:13px;color:#e2e8f0;margin-bottom:3px">${e.name}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${[e.city,e.country].filter(Boolean).join(', ')||'—'} · ${e.startDate||fmtDate(e.updated_at)}</div>
+        </td>
+      </tr>`).join('') || '<tr><td style="padding:16px;color:var(--text-muted);font-size:13px">No exhibitions yet.</td></tr>';
+  }catch(e){
+    console.warn('Dashboard load failed', e);
+  }
+}
+loadDashboard();
 </script>
 
 <style id="user-dropdown-style">
