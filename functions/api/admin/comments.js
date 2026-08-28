@@ -13,7 +13,7 @@ export async function onRequestGet(context) {
   const q = (url.searchParams.get('q') || '').trim();
 
   let sql = `SELECT c.id, c.article_id, c.user_id, c.name, c.email, c.content, c.status, c.created_at,
-                    a.title AS article_title, a.slug AS article_slug
+                    a.title AS article_title
              FROM comments c
              LEFT JOIN articles a ON a.id = c.article_id
              WHERE c.status != 'deleted'`;

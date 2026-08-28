@@ -149,7 +149,7 @@ async function loadComments(){
 
 async function setStatus(id, status){
   try{
-    await apiSend('/api/admin/comments/' + id, 'PUT', { status });
+    await apiSend('/api/admin/comment/' + id, 'PUT', { status });
     showToast('Comment ' + status, 'success');
     loadComments();
   }catch(e){ showToast(e.message || 'Failed', 'error'); }
@@ -158,7 +158,7 @@ async function setStatus(id, status){
 async function delComment(id){
   if(!confirm('Permanently delete this comment?')) return;
   try{
-    await apiSend('/api/admin/comments/' + id, 'DELETE');
+    await apiSend('/api/admin/comment/' + id, 'DELETE');
     showToast('Comment deleted', 'success');
     loadComments();
   }catch(e){ showToast(e.message || 'Failed', 'error'); }
