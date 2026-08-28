@@ -102,6 +102,10 @@
 
     <div class="news-layout">
       <div class="news-main">
+        <!-- Aggregation disclaimer -->
+        <div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.25);border-radius:8px;padding:10px 16px;font-size:.75rem;color:var(--text-secondary);margin-bottom:24px;">
+          📡 News is aggregated automatically from public RSS feeds of leading industry media. Only headlines & short summaries are shown — click any story to read the full article on the original publisher's website. All rights belong to the original publishers.
+        </div>
         <!-- Featured Article -->
         <div class="featured-news fade-in">
           <div class="cover">🎪</div>
@@ -280,18 +284,20 @@
     if (!items.length) return; // keep static demo fallback
     list.innerHTML = items.map(n => {
       const d = n.published_at ? new Date(n.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent';
-      const cat = n.category || 'news';
-      const emoji = cat === 'anime' ? '🎌' : (cat === 'gaming' ? '🎮' : '📰');
+      const cat = n.category || 'industry';
+      const EMOJI = { exhibitions: '🎪', companies: '🏢', regulation: '⚖️', technology: '🤖', interviews: '🎙️', industry: '📊', news: '📰' };
+      const emoji = EMOJI[cat] || '📰';
       const title = (n.title || '').replace(/</g, '&lt;');
       const summary = (n.summary || '').replace(/</g, '&lt;');
       const url = n.url || '#';
+      const source = (n.source || 'News').replace(/</g, '&lt;');
       return `<div class="news-item-full fade-in filterable-item" data-category="${cat}">
         <div class="thumb" style="background:linear-gradient(135deg,#1e2e3b,#0d1825);">${emoji}</div>
         <div class="body">
-          <span class="card-tag">${n.source || 'News'}</span>
-          <div class="title"><a href="${url}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;">${title}</a></div>
+          <span class="card-tag">${source}</span>
+          <div class="title"><a href="${url}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;" onclick="event.stopPropagation()">${title}</a></div>
           <div class="excerpt">${summary}</div>
-          <div class="meta"><span>📅 ${d}</span><span>✍️ ${n.source || 'Editorial'}</span><span>🔗 Source</span></div>
+          <div class="meta"><span>📅 ${d}</span><span>✍️ ${source}</span><a href="${url}" target="_blank" rel="noopener" style="color:#c9a227;text-decoration:none;">🔗 Source: ${source} ↗</a></div>
         </div>
       </div>`;
     }).join('');

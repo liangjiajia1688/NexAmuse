@@ -16,27 +16,16 @@
 .src-name{font-size:13px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .src-type{font-size:11px;color:var(--text-muted);margin-top:2px}
 
-.log-box{background:#0a0e1a;border:1px solid var(--border);border-radius:8px;padding:14px;height:180px;overflow-y:auto;font-family:monospace;font-size:12px;color:#94a3b8}
+.log-box{background:#0a0e1a;border:1px solid var(--border);border-radius:8px;padding:14px;height:200px;overflow-y:auto;font-family:monospace;font-size:12px;color:#94a3b8}
 .log-line{margin-bottom:4px;line-height:1.5}
 .log-line.ok{color:#22c55e}
 .log-line.warn{color:#c9a227}
 .log-line.err{color:#ef4444}
 .log-line.info{color:#60a5fa}
 
-.result-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;transition:.2s}
-.result-item:hover{border-color:rgba(201,162,39,.4)}
-.result-item.selected-result{border-color:var(--accent);background:rgba(201,162,39,.06)}
-.result-item input[type=checkbox]{accent-color:#c9a227;width:17px;height:17px;margin-top:3px;flex-shrink:0}
-.ri-body{flex:1;min-width:0}
-.ri-title{font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px;line-height:1.4}
-.ri-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-.ri-meta span{font-size:11px;color:var(--text-muted)}
-.ri-source{display:inline-flex;align-items:center;gap:4px;background:rgba(201,162,39,.12);color:#c9a227;border:1px solid rgba(201,162,39,.3);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600}
-.ri-excerpt{font-size:13px;color:#94a3b8;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.ri-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.ri-tag{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--text-muted)}
-.dup-badge{background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.3);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600}
-.new-badge{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600}
+.result-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.result-item .src-badge{font-size:11px;font-weight:600;color:#c9a227;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);border-radius:4px;padding:2px 8px;white-space:nowrap}
+.result-item .added-count{font-size:14px;font-weight:700;color:#22c55e;min-width:46px;text-align:center}
 
 .progress-wrap{background:rgba(255,255,255,.05);border-radius:6px;height:8px;overflow:hidden;margin:10px 0}
 .progress-bar{height:100%;background:linear-gradient(90deg,#c9a227,#f0c040);border-radius:6px;transition:width .4s ease}
@@ -46,19 +35,8 @@
 .stat-mini .val{font-size:1.6rem;font-weight:700;color:#c9a227}
 .stat-mini .lbl{font-size:11px;color:var(--text-muted);margin-top:4px}
 
-.schedule-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.toggle-switch{position:relative;display:inline-block;width:44px;height:24px}
-.toggle-switch input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;background:#2d3748;border-radius:24px;cursor:pointer;transition:.3s}
-.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
-.toggle-switch input:checked + .toggle-slider{background:#c9a227}
-.toggle-switch input:checked + .toggle-slider:before{transform:translateX(20px)}
-
-.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
-.rank-1{background:linear-gradient(135deg,#c9a227,#f0c040);color:#000}
-.rank-2{background:linear-gradient(135deg,#94a3b8,#cbd5e1);color:#000}
-.rank-3{background:linear-gradient(135deg,#b45309,#d97706);color:#fff}
-.rank-n{background:rgba(255,255,255,.08);color:#94a3b8}
+.schedule-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--text-muted)}
+.schedule-row .ok-note{color:#22c55e}
 </style>
 </head>
 <body>
@@ -77,7 +55,6 @@
         <div class="breadcrumb">Articles / <span>Global News Crawler</span></div>
       </div>
       <div class="header-right">
-        <a href="news-review.html" class="btn btn-gold">🔍 Review Queue</a>
         <div class="header-user-wrap" style="position:relative;">
           <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
             <div class="user-avatar">A</div>
@@ -101,51 +78,20 @@
       <!-- Stats Row -->
       <div class="stats-row" id="statsRow">
         <div class="stat-mini"><div class="val" id="statTotal">0</div><div class="lbl">Total Collected</div></div>
-        <div class="stat-mini"><div class="val" id="statNew">0</div><div class="lbl">New Today</div></div>
-        <div class="stat-mini"><div class="val" id="statPending">0</div><div class="lbl">Pending Review</div></div>
-        <div class="stat-mini"><div class="val" id="statPublished">0</div><div class="lbl">Published</div></div>
-        <div class="stat-mini"><div class="val" id="statLastRun">—</div><div class="lbl">Last Crawl</div></div>
+        <div class="stat-mini"><div class="val" id="statSources">8</div><div class="lbl">RSS Sources</div></div>
+        <div class="stat-mini"><div class="val" id="statLastPublished">—</div><div class="lbl">Newest Story</div></div>
+        <div class="stat-mini"><div class="val" id="statLastRun">—</div><div class="lbl">Last Manual Refresh</div></div>
       </div>
 
       <!-- Auto Schedule Card -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-header">
-          <h3>⏰ Auto Daily Crawl Schedule</h3>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <span id="autoStatus" style="font-size:13px;color:#94a3b8">Auto-crawl: OFF</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="autoToggle" onchange="toggleAuto(this.checked)">
-              <div class="toggle-slider"></div>
-            </label>
-          </div>
+          <h3>⏰ Daily Auto Refresh</h3>
         </div>
         <div class="card-body">
           <div class="schedule-row">
-            <label style="font-size:13px;color:var(--text-muted)">Crawl Time:</label>
-            <select id="crawlHour" class="form-input" style="width:120px">
-              <option value="6">06:00 AM</option>
-              <option value="8" selected>08:00 AM</option>
-              <option value="9">09:00 AM</option>
-              <option value="12">12:00 PM</option>
-              <option value="18">06:00 PM</option>
-              <option value="20">08:00 PM</option>
-            </select>
-            <label style="font-size:13px;color:var(--text-muted)">Frequency:</label>
-            <select id="crawlFreq" class="form-input" style="width:130px">
-              <option value="daily" selected>Daily</option>
-              <option value="twice">Twice a Day</option>
-              <option value="weekly">Weekly</option>
-            </select>
-            <label style="font-size:13px;color:var(--text-muted)">Top:</label>
-            <select id="topN" class="form-input" style="width:100px">
-              <option value="5">5 news</option>
-              <option value="10" selected>10 news</option>
-              <option value="20">20 news</option>
-              <option value="30">30 news</option>
-            </select>
-            <div id="nextRunBox" style="display:none;font-size:12px;color:#22c55e;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:6px 12px">
-              ✅ Next run: <strong id="nextRunTime">—</strong>
-            </div>
+            <span>✅ <span class="ok-note">Cloudflare Worker cron 已启用</span> — 每天 <strong style="color:#e2e8f0">08:15 (Beijing)</strong> 自动拉取 8 个行业 RSS 源。</span>
+            <span style="opacity:.7">也可以在下方点击「🚀 Refresh Now」手动立即刷新。</span>
           </div>
         </div>
       </div>
@@ -153,13 +99,10 @@
       <!-- Sources Selection -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-          <h3>📡 News Sources <span id="srcCount" style="font-size:13px;color:var(--text-muted);font-weight:400">(0 selected)</span></h3>
+          <h3>📡 News Sources <span id="srcCount" style="font-size:13px;color:var(--text-muted);font-weight:400">(8 selected)</span></h3>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-outline btn-sm" onclick="selectAllSources(true)">☑ Select All</button>
             <button class="btn btn-outline btn-sm" onclick="selectAllSources(false)">☐ Deselect All</button>
-            <button class="btn btn-outline btn-sm" onclick="selectByType('anime')">🎌 Anime</button>
-            <button class="btn btn-outline btn-sm" onclick="selectByType('gaming')">🎮 Gaming</button>
-            <button class="btn btn-outline btn-sm" onclick="selectByType('amusement')">🎪 Amusement</button>
           </div>
         </div>
         <div class="card-body">
@@ -170,22 +113,15 @@
       <!-- Scan Control -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-          <h3>🔍 Crawl & Collect TOP 10 Hot News</h3>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <select id="langFilter" class="form-input" style="width:130px">
-              <option value="en">English</option>
-              <option value="zh">Chinese</option>
-              <option value="all" selected>All Languages</option>
-            </select>
-            <button class="btn btn-gold" id="scanBtn" onclick="startScan()">🚀 Start Crawl Now</button>
-          </div>
+          <h3>🔍 Refresh RSS News</h3>
+          <button class="btn btn-gold" id="scanBtn" onclick="startScan()">🚀 Refresh Now</button>
         </div>
         <div class="card-body">
           <div class="progress-wrap" id="progressWrap" style="display:none">
             <div class="progress-bar" id="progressBar" style="width:0%"></div>
           </div>
           <div class="log-box" id="logBox">
-            <div class="log-line info">[ System ] News Crawler ready. Select sources and click "Start Crawl Now".</div>
+            <div class="log-line info">[ System ] Click "Refresh Now" to pull the latest stories from the 8 industry RSS feeds.</div>
           </div>
         </div>
       </div>
@@ -194,17 +130,11 @@
       <div id="resultsPanel" style="display:none">
         <div class="card">
           <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-            <h3>📋 Crawl Results <span id="resultCount" style="font-size:13px;color:var(--text-muted);font-weight:400"></span></h3>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <span id="resultStats" style="font-size:12px;color:var(--text-muted)"></span>
-              <button class="btn btn-outline btn-sm" onclick="selectAllNews('all')">☑ Select All</button>
-              <button class="btn btn-outline btn-sm" onclick="selectAllNews(true)">✨ New Only</button>
-              <button class="btn btn-outline btn-sm" onclick="selectAllNews(false)">☐ Deselect All</button>
-              <button class="btn btn-gold" onclick="sendToReview()">📨 Send to Review Queue</button>
-            </div>
+            <h3>📋 Per-Source Results <span id="resultStats" style="font-size:13px;color:var(--text-muted);font-weight:400"></span></h3>
           </div>
           <div class="card-body">
             <div id="resultsList"></div>
+            <p style="font-size:11px;color:var(--text-muted);margin-top:12px;line-height:1.6">⚠️ News is aggregated from public RSS feeds. Only the title, a short summary and a link to the original article are stored. All rights belong to the original publishers.</p>
           </div>
         </div>
       </div>
@@ -215,90 +145,38 @@
 
 <script src="admin.js"></script>
 <script>
-// ── News Sources Database ─────────────────────────────────────────────────
+// ── Real RSS Sources (matches functions/api/news-refresh.js) ───────────────
 const SOURCES = [
-  // Anime & Manga
-  { id:'ann',      name:'Anime News Network',   icon:'🎌', type:'anime',     url:'https://www.animenewsnetwork.com',  desc:'#1 English anime news' },
-  { id:'cr',       name:'Crunchyroll News',      icon:'🍥', type:'anime',     url:'https://www.crunchyroll.com/news',  desc:'Streaming + anime news' },
-  { id:'myanimelist',name:'MyAnimeList News',   icon:'📋', type:'anime',     url:'https://myanimelist.net/news',      desc:'Community-driven anime' },
-  { id:'akibastation',name:'Akiba Station',     icon:'🗼', type:'anime',     url:'https://en.akibablog.net',          desc:'Japan otaku culture' },
-  { id:'kotaku',   name:'Kotaku Anime',          icon:'⚡', type:'anime',     url:'https://kotaku.com',                desc:'Gaming & anime culture' },
-  { id:'animecorner',name:'Anime Corner',        icon:'🌸', type:'anime',     url:'https://animecorner.me',            desc:'Seasonal anime rankings' },
-  { id:'icv2',     name:'ICv2 (Manga/Anime)',    icon:'📚', type:'anime',     url:'https://icv2.com',                  desc:'Trade news for anime/manga' },
-  // Gaming
-  { id:'ign',      name:'IGN Gaming',            icon:'🎮', type:'gaming',    url:'https://www.ign.com',               desc:'Top gaming media' },
-  { id:'gamespot', name:'GameSpot',              icon:'🕹', type:'gaming',    url:'https://www.gamespot.com',          desc:'Reviews & gaming news' },
-  { id:'polygon',  name:'Polygon',               icon:'🔷', type:'gaming',    url:'https://www.polygon.com',           desc:'Gaming culture' },
-  { id:'eurogamer',name:'Eurogamer',             icon:'🌍', type:'gaming',    url:'https://www.eurogamer.net',         desc:'European gaming news' },
-  { id:'pocketgamer',name:'Pocket Gamer',        icon:'📱', type:'gaming',    url:'https://www.pocketgamer.com',       desc:'Mobile gaming news' },
-  { id:'siliconera',name:'Siliconera',           icon:'🇯🇵', type:'gaming',   url:'https://www.siliconera.com',       desc:'JP/Asian game news' },
-  { id:'gamasutra', name:'Game Developer',       icon:'🛠', type:'gaming',    url:'https://www.gamedeveloper.com',     desc:'Dev-focused game industry' },
-  // Amusement & Theme Parks
-  { id:'iaapa',    name:'IAAPA News',            icon:'🎡', type:'amusement', url:'https://www.iaapa.org/news',        desc:'Global amusement industry' },
-  { id:'blooloop', name:'Blooloop',              icon:'🎢', type:'amusement', url:'https://blooloop.com',              desc:'Theme park & attractions' },
-  { id:'themeparkinsider',name:'Theme Park Insider',icon:'🏰',type:'amusement',url:'https://www.themeparkinsider.com',desc:'Theme park fan news' },
-  { id:'accesso',  name:'InPark Magazine',       icon:'🎠', type:'amusement', url:'https://www.inparkmagazine.com',   desc:'Attractions industry' },
-  { id:'amuseinsights',name:'Amuse Insights',   icon:'📊', type:'amusement', url:'https://amuseinsights.com',         desc:'Amusement biz analytics' },
-  // Combined / China
-  { id:'gti',      name:'GTI Asia News',         icon:'🌏', type:'amusement', url:'https://gtichinaamuse.com',         desc:'Asia amusement trade' },
-  { id:'chinaamuse',name:'China Amuse',          icon:'🇨🇳', type:'amusement',url:'https://chinaamuse.com',           desc:'China amusement industry' },
-  { id:'esports_obs',name:'Esports Observer',   icon:'🏆', type:'gaming',    url:'https://esportsobserver.com',       desc:'Esports business' },
-  { id:'the_gamer', name:'TheGamer',            icon:'🎯', type:'gaming',    url:'https://www.thegamer.com',          desc:'Gaming culture & lists' },
-  { id:'animefeminist',name:'Anime Feminist',   icon:'✊', type:'anime',     url:'https://www.animefeminist.com',     desc:'Critical anime analysis' },
+  { id:'blooloop',        name:'Blooloop',                icon:'🎢', type:'amusement', url:'https://blooloop.com',                    desc:'Theme parks & attractions' },
+  { id:'attractions',     name:'Attractions Magazine',    icon:'🎡', type:'amusement', url:'https://attractionsmagazine.com',          desc:'US attractions industry' },
+  { id:'parkworld',       name:'Park World',              icon:'🌍', type:'amusement', url:'https://www.parkworld-online.com',        desc:'European industry trade' },
+  { id:'amusementtoday',  name:'Amusement Today',         icon:'📰', type:'amusement', url:'https://amusementtoday.com',              desc:'Amusement parks & water parks' },
+  { id:'laughingplace',   name:'Laughing Place',          icon:'🏰', type:'amusement', url:'https://www.laughingplace.com',           desc:'Theme park news' },
+  { id:'coaster101',      name:'Coaster101',              icon:'🎢', type:'amusement', url:'https://www.coaster101.com',              desc:'Roller coasters & rides' },
+  { id:'iaapa',           name:'IAAPA',                   icon:'🎡', type:'amusement', url:'https://www.iaapa.org',                  desc:'Global amusement industry assoc.' },
+  { id:'orlando',         name:'Orlando Attractions',     icon:'🏰', type:'amusement', url:'https://orlandoattractions.com',         desc:'Florida attractions news' },
 ];
 
-// ── Built-in News Database (simulated real news) ──────────────────────────
-const NEWS_BANK = [
-  // Anime
-  { title:'Attack on Titan: Final Chapter Part 3 Announced for 2026 Release', category:'Anime', tags:['Attack on Titan','Final Season','2026'], source:'Anime News Network', sourceUrl:'https://www.animenewsnetwork.com', sourceType:'anime', lang:'en', date:'2026-03-25', heat:98, excerpt:'MAPPA studio officially confirmed the third part of Attack on Titan\'s final chapter will premiere in spring 2026, marking the end of the decade-long epic series. The announcement was accompanied by a new key visual showing Eren Yeager in a dramatic pose.', img:'https://picsum.photos/seed/aot/400/220' },
-  { title:'Demon Slayer Season 5 Production Confirmed — Infinity Castle Arc Next', category:'Anime', tags:['Demon Slayer','Infinity Castle','Ufotable'], source:'Crunchyroll News', sourceUrl:'https://www.crunchyroll.com/news', sourceType:'anime', lang:'en', date:'2026-03-24', heat:96, excerpt:'Ufotable has officially greenlit Demon Slayer Season 5, adapting the Infinity Castle arc following the record-breaking theatrical films. The studio promises unprecedented animation quality using its proprietary digital cel techniques.', img:'https://picsum.photos/seed/demonslayer/400/220' },
-  { title:'One Piece Live-Action Season 2 Begins Filming in Cape Town', category:'Anime', tags:['One Piece','Netflix','Live Action'], source:'Anime News Network', sourceUrl:'https://www.animenewsnetwork.com', sourceType:'anime', lang:'en', date:'2026-03-23', heat:94, excerpt:'Netflix\'s One Piece live-action adaptation has officially begun production on its second season in Cape Town, South Africa. New cast members portraying Crocodile and Vivi have been confirmed, with Eiichiro Oda continuing as executive producer.', img:'https://picsum.photos/seed/onepiece/400/220' },
-  { title:'Genshin Impact Surpasses $5 Billion Revenue Milestone in 2025', category:'Gaming', tags:['Genshin Impact','miHoYo','Revenue'], source:'GameSpot', sourceUrl:'https://www.gamespot.com', sourceType:'gaming', lang:'en', date:'2026-03-25', heat:95, excerpt:'HoYoverse\'s flagship title Genshin Impact crossed the $5 billion cumulative revenue mark in fiscal year 2025, cementing its status as the most successful gacha RPG globally. Version 5.0 "Natlan" was cited as the key growth driver.', img:'https://picsum.photos/seed/genshin/400/220' },
-  { title:'Nintendo Switch 2 Sells 3 Million Units in Launch Weekend', category:'Gaming', tags:['Nintendo Switch 2','Nintendo','Hardware'], source:'IGN Gaming', sourceUrl:'https://www.ign.com', sourceType:'gaming', lang:'en', date:'2026-03-24', heat:99, excerpt:'Nintendo\'s Switch 2 launched to unprecedented demand, selling over 3 million units globally in its first weekend. The new console features 4K docked output, an improved Joy-Con system, and backward compatibility with the original Switch library.', img:'https://picsum.photos/seed/switch2/400/220' },
-  { title:'IAAPA Expo 2026 Asia-Pacific Breaks Attendance Record in Singapore', category:'Amusement', tags:['IAAPA','Singapore','Expo 2026'], source:'IAAPA News', sourceUrl:'https://www.iaapa.org/news', sourceType:'amusement', lang:'en', date:'2026-03-22', heat:88, excerpt:'The IAAPA Expo Asia-Pacific 2026 held in Singapore set a new attendance record with over 18,000 trade visitors from 65 countries. Key trends highlighted included AI-driven ride personalization, immersive dark rides, and sustainable park operations.', img:'https://picsum.photos/seed/iaapa/400/220' },
-  { title:'Universal Studios Beijing Phase 2 Opening Date Revealed', category:'Amusement', tags:['Universal Studios','Beijing','Theme Park'], source:'Blooloop', sourceUrl:'https://blooloop.com', sourceType:'amusement', lang:'en', date:'2026-03-23', heat:91, excerpt:'Universal Studios Beijing has officially announced the opening date for its Phase 2 expansion, adding three new themed worlds including Minions Land, Harry Potter extension, and the world\'s first Nintendo World in China. The opening is scheduled for National Day 2026.', img:'https://picsum.photos/seed/universal/400/220' },
-  { title:'eSports World Cup 2026 Prize Pool Reaches Record $80 Million', category:'Gaming', tags:['Esports','World Cup','Prize Pool'], source:'Esports Observer', sourceUrl:'https://esportsobserver.com', sourceType:'gaming', lang:'en', date:'2026-03-21', heat:87, excerpt:'The Esports World Cup Foundation announced the 2026 tournament prize pool has reached a record $80 million across 21 titles, up 40% from the previous year. Saudi Arabia\'s Riyadh will host the event in July-August with 1,500 participating teams.', img:'https://picsum.photos/seed/esports/400/220' },
-  { title:'Studio Ghibli Releases First Original Feature in 5 Years: "Moonlit Forest"', category:'Anime', tags:['Studio Ghibli','New Film','Miyazaki'], source:'Anime News Network', sourceUrl:'https://www.animenewsnetwork.com', sourceType:'anime', lang:'en', date:'2026-03-20', heat:92, excerpt:'Studio Ghibli has unveiled its new original feature film "Moonlit Forest," directed by Hayao Miyazaki\'s son Goro Miyazaki. The film, set in a mystical ancient forest, is scheduled for Japanese release in summer 2026, with worldwide distribution through Netflix.', img:'https://picsum.photos/seed/ghibli/400/220' },
-  { title:'GTI Asia China Amusement Show 2026 Guangzhou Expected 900+ Exhibitors', category:'Amusement', tags:['GTI','Guangzhou','China Amusement'], source:'GTI Asia News', sourceUrl:'https://gtichinaamuse.com', sourceType:'amusement', lang:'en', date:'2026-03-19', heat:85, excerpt:'The GTI Asia China Amusement Show 2026 in Guangzhou is set to welcome over 900 exhibitors from 40 countries, showcasing the latest in redemption games, VR attractions, coin-operated machines, and themed entertainment technology.', img:'https://picsum.photos/seed/gti2026/400/220' },
-  { title:'Dragon Ball Super: New Saga Teased at Jump Festa 2026', category:'Anime', tags:['Dragon Ball','Jump Festa','New Saga'], source:'MyAnimeList News', sourceUrl:'https://myanimelist.net/news', sourceType:'anime', lang:'en', date:'2026-03-18', heat:90, excerpt:'Akira Toriyama\'s estate and Toei Animation teased a brand-new Dragon Ball Super saga at Jump Festa 2026, featuring a mysterious new antagonist described as "a god who erases the concept of fighting itself." The new arc will adapt fresh manga content.', img:'https://picsum.photos/seed/dragonball/400/220' },
-  { title:'Capcom Reveals Street Fighter 7 at State of Play', category:'Gaming', tags:['Street Fighter 7','Capcom','Fighting Game'], source:'GameSpot', sourceUrl:'https://www.gamespot.com', sourceType:'gaming', lang:'en', date:'2026-03-17', heat:89, excerpt:'Capcom surprised fans by revealing Street Fighter 7 during Sony\'s State of Play. The game features a new 3D anime art style, a revamped Drive system, and 24 launch fighters. Ryu, Chun-Li, and a brand-new character "Kokoro" were shown in the reveal trailer.', img:'https://picsum.photos/seed/sf7/400/220' },
-  { title:'VR Theme Parks See 150% Growth in Asia — Market Report 2026', category:'Amusement', tags:['VR','Theme Parks','Asia','Market Report'], source:'Blooloop', sourceUrl:'https://blooloop.com', sourceType:'amusement', lang:'en', date:'2026-03-16', heat:82, excerpt:'A new market research report reveals VR-based theme park attractions in Asia-Pacific experienced 150% year-on-year growth in 2025. China leads with over 3,200 VR entertainment centers, followed by Japan and South Korea.', img:'https://picsum.photos/seed/vrpark/400/220' },
-  { title:'Pokémon GO Introduces Real-World Amusement Park Integration', category:'Gaming', tags:['Pokémon GO','Niantic','Theme Park'], source:'Pocket Gamer', sourceUrl:'https://www.pocketgamer.com', sourceType:'gaming', lang:'en', date:'2026-03-15', heat:84, excerpt:'Niantic has launched a new partnership program allowing amusement parks worldwide to become official Pokémon GO "Super Pokéstops," offering exclusive in-game rewards tied to real-world ride completions. Universal and Six Flags are among the first partners.', img:'https://picsum.photos/seed/pokemongo/400/220' },
-  { title:'Jujutsu Kaisen Manga Final Volume Sales Exceed 8 Million Copies', category:'Anime', tags:['Jujutsu Kaisen','Manga','Sales Record'], source:'ICv2', sourceUrl:'https://icv2.com', sourceType:'anime', lang:'en', date:'2026-03-14', heat:86, excerpt:'The final volume of Jujutsu Kaisen sold over 8 million copies in its first week, making it the fastest-selling manga volume in Japan\'s history. Author Gege Akutami shared a heartfelt message thanking fans for their decade-long support.', img:'https://picsum.photos/seed/jjk/400/220' },
-  { title:'LEGOLAND Opens First Location in Saudi Arabia — Riyadh', category:'Amusement', tags:['LEGOLAND','Saudi Arabia','Middle East'], source:'InPark Magazine', sourceUrl:'https://www.inparkmagazine.com', sourceType:'amusement', lang:'en', date:'2026-03-13', heat:80, excerpt:'Merlin Entertainments has officially opened LEGOLAND Saudi Arabia in Riyadh, marking the brand\'s first Middle Eastern location. The 120-acre park features 60 rides and attractions, including a new "LEGO Kingdom" themed land exclusive to this location.', img:'https://picsum.photos/seed/legoland/400/220' },
-  { title:'China Game Industry Revenue Hits ¥340 Billion in 2025', category:'Gaming', tags:['China Gaming','Market','Revenue 2025'], source:'Siliconera', sourceUrl:'https://www.siliconera.com', sourceType:'gaming', lang:'en', date:'2026-03-12', heat:78, excerpt:'The China Audio-Video and Digital Publishing Association reported China\'s game industry revenue reached ¥340 billion (approx. $47B USD) in 2025, a 12% increase driven by mobile gaming and the emerging AI-NPC technology wave.', img:'https://picsum.photos/seed/chinagame/400/220' },
-  { title:'Spy x Family Season 3 Confirmed — Production in Progress', category:'Anime', tags:['Spy x Family','Season 3','CloverWorks'], source:'Anime Corner', sourceUrl:'https://animecorner.me', sourceType:'anime', lang:'en', date:'2026-03-11', heat:83, excerpt:'CloverWorks and Wit Studio jointly announced Spy x Family Season 3 is in production, adapting the latest manga arcs featuring a new antagonist threatening the Forger family. A 2027 premiere window was confirmed.', img:'https://picsum.photos/seed/spyfamily/400/220' },
-  { title:'The Legend of Zelda: Echoes of the Ancient Tops Global Charts', category:'Gaming', tags:['Zelda','Nintendo','Open World'], source:'IGN Gaming', sourceUrl:'https://www.ign.com', sourceType:'gaming', lang:'en', date:'2026-03-10', heat:93, excerpt:'Nintendo\'s latest Zelda title "Echoes of the Ancient" debuted at #1 in 42 countries, achieving 5 million sales in its first week. Critics praise its seamless blend of classic dungeons, time manipulation mechanics, and breathtaking hand-crafted open world.', img:'https://picsum.photos/seed/zelda/400/220' },
-  { title:'Tokyo DisneySea Fantasy Springs Expansion Wins Theme Park Award', category:'Amusement', tags:['Tokyo Disney','DisneySea','Fantasy Springs'], source:'Theme Park Insider', sourceUrl:'https://www.themeparkinsider.com', sourceType:'amusement', lang:'en', date:'2026-03-09', heat:81, excerpt:'Tokyo DisneySea\'s Fantasy Springs expansion won the "Best New Themed Land" award at the Global Attractions Awards 2026. The land, featuring Frozen, Rapunzel, and Peter Pan worlds, has drawn record crowds since its 2024 opening.', img:'https://picsum.photos/seed/disneysea/400/220' },
-  { title:'Honkai: Star Rail Version 3.0 "The Trailblaze" Shatters DAU Records', category:'Gaming', tags:['Honkai Star Rail','HoYoverse','Version 3.0'], source:'GameSpot', sourceUrl:'https://www.gamespot.com', sourceType:'gaming', lang:'en', date:'2026-03-08', heat:88, excerpt:'HoYoverse\'s Honkai: Star Rail Version 3.0 achieved its highest-ever daily active users count, breaking 18 million DAU within 24 hours of launch. The new "Amphoreus" region introduced 5 new characters and a cinematic story that fans describe as the game\'s best writing.', img:'https://picsum.photos/seed/hsr/400/220' },
-  { title:'Chainsaw Man Part 3 Announced — Denji Returns with New Powers', category:'Anime', tags:['Chainsaw Man','Part 3','Fujimoto'], source:'ICv2', sourceUrl:'https://icv2.com', sourceType:'anime', lang:'en', date:'2026-03-07', heat:91, excerpt:'Tatsuki Fujimoto\'s Chainsaw Man began its Part 3 serialization in Weekly Shonen Jump, featuring an older Denji navigating a world where devil hunting has become a billion-dollar corporate industry. The opening chapter broke Shonen Jump digital download records.', img:'https://picsum.photos/seed/chainsawman/400/220' },
-  { title:'China Amusement Industry Expo 2026 — 1,200 Exhibitors Expected', category:'Amusement', tags:['China Amusement','Expo','Industry'], source:'China Amuse', sourceUrl:'https://chinaamuse.com', sourceType:'amusement', lang:'en', date:'2026-03-06', heat:79, excerpt:'The China Amusement Industry Expo 2026 is projected to attract over 1,200 exhibitors and 60,000 trade visitors, making it the largest edition in the event\'s 30-year history. New halls dedicated to VR/AR attractions and AI gaming have been added.', img:'https://picsum.photos/seed/chinaexpo/400/220' },
-  { title:'Final Fantasy VII Rebirth DLC "Zack\'s Story" Announced', category:'Gaming', tags:['Final Fantasy VII','Rebirth','DLC'], source:'Polygon', sourceUrl:'https://www.polygon.com', sourceType:'gaming', lang:'en', date:'2026-03-05', heat:85, excerpt:'Square Enix revealed a major DLC for Final Fantasy VII Rebirth titled "Zack\'s Story," expanding the alternate timeline narrative with 15+ hours of content. The DLC features a full Zack Fair protagonist campaign and new interactions with Aerith.', img:'https://picsum.photos/seed/ff7/400/220' },
-  { title:'Naruto Returns: New Generation Anime Series Premieres April 2026', category:'Anime', tags:['Naruto','New Generation','Masashi Kishimoto'], source:'Anime News Network', sourceUrl:'https://www.animenewsnetwork.com', sourceType:'anime', lang:'en', date:'2026-03-04', heat:94, excerpt:'Masashi Kishimoto\'s new Naruto-universe anime "Naruto: New Generation" premieres in April 2026, set 30 years after the original series. Boruto and Himawari lead a new generation of shinobi in a technologically advanced Hidden Leaf Village.', img:'https://picsum.photos/seed/naruto/400/220' },
-  { title:'Six Flags and Cedar Fair Merge Complete — "Great Escapes Parks" Formed', category:'Amusement', tags:['Six Flags','Cedar Fair','Merger'], source:'Blooloop', sourceUrl:'https://blooloop.com', sourceType:'amusement', lang:'en', date:'2026-03-03', heat:77, excerpt:'The merger between Six Flags and Cedar Fair has been finalized under the new brand "Great Escapes Parks," creating the world\'s largest regional theme park operator with 56 parks across North America. New unified loyalty programs launch in May 2026.', img:'https://picsum.photos/seed/sixflags/400/220' },
-  { title:'Valorant Mobile Launch in Southeast Asia Draws 10M Pre-Registrations', category:'Gaming', tags:['Valorant','Mobile','Riot Games'], source:'Pocket Gamer', sourceUrl:'https://www.pocketgamer.com', sourceType:'gaming', lang:'en', date:'2026-03-02', heat:82, excerpt:'Riot Games\' Valorant Mobile soft-launched in Southeast Asia with 10 million pre-registrations, the highest ever for the region. The mobile version features all PC agents, touch-optimized controls, and exclusive Southeast Asia-only cosmetic bundles.', img:'https://picsum.photos/seed/valorant/400/220' },
-];
+let selectedSources = new Set(SOURCES.map(s => s.id));
 
-let crawlResults = [];
-let selectedSources = new Set(SOURCES.filter(s=>s.type!=='none').map(s=>s.id));
-
-// ── Init ──────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  initPage('news-crawler');
-  renderSources();
-  updateStats();
-  loadAutoSettings();
-});
+function log(msg, type = 'info') {
+  const box = document.getElementById('logBox');
+  const line = document.createElement('div');
+  line.className = 'log-line ' + type;
+  line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
 
 function renderSources() {
   const grid = document.getElementById('sourcesGrid');
   grid.innerHTML = SOURCES.map(s => `
-    <div class="source-card ${selectedSources.has(s.id)?'selected':''}" id="sc_${s.id}" onclick="toggleSource('${s.id}')">
-      <input type="checkbox" ${selectedSources.has(s.id)?'checked':''} onclick="event.stopPropagation();toggleSource('${s.id}')">
+    <div class="source-card ${selectedSources.has(s.id) ? 'selected' : ''}" id="sc_${s.id}" onclick="toggleSource('${s.id}')">
+      <input type="checkbox" ${selectedSources.has(s.id) ? 'checked' : ''} onclick="event.stopPropagation();toggleSource('${s.id}')">
       <div class="src-icon">${s.icon}</div>
       <div class="src-info">
         <div class="src-name">${s.name}</div>
-        <div class="src-type">${s.type}</div>
+        <div class="src-type">${s.desc}</div>
       </div>
     </div>
   `).join('');
@@ -306,290 +184,106 @@ function renderSources() {
 }
 
 function toggleSource(id) {
-  if(selectedSources.has(id)) selectedSources.delete(id);
-  else selectedSources.add(id);
-  const card = document.getElementById('sc_'+id);
-  const cb = card.querySelector('input');
-  const sel = selectedSources.has(id);
-  card.classList.toggle('selected', sel);
-  cb.checked = sel;
+  if (selectedSources.has(id)) selectedSources.delete(id); else selectedSources.add(id);
+  const card = document.getElementById('sc_' + id);
+  card.classList.toggle('selected', selectedSources.has(id));
+  card.querySelector('input').checked = selectedSources.has(id);
   updateSrcCount();
 }
 
 function selectAllSources(sel) {
   SOURCES.forEach(s => {
-    if(sel) selectedSources.add(s.id);
-    else selectedSources.delete(s.id);
-    const card = document.getElementById('sc_'+s.id);
-    if(card){ card.classList.toggle('selected',sel); card.querySelector('input').checked=sel; }
-  });
-  updateSrcCount();
-}
-
-function selectByType(type) {
-  SOURCES.forEach(s => {
-    if(s.type === type) {
-      selectedSources.add(s.id);
-      const card = document.getElementById('sc_'+s.id);
-      if(card){ card.classList.add('selected'); card.querySelector('input').checked=true; }
-    }
+    if (sel) selectedSources.add(s.id); else selectedSources.delete(s.id);
+    const card = document.getElementById('sc_' + s.id);
+    if (card) { card.classList.toggle('selected', sel); card.querySelector('input').checked = sel; }
   });
   updateSrcCount();
 }
 
 function updateSrcCount() {
-  document.getElementById('srcCount').textContent = `(${selectedSources.size} selected)`;
+  document.getElementById('srcCount').textContent = '(' + selectedSources.size + ' selected)';
 }
 
-// ── Scan Logic ───────────────────────────────────────────────────────────
-function log(msg, type='info') {
-  const box = document.getElementById('logBox');
-  const line = document.createElement('div');
-  line.className = `log-line ${type}`;
-  const time = new Date().toLocaleTimeString();
-  line.textContent = `[${time}] ${msg}`;
-  box.appendChild(line);
-  box.scrollTop = box.scrollHeight;
-}
-
-function startScan() {
-  if(selectedSources.size === 0) { showToast('Please select at least one source!','error'); return; }
-  const btn = document.getElementById('scanBtn');
-  btn.disabled = true; btn.textContent = '⏳ Crawling...';
-
-  document.getElementById('logBox').innerHTML = '';
-  document.getElementById('progressWrap').style.display = 'block';
-  document.getElementById('progressBar').style.width = '0%';
-  document.getElementById('resultsPanel').style.display = 'none';
-  crawlResults = [];
-
-  const topN = parseInt(document.getElementById('topN').value);
-  const activeSrcs = SOURCES.filter(s => selectedSources.has(s.id));
-  log(`Starting crawl — ${activeSrcs.length} sources, Top ${topN} hot news requested`, 'info');
-
-  let step = 0;
-  const total = activeSrcs.length;
-
-  function crawlNext() {
-    if(step >= total) {
-      finalizeScan(topN);
-      return;
-    }
-    const src = activeSrcs[step];
-    log(`Fetching: ${src.name} (${src.url}) ...`, 'info');
-    document.getElementById('progressBar').style.width = `${Math.round((step+1)/total*80)}%`;
-
-    setTimeout(() => {
-      const news = NEWS_BANK.filter(n => n.sourceType === src.type)
-        .filter(n => !crawlResults.find(r=>r.title===n.title));
-      const picked = news.slice(0, 3);
-      picked.forEach(n => crawlResults.push({...n}));
-      log(`  ✓ ${src.name}: ${picked.length} articles found`, 'ok');
-      step++;
-      crawlNext();
-    }, 180 + Math.random()*220);
-  }
-  crawlNext();
-}
-
-function finalizeScan(topN) {
-  // Sort by heat score, deduplicate, take top N
-  const seen = new Set();
-  const deduped = crawlResults.filter(n => {
-    if(seen.has(n.title)) return false;
-    seen.add(n.title); return true;
-  });
-  deduped.sort((a,b) => b.heat - a.heat);
-  crawlResults = deduped.slice(0, topN);
-
-  document.getElementById('progressBar').style.width = '100%';
-  log(`─────────────────────────────────────`, 'info');
-  log(`Crawl complete! ${crawlResults.length} hot news items ranked by heat score.`, 'ok');
-  log(`Top headline: "${crawlResults[0]?.title}"`, 'warn');
-
-  // Save last run
-  const now = new Date().toLocaleString();
-  localStorage.setItem('nexamuse_news_lastcrawl', now);
-  document.getElementById('statLastRun').textContent = now;
-
-  setTimeout(() => {
-    renderResults();
-    document.getElementById('scanBtn').disabled = false;
-    document.getElementById('scanBtn').textContent = '🚀 Start Crawl Now';
-  }, 500);
-}
-
-function renderResults() {
-  const existing = JSON.parse(localStorage.getItem('nexamuse_news_queue') || '[]');
-  const existingTitles = new Set(existing.map(n=>n.title.toLowerCase()));
-
-  let newCount = 0, dupCount = 0;
-  const panel = document.getElementById('resultsPanel');
-  panel.style.display = 'block';
-  panel.scrollIntoView({behavior:'smooth', block:'start'});
-
-  document.getElementById('resultCount').textContent = `— ${crawlResults.length} articles`;
-
-  const html = crawlResults.map((n, i) => {
-    const isDup = existingTitles.has(n.title.toLowerCase());
-    if(isDup) dupCount++; else newCount++;
-    const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n';
-    return `
-    <div class="result-item ${!isDup?'selected-result':''}" id="ri_${i}">
-      <input type="checkbox" class="result-check" data-idx="${i}" ${!isDup?'checked':''} onchange="toggleSelect(${i},this)">
-      <div class="rank-badge ${rankClass}">${i+1}</div>
-      <div class="ri-body">
-        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
-          ${isDup?'<span class="dup-badge">⟳ ALREADY IN QUEUE</span>':'<span class="new-badge">★ NEW</span>'}
-          <span class="ri-source">📰 ${n.source}</span>
-          <span style="font-size:11px;color:var(--text-muted)">🔥 Heat ${n.heat}</span>
-          <span style="font-size:11px;color:var(--text-muted)">📅 ${n.date}</span>
-        </div>
-        <div class="ri-title">${n.title}</div>
-        <div class="ri-excerpt">${n.excerpt}</div>
-        <div class="ri-tags">
-          <span class="ri-tag">📁 ${n.category}</span>
-          ${n.tags.map(t=>`<span class="ri-tag"># ${t}</span>`).join('')}
-          <span class="ri-tag">🌐 ${n.lang==='zh'?'Chinese':'English'}</span>
-          <a href="${n.sourceUrl}" target="_blank" style="font-size:11px;color:#c9a227;text-decoration:none;margin-left:4px">↗ Source</a>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('resultsList').innerHTML = html;
-  document.getElementById('resultStats').textContent = `${newCount} new · ${dupCount} duplicates`;
-  updateStats();
-}
-
-function toggleSelect(idx, cb) {
-  document.getElementById('ri_'+idx).classList.toggle('selected-result', cb.checked);
-}
-
-function selectAllNews(sel) {
-  document.querySelectorAll('.result-check').forEach(c => {
-    const item = document.getElementById('ri_'+c.dataset.idx);
-    const isDup = item.querySelector('.dup-badge');
-    if(sel==='all'){ c.checked=true; item.classList.add('selected-result'); }
-    else if(sel===true){ if(!isDup){c.checked=true;item.classList.add('selected-result');}else{c.checked=false;item.classList.remove('selected-result');} }
-    else { c.checked=false; item.classList.remove('selected-result'); }
-  });
-}
-
-// ── Send to Review Queue ─────────────────────────────────────────────────
-function sendToReview() {
-  const checked = [...document.querySelectorAll('.result-check:checked')];
-  if(!checked.length){ showToast('Please select at least one article!','error'); return; }
-
-  const existing = JSON.parse(localStorage.getItem('nexamuse_news_queue') || '[]');
-  const existingTitles = new Set(existing.map(n=>n.title.toLowerCase()));
-  let added = 0;
-
-  checked.forEach(cb => {
-    const n = crawlResults[parseInt(cb.dataset.idx)];
-    if(!existingTitles.has(n.title.toLowerCase())) {
-      existing.unshift({
-        ...n,
-        id: Date.now() + Math.random()*1000|0,
-        status: 'pending',   // pending | approved | rejected | published
-        submittedAt: new Date().toISOString(),
-        reviewedBy: null,
-        reviewedAt: null,
-        note: ''
-      });
-      added++;
-    }
-  });
-
-  localStorage.setItem('nexamuse_news_queue', JSON.stringify(existing));
-  updateStats();
-
-  showSuccessModal(added);
-}
-
-function showSuccessModal(added) {
-  const old = document.getElementById('sendSuccessModal');
-  if(old) old.remove();
-  const el = document.createElement('div');
-  el.id = 'sendSuccessModal';
-  el.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#131929;border:1px solid #c9a227;border-radius:16px;padding:36px 40px;text-align:center;z-index:9999;box-shadow:0 20px 60px rgba(0,0,0,.7);min-width:340px;max-width:90vw';
-  el.innerHTML = `
-    <div style="font-size:3rem;margin-bottom:12px">📨</div>
-    <h3 style="color:#e2e8f0;margin:0 0 12px;font-size:1.25rem">Sent to Review Queue!</h3>
-    <p style="color:#94a3b8;font-size:13px;margin-bottom:8px"><strong style="color:#22c55e">${added}</strong> articles added to the review queue.</p>
-    <p style="color:#94a3b8;font-size:12px;margin-bottom:24px">⏳ Awaiting approval from the Super Administrator before publishing.</p>
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-      <a href="news-review.html" class="btn btn-gold" style="text-decoration:none;min-width:160px">Go to Review Queue →</a>
-      <button class="btn btn-outline" style="min-width:100px" onclick="document.getElementById('sendSuccessModal').remove()">OK</button>
-    </div>
-  `;
-  document.body.appendChild(el);
-  el.addEventListener('click', e => { if(e.target===el) el.remove(); });
-}
-
-// ── Stats ─────────────────────────────────────────────────────────────────
-function updateStats() {
-  const queue = JSON.parse(localStorage.getItem('nexamuse_news_queue') || '[]');
-  const published = JSON.parse(localStorage.getItem('nexamuse_news_published') || '[]');
-  document.getElementById('statTotal').textContent = queue.length;
-  document.getElementById('statNew').textContent = queue.filter(n=>{
-    const d=new Date(n.submittedAt||n.date); return d.toDateString()===new Date().toDateString();
-  }).length;
-  document.getElementById('statPending').textContent = queue.filter(n=>n.status==='pending').length;
-  document.getElementById('statPublished').textContent = published.length;
-  const lr = localStorage.getItem('nexamuse_news_lastcrawl');
-  if(lr) document.getElementById('statLastRun').textContent = lr.slice(0,16);
-}
-
-// ── Auto Schedule ─────────────────────────────────────────────────────────
-function toggleAuto(on) {
-  const s = document.getElementById('autoStatus');
-  const box = document.getElementById('nextRunBox');
-  if(on) {
-    s.textContent='Auto-crawl: ON'; s.style.color='#22c55e';
-    box.style.display='block';
-    const h = parseInt(document.getElementById('crawlHour').value);
-    const next = new Date(); next.setHours(h,0,0,0);
-    if(next <= new Date()) next.setDate(next.getDate()+1);
-    document.getElementById('nextRunTime').textContent = next.toLocaleString();
-    localStorage.setItem('nexamuse_news_auto', JSON.stringify({
-      enabled:true, hour:h, freq:document.getElementById('crawlFreq').value,
-      topN:document.getElementById('topN').value
-    }));
-  } else {
-    s.textContent='Auto-crawl: OFF'; s.style.color='#94a3b8';
-    box.style.display='none';
-    localStorage.removeItem('nexamuse_news_auto');
-  }
-}
-
-function loadAutoSettings() {
-  const saved = JSON.parse(localStorage.getItem('nexamuse_news_auto') || 'null');
-  const lr = localStorage.getItem('nexamuse_news_lastcrawl');
-  if(lr) document.getElementById('statLastRun').textContent = lr.slice(0,16);
-  if(!saved) return;
-  document.getElementById('autoToggle').checked = saved.enabled;
-  if(saved.hour) document.getElementById('crawlHour').value = saved.hour;
-  if(saved.freq) document.getElementById('crawlFreq').value = saved.freq;
-  if(saved.topN) document.getElementById('topN').value = saved.topN;
-  if(saved.enabled) toggleAuto(true);
-}
-</script>
-<script>
-// ── Real NexAmuse news refresh (overrides demo startScan) ──
-window.startScan = async function() {
+// ── Real refresh ───────────────────────────────────────────────────────────
+async function startScan() {
   const token = getApiToken();
   if (!token) { showToast('Please log in to the admin console first.', 'error'); return; }
+  if (selectedSources.size === 0) { showToast('Please select at least one source!', 'error'); return; }
+
   const btn = document.getElementById('scanBtn');
-  const old = btn ? btn.innerHTML : '';
-  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Refreshing…'; }
+  btn.disabled = true; btn.innerHTML = '⏳ Refreshing…';
+  document.getElementById('logBox').innerHTML = '';
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('progressBar').style.width = '15%';
+  document.getElementById('resultsPanel').style.display = 'none';
+
+  log('Starting refresh — ' + selectedSources.size + ' / ' + SOURCES.length + ' sources enabled…', 'info');
+
   try {
-    const res = await fetch('/api/news-refresh', { headers: { 'Authorization': 'Bearer ' + token } });
+    const res = await fetch('/api/news-refresh', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
-    showToast((data.ok ? 'News refreshed (' + (data.added || 0) + ' added).' : 'Failed: ' + JSON.stringify(data)), data.ok ? 'success' : 'error');
-  } catch (e) { showToast('Error: ' + e.message, 'error'); }
-  finally { if (btn) { btn.disabled = false; btn.innerHTML = old; } }
-};
+    document.getElementById('progressBar').style.width = '100%';
+
+    if (!data.ok) {
+      log('Refresh failed: ' + JSON.stringify(data), 'err');
+      showToast('Refresh failed: ' + (data.error || 'unknown'), 'error');
+      return;
+    }
+
+    log('─────────────────────────────────────', 'info');
+    log('Done! ' + data.added + ' new stories added · total ' + data.total + ' in database.', data.added ? 'ok' : 'warn');
+    localStorage.setItem('nexamuse_news_lastcrawl', new Date().toLocaleString());
+    document.getElementById('statLastRun').textContent = new Date().toLocaleString();
+
+    // Per-source results
+    const bySource = data.bySource || {};
+    const html = SOURCES.map(s => {
+      const added = bySource[s.name] != null ? bySource[s.name] : (data.errors || []).some(e => String(e).indexOf(s.name) === 0) ? 'err' : 0;
+      const isErr = added === 'err';
+      return `<div class="result-item">
+        <span class="src-icon">${s.icon}</span>
+        <span class="src-badge">${s.name}</span>
+        <span class="added-count" style="${isErr ? 'color:#ef4444' : ''}">${isErr ? 'ERR' : '+' + added}</span>
+        <span style="flex:1;min-width:0;font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.url}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('resultsList').innerHTML = html;
+    document.getElementById('resultStats').textContent = '— ' + data.added + ' new · ' + (data.errors || []).length + ' source errors';
+    document.getElementById('resultsPanel').style.display = 'block';
+
+    (data.errors || []).forEach(e => log('⚠ ' + e, 'err'));
+    await loadStats();
+  } catch (e) {
+    log('Error: ' + e.message, 'err');
+    showToast('Refresh failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '🚀 Refresh Now';
+  }
+}
+
+// ── Real stats from the API ───────────────────────────────────────────────
+async function loadStats() {
+  const token = getApiToken();
+  if (!token) return;
+  try {
+    const res = await fetch('/api/news-refresh', { method: 'GET', headers: { 'Authorization': 'Bearer ' + token } });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('statTotal').textContent = data.total || 0;
+      document.getElementById('statSources').textContent = SOURCES.length;
+      const t = data.lastPublishedAt;
+      document.getElementById('statLastPublished').textContent = t ? new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—';
+    }
+  } catch (e) {}
+  const lr = localStorage.getItem('nexamuse_news_lastcrawl');
+  if (lr) document.getElementById('statLastRun').textContent = lr;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initPage('news-crawler');
+  renderSources();
+  loadStats();
+});
 </script>
 </body>
 </html>

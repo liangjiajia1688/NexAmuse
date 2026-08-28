@@ -1,0 +1,12 @@
+name = "nexamuse-news-sync"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+account_id = "c50b8aacc7cf106544a282781b2b74b5"
+
+# Daily at 00:15 UTC (08:15 Beijing) — pull industry news RSS.
+[triggers]
+crons = ["15 0 * * *"]
+
+[vars]
+NEWS_URL = "https://nexamuse.cc.cd/api/news-refresh"
+NEWS_KEY = "nx2026_news_cron_7f3a9c2e5b81d4f6a0c3e9b7d1f5a8c4"

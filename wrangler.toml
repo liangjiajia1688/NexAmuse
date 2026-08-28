@@ -6,6 +6,8 @@ compatibility_date = "2024-09-23"
 AI_BASE_URL = "https://openrouter.ai/api/v1"
 AI_MODEL = "minimax/minimax-m3:free"
 SITE_URL = "https://nexamuse.cc.cd"
+# Cron trigger key for the news auto-refresh Worker (low sensitivity).
+CRON_KEY = "nx2026_news_cron_7f3a9c2e5b81d4f6a0c3e9b7d1f5a8c4"
 
 [[d1_databases]]
 binding = "DB"
