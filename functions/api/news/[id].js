@@ -7,6 +7,18 @@ export async function onRequest(context) {
   const id = parseInt(context.params.id, 10);
   if (!id) return fail('Invalid id', 400);
 
+  if (method === 'GET') {
+    const row = await env.DB.prepare(
+      'SELECT id, title, summary, url, source, category, status, published_at FROM news WHERE id = ?'
+    ).bind(id).first();
+    if (!row) return fail('Not found', 404);
+    if (row.status !== 'published') {
+      const u = await authUser(request, env);
+      if (!u || u.role !== 'admin') return fail('Unauthorized', 401);
+    }
+    return json({ ok: true, news: row });
+  }
+
   if (method === 'PUT' || method === 'DELETE') {
     const u = await authUser(request, env);
     if (!u || u.role !== 'admin') return fail('Unauthorized', 401);

@@ -15,10 +15,25 @@ export async function onRequest(context) {
     if (manage) {
       const u = await authUser(request, env);
       if (!u || u.role !== 'admin') return fail('Unauthorized', 401);
+      const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+      const statusFilter = url.searchParams.get('status');
+      const catFilter = url.searchParams.get('cat');
+      const q = url.searchParams.get('q');
+
+      const where = [];
+      const params = [];
+      if (statusFilter) { where.push('status = ?'); params.push(statusFilter); }
+      if (catFilter) { where.push('category = ?'); params.push(catFilter); }
+      if (q) { where.push('LOWER(title) LIKE ?'); params.push('%' + q.toLowerCase() + '%'); }
+      const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : '';
+
+      const countRes = await env.DB.prepare(`SELECT COUNT(*) AS c FROM news ${whereSql}`).bind(...params).first();
+      const total = countRes?.c || 0;
+
       const rows = await env.DB.prepare(
-        'SELECT id, title, summary, url, source, category, status, published_at FROM news ORDER BY published_at DESC LIMIT ?'
-      ).bind(limit).all();
-      return json({ ok: true, news: rows.results || [] });
+        `SELECT id, title, summary, url, source, category, status, published_at FROM news ${whereSql} ORDER BY published_at DESC LIMIT ? OFFSET ?`
+      ).bind(...params, limit, offset).all();
+      return json({ ok: true, news: rows.results || [], total, limit, offset });
     }
 
     let rows;

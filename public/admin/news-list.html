@@ -94,6 +94,7 @@
             <a href="news-add.html" class="btn btn-gold btn-sm" style="margin-bottom:2px">➕ Add News</a>
           </div>
           <div id="listWrap"><p style="color:var(--text-muted);font-size:13px;">Loading…</p></div>
+          <div id="pagerWrap" style="margin-top:16px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;"></div>
         </div>
       </div>
     </div>
@@ -124,6 +125,9 @@
 <script>
 let CATS = [];
 let editId = null;
+let currentOffset = 0;
+let lastTotal = 0;
+const PAGE_SIZE = 10;
 
 async function loadCats() {
   try {
@@ -138,26 +142,34 @@ async function loadCats() {
   } catch (e) {}
 }
 
-async function loadNews() {
+async function loadNews(offset = 0) {
+  currentOffset = offset;
   const wrap = document.getElementById('listWrap');
+  const pager = document.getElementById('pagerWrap');
   wrap.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Loading…</p>';
+  pager.innerHTML = '';
   const status = document.getElementById('fStatus').value;
   const cat = document.getElementById('fCat').value;
-  const q = document.getElementById('fQ').value.trim().toLowerCase();
+  const q = document.getElementById('fQ').value.trim();
+  const params = new URLSearchParams({ manage: '1', limit: String(PAGE_SIZE), offset: String(offset) });
+  if (status) params.set('status', status);
+  if (cat) params.set('cat', cat);
+  if (q) params.set('q', q);
+
   let data;
   try {
-    data = await apiGet('/api/news?manage=1&limit=200');
+    data = await apiGet('/api/news?' + params.toString());
   } catch (e) {
     wrap.innerHTML = '<p style="color:#ef4444">Failed to load news.</p>';
     return;
   }
-  let rows = data.news || [];
-  if (status) rows = rows.filter(r => r.status === status);
-  if (cat) rows = rows.filter(r => r.category === cat);
-  if (q) rows = rows.filter(r => (r.title || '').toLowerCase().includes(q));
+
+  const rows = data.news || [];
+  lastTotal = data.total || rows.length;
 
   if (!rows.length) {
     wrap.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No news found.</p>';
+    renderPager();
     return;
   }
   const catName = (code) => (CATS.find(c => c.code === code) || {}).name || code || '—';
@@ -176,6 +188,35 @@ async function loadNews() {
         <button class="btn-mini danger" onclick="delNews(${r.id})">Delete</button>
       </div></td>
     </tr>`).join('')}</tbody></table>`;
+  renderPager();
+}
+
+function renderPager() {
+  const pager = document.getElementById('pagerWrap');
+  const totalPages = Math.max(1, Math.ceil(lastTotal / PAGE_SIZE));
+  const page = Math.floor(currentOffset / PAGE_SIZE) + 1;
+  if (totalPages <= 1) { pager.innerHTML = ''; return; }
+
+  let html = '';
+  html += `<button class="btn-mini ${page === 1 ? 'disabled' : ''}" ${page === 1 ? 'disabled' : ''} onclick="loadNews(${currentOffset - PAGE_SIZE})">← Prev</button>`;
+
+  const maxVisible = 5;
+  let start = Math.max(1, page - Math.floor(maxVisible / 2));
+  let end = Math.min(totalPages, start + maxVisible - 1);
+  if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
+
+  if (start > 1) html += `<button class="btn-mini" onclick="loadNews(0)">1</button>`;
+  if (start > 2) html += `<span style="color:var(--text-muted);padding:5px 8px;">…</span>`;
+
+  for (let i = start; i <= end; i++) {
+    html += `<button class="btn-mini ${i === page ? 'active' : ''}" onclick="loadNews(${(i-1)*PAGE_SIZE})">${i}</button>`;
+  }
+
+  if (end < totalPages - 1) html += `<span style="color:var(--text-muted);padding:5px 8px;">…</span>`;
+  if (end < totalPages) html += `<button class="btn-mini" onclick="loadNews(${(totalPages-1)*PAGE_SIZE})">${totalPages}</button>`;
+
+  html += `<button class="btn-mini ${page === totalPages ? 'disabled' : ''}" ${page === totalPages ? 'disabled' : ''} onclick="loadNews(${currentOffset + PAGE_SIZE})">Next →</button>`;
+  pager.innerHTML = html;
 }
 
 function escapeHtml(s) {
@@ -183,9 +224,8 @@ function escapeHtml(s) {
 }
 
 function openEdit(id) {
-  const row = (window.__rows || []).find(r => r.id === id);
-  apiGet('/api/news?manage=1&limit=200').then(d => {
-    const r = (d.news || []).find(x => x.id === id);
+  apiGet('/api/news/' + id).then(d => {
+    const r = d.news;
     if (!r) return;
     editId = id;
     document.getElementById('eTitle').value = r.title || '';
@@ -195,7 +235,7 @@ function openEdit(id) {
     document.getElementById('eCat').value = r.category || 'industry';
     document.getElementById('eStatus').value = r.status || 'published';
     document.getElementById('editMask').classList.add('open');
-  });
+  }).catch(() => showToast('Failed to load news item.', 'error'));
 }
 
 function closeEdit() {
@@ -217,7 +257,7 @@ async function saveEdit() {
     await apiSend('/api/news/' + editId, 'PUT', payload);
     showToast('News updated.', 'success');
     closeEdit();
-    loadNews();
+    loadNews(currentOffset);
   } catch (e) {
     showToast(e.message, 'error');
   }
@@ -228,7 +268,7 @@ async function delNews(id) {
   try {
     await apiSend('/api/news/' + id, 'DELETE');
     showToast('News deleted.', 'success');
-    loadNews();
+    loadNews(currentOffset);
   } catch (e) {
     showToast(e.message, 'error');
   }

@@ -273,34 +273,82 @@
 <button class="scroll-top" id="scrollTop">↑</button>
 <script src="../assets/js/main.js"></script>
 <script>
-// Load global industry news from API (Cloudflare D1)
+// Load global industry news from API (Cloudflare D1) with real pagination
 (async function loadLiveNews(){
   const list = document.querySelector('.news-list-full');
+  const pager = document.querySelector('.pagination');
   if (!list) return;
   try {
-    const r = await fetch('../api/news?limit=30');
+    const r = await fetch('../api/news?limit=100');
     const data = await r.json();
     const items = data.news || [];
     if (!items.length) return; // keep static demo fallback
-    list.innerHTML = items.map(n => {
-      const d = n.published_at ? new Date(n.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent';
-      const cat = n.category || 'industry';
-      const EMOJI = { exhibitions: '🎪', companies: '🏢', regulation: '⚖️', technology: '🤖', interviews: '🎙️', industry: '📊', news: '📰' };
-      const emoji = EMOJI[cat] || '📰';
-      const title = (n.title || '').replace(/</g, '&lt;');
-      const summary = (n.summary || '').replace(/</g, '&lt;');
-      const url = n.url || '#';
-      const source = (n.source || 'News').replace(/</g, '&lt;');
-      return `<div class="news-item-full fade-in filterable-item" data-category="${cat}">
-        <div class="thumb" style="background:linear-gradient(135deg,#1e2e3b,#0d1825);">${emoji}</div>
-        <div class="body">
-          <span class="card-tag">${source}</span>
-          <div class="title"><a href="${url}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;" onclick="event.stopPropagation()">${title}</a></div>
-          <div class="excerpt">${summary}</div>
-          <div class="meta"><span>📅 ${d}</span><span>✍️ ${source}</span><a href="${url}" target="_blank" rel="noopener" style="color:#c9a227;text-decoration:none;">🔗 Source: ${source} ↗</a></div>
-        </div>
-      </div>`;
-    }).join('');
+
+    const EMOJI = { exhibitions: '🎪', companies: '🏢', regulation: '⚖️', technology: '🤖', interviews: '🎙️', industry: '📊', news: '📰' };
+    const PAGE_SIZE = 8;
+    let filtered = [...items];
+    let page = 1;
+
+    function fmt(ts) {
+      if (!ts) return 'Recent';
+      try { return new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch(e){ return 'Recent'; }
+    }
+    function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function renderList(){
+      const pageItems = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+      list.innerHTML = pageItems.map(n => {
+        const cat = n.category || 'industry';
+        const emoji = EMOJI[cat] || '📰';
+        const title = esc(n.title);
+        const summary = esc(n.summary);
+        const url = n.url || '#';
+        const source = esc(n.source || 'News');
+        const d = fmt(n.published_at);
+        return `<div class="news-item-full filterable-item" data-category="${cat}">
+          <div class="thumb" style="background:linear-gradient(135deg,#1e2e3b,#0d1825);">${emoji}</div>
+          <div class="body">
+            <span class="card-tag">${source}</span>
+            <div class="title"><a href="${url}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;" onclick="event.stopPropagation()">${title}</a></div>
+            <div class="excerpt">${summary}</div>
+            <div class="meta"><span>📅 ${d}</span><span>✍️ ${source}</span><a href="${url}" target="_blank" rel="noopener" style="color:#c9a227;text-decoration:none;">🔗 Source: ${source} ↗</a></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    function renderPager(){
+      const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      if (!pager) return;
+      let html = '';
+      if (page > 1) html += `<button class="page-btn" data-page="${page-1}">←</button>`;
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === page ? 'active' : ''}" data-page="${i}">${i}</button>`;
+      }
+      if (page < totalPages) html += `<button class="page-btn" data-page="${page+1}">→</button>`;
+      pager.innerHTML = html;
+      pager.querySelectorAll('.page-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const p = parseInt(btn.dataset.page, 10);
+          if (!p || p === page) return;
+          page = p;
+          renderList();
+          renderPager();
+          list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+
+    document.querySelectorAll('.filter-btn[data-group="news"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+        filtered = filter === 'all' ? [...items] : items.filter(n => n.category === filter);
+        page = 1;
+        renderList();
+        renderPager();
+      });
+    });
+
+    renderList();
+    renderPager();
   } catch (e) {
     console.warn('Live news load failed', e);
   }
