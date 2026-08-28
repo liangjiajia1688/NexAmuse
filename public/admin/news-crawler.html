@@ -347,10 +347,10 @@ async function publishBatch(scope) {
   const original = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Publishing…'; }
   try {
-    const res = await fetch('/api/news-refresh/publish', {
+    const res = await fetch('/api/news-refresh', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scope })
+      body: JSON.stringify({ action: 'publish', scope })
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Publish failed');

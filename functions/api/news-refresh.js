@@ -94,58 +94,27 @@ async function getStats(env) {
   };
 }
 
-export async function onRequest(context) {
-  const { request, env } = context;
-  const url = new URL(request.url);
-  const path = url.pathname.replace(/\/$/, '');
-
-  // ── GET /api/news-refresh ── stats for admin panel
-  if (request.method === 'GET') {
-    if (!(await authed(context))) return fail('Unauthorized', 401);
-    const stats = await getStats(env);
-    return json({ ok: true, ...stats });
+async function doPublish(env, scope) {
+  let result;
+  if (scope === 'last-scan') {
+    const since = Date.now() - 5 * 60 * 1000;
+    result = await env.DB.prepare(
+      "UPDATE news SET status = 'published' WHERE status = 'pending' AND created_at >= ?"
+    ).bind(since).run();
+  } else {
+    result = await env.DB.prepare(
+      "UPDATE news SET status = 'published' WHERE status = 'pending'"
+    ).run();
   }
+  const published = result && result.meta ? result.meta.changes : 0;
+  const stats = await getStats(env);
+  return json({ ok: true, published, ...stats });
+}
 
-  // ── POST /api/news-refresh/publish ── make crawled stories public
-  if (request.method === 'POST' && path.endsWith('/publish')) {
-    if (!(await authed(context))) return fail('Unauthorized', 401);
-    let body = { scope: 'all' };
-    try {
-      const text = await request.text();
-      if (text) body = JSON.parse(text);
-    } catch (e) {
-      return fail('Invalid JSON body', 400);
-    }
-
-    let result;
-    if (body.scope === 'last-scan') {
-      // Publish stories that are pending and were created in the last 5 minutes.
-      const since = Date.now() - 5 * 60 * 1000;
-      result = await env.DB.prepare(
-        "UPDATE news SET status = 'published' WHERE status = 'pending' AND created_at >= ?"
-      ).bind(since).run();
-    } else {
-      // Publish all pending stories.
-      result = await env.DB.prepare(
-        "UPDATE news SET status = 'published' WHERE status = 'pending'"
-      ).run();
-    }
-    const published = result && result.meta ? result.meta.changes : 0;
-    const stats = await getStats(env);
-    return json({ ok: true, published, ...stats });
-  }
-
-  // ── POST /api/news-refresh ── crawl selected feeds within a time window
-  if (request.method !== 'POST') return fail('Method not allowed', 405);
-  if (!(await authed(context))) return fail('Unauthorized', 401);
-
-  let body = {};
-  try {
-    const text = await request.text();
-    if (text) body = JSON.parse(text);
-  } catch (e) {
-    return fail('Invalid JSON body', 400);
-  }
+async function doCrawl(env, request, body) {
+  const cronHeader = request.headers.get('x-cron-secret') || '';
+  const cronKey = env.CRON_KEY || env.TOKEN_SECRET;
+  const fromCron = !!cronKey && cronHeader === cronKey;
 
   const days = Math.max(1, Math.min(90, parseInt(body.days, 10) || 7));
   const selectedIds = Array.isArray(body.sources) && body.sources.length > 0
@@ -197,9 +166,6 @@ export async function onRequest(context) {
   } catch (e) {}
 
   // Auto-publish when triggered by the daily cron worker so the public news page stays fresh.
-  const cronHeader = request.headers.get('x-cron-secret') || '';
-  const cronKey = env.CRON_KEY || env.TOKEN_SECRET;
-  const fromCron = !!cronKey && cronHeader === cronKey;
   if (fromCron && added > 0) {
     try {
       await env.DB.prepare(
@@ -210,4 +176,34 @@ export async function onRequest(context) {
 
   const stats = await getStats(env);
   return json({ ok: true, added, bySource, errors, cronAutoPublish: fromCron && added > 0, ...stats });
+}
+
+export async function onRequest(context) {
+  const { request, env } = context;
+
+  // ── GET /api/news-refresh ── stats for admin panel
+  if (request.method === 'GET') {
+    if (!(await authed(context))) return fail('Unauthorized', 401);
+    const stats = await getStats(env);
+    return json({ ok: true, ...stats });
+  }
+
+  if (request.method !== 'POST') return fail('Method not allowed', 405);
+  if (!(await authed(context))) return fail('Unauthorized', 401);
+
+  let body = {};
+  try {
+    const text = await request.text();
+    if (text) body = JSON.parse(text);
+  } catch (e) {
+    return fail('Invalid JSON body', 400);
+  }
+
+  // ── POST /api/news-refresh {action:'publish'} ── make crawled stories public
+  if (body.action === 'publish') {
+    return doPublish(env, body.scope || 'all');
+  }
+
+  // ── POST /api/news-refresh {sources, days} ── crawl selected feeds within a time window
+  return doCrawl(env, request, body);
 }
