@@ -1,5 +1,6 @@
 import { json, fail, now } from '../_lib/db.js';
 import { authUser } from '../_lib/auth.js';
+import { sanitizeHtml } from '../_lib/sanitize.js';
 
 // GET  /api/forum            → forum overview (stats + sections + recent + active members)
 // POST /api/forum            → create a new thread (auth required, level-gated)
@@ -118,7 +119,7 @@ export async function onRequest(context) {
     let body;
     try { body = await request.json(); } catch (e) { return fail('Invalid JSON'); }
     const title = (body.title || '').trim();
-    const content = (body.content || '').trim();
+    const content = sanitizeHtml((body.content || '').trim());
     const slug = (body.section || '').trim().toLowerCase();
 
     if (!title || title.length < 5) return fail('Title too short (min 5 chars)');

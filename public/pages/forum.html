@@ -88,6 +88,33 @@
 .tab-bar{display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:5px}
 .tab-btn{flex:1;padding:8px;border:none;background:transparent;color:#6b7280;font-size:13px;font-weight:500;cursor:pointer;border-radius:7px;transition:.2s}
 .tab-btn.active{background:rgba(201,162,39,.12);color:#c9a227;font-weight:600}
+
+/* User profile card in sidebar */
+.user-profile-card{padding:18px}
+.profile-avatar{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#c9a227,#f5d06e);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#0a0e1a;flex-shrink:0;border:2px solid rgba(201,162,39,.4);box-shadow:0 0 0 4px rgba(201,162,39,.1)}
+.profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.new-post-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s}
+.new-post-btn:hover{opacity:.9;transform:translateY(-1px)}
+.profile-stat{flex:1;background:rgba(255,255,255,.05);border-radius:8px;padding:10px;text-align:center}
+.profile-stat-num{font-size:15px;font-weight:700;color:#c9a227}
+.profile-stat-lab{font-size:11px;color:#6b7280;margin-top:2px}
+
+/* Rich text editor */
+.rich-editor{border:1px solid rgba(255,255,255,.1);border-radius:10px;overflow:hidden;background:rgba(255,255,255,.04)}
+.rich-toolbar{display:flex;gap:4px;padding:8px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);flex-wrap:wrap}
+.rich-toolbar button{width:32px;height:32px;border-radius:6px;border:1px solid rgba(255,255,255,.08);background:transparent;color:#e2e8f0;font-size:14px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center}
+.rich-toolbar button:hover{border-color:#c9a227;color:#c9a227}
+.editor-content{min-height:160px;max-height:320px;overflow-y:auto;padding:14px;color:#e2e8f0;font-size:14px;line-height:1.7;outline:none}
+.editor-content p{margin:0 0 10px}
+.editor-content blockquote{border-left:3px solid #c9a227;padding:8px 12px;margin:8px 0;color:#9aa0b4;background:rgba(255,255,255,.03);border-radius:0 8px 8px 0}
+.editor-content ul,.editor-content ol{margin:8px 0;padding-left:24px}
+.editor-content h3{margin:12px 0 8px;font-size:16px;color:#f5d06e}
+.editor-content img{max-width:100%;border-radius:8px;display:block;margin:8px 0}
+.editor-content:empty:before{content:attr(placeholder);color:#6b7280}
+.editor-content a{color:#c9a227;text-decoration:underline}
+
+/* Post modal */
+.post-modal-box{background:#111827;border:1px solid rgba(255,255,255,.12);border-radius:16px;max-width:720px;width:100%;max-height:85vh;overflow-y:auto;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 </style>
 </head>
 <body>
@@ -198,38 +225,6 @@
     <!-- LEFT MAIN -->
     <div>
 
-      <!-- New Post Form -->
-      <div class="post-form-card" id="postFormCard">
-        <h3>✍️ Start a New Discussion</h3>
-        <div id="postFormInner">
-          <select class="form-input-dark" id="postSection" style="margin-bottom:10px">
-            <option value="">Select forum section…</option>
-            <option value="venue-design">🏗️ Venue Design & Planning</option>
-            <option value="equipment-reviews">🎮 Equipment Reviews & Recommendations</option>
-            <option value="business-strategy">📊 Business & Revenue Strategy</option>
-            <option value="exhibitions">🎪 Exhibition Reports & Networking</option>
-            <option value="technical">🔧 Technical Support & Maintenance</option>
-            <option value="buy-sell">🛒 Buy / Sell / Trade Equipment</option>
-            <option value="park-operations">🎡 Amusement Park Operations</option>
-          </select>
-          <input type="text" class="form-input-dark" id="postTitle" placeholder="Thread title (5–100 characters)…">
-          <textarea class="form-textarea-dark" id="postContent" placeholder="Share your thoughts, questions or insights… (min 20 characters)"></textarea>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
-            <div style="font-size:12px;color:#6b7280" id="postLimitInfo">💡 Standard members: 1 post per day · Comments: 1 per account total</div>
-            <div style="display:flex;gap:8px">
-              <button class="btn-outline-sm" onclick="clearPost()">Clear</button>
-              <button class="btn-gold-sm" onclick="submitPost()">Post Thread 🚀</button>
-            </div>
-          </div>
-        </div>
-        <div id="postLoginPrompt" style="display:none;text-align:center;padding:20px">
-          <div style="font-size:32px;margin-bottom:10px">🔐</div>
-          <div style="color:#9aa0b4;margin-bottom:14px">Please log in to post or reply in the forum.</div>
-          <a href="login.html" class="btn-gold-sm" style="text-decoration:none;display:inline-block">Sign In</a>
-          <a href="register.html" class="btn-outline-sm" style="text-decoration:none;display:inline-block;margin-left:8px">Register Free</a>
-        </div>
-      </div>
-
       <!-- Tab bar -->
       <div class="tab-bar">
         <button class="tab-btn active" onclick="switchTab(this,'latest')">🕐 Latest</button>
@@ -245,6 +240,39 @@
 
     <!-- RIGHT SIDEBAR -->
     <div>
+
+      <!-- User Profile / New Post Widget -->
+      <div class="sidebar-widget user-profile-card" id="userProfileWidget">
+        <div id="profileGuest" style="display:none;text-align:center;padding:10px 0">
+          <div style="font-size:32px;margin-bottom:10px">🔐</div>
+          <div style="color:#9aa0b4;margin-bottom:14px">Please log in to post in the forum.</div>
+          <a href="login.html" class="btn-gold-sm" style="text-decoration:none;display:inline-block">Sign In</a>
+          <a href="register.html" class="btn-outline-sm" style="text-decoration:none;display:inline-block;margin-left:8px">Register Free</a>
+        </div>
+        <div id="profileLoggedIn" style="display:none">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+            <div class="profile-avatar" id="profileAvatar">U</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:15px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="profileName">User</div>
+              <div style="margin-top:4px" id="profileBadge"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <div class="profile-stat">
+              <div class="profile-stat-num" id="profilePoints">0</div>
+              <div class="profile-stat-lab">Points</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-num" id="profilePosts">0</div>
+              <div class="profile-stat-lab">Posts</div>
+            </div>
+          </div>
+          <button class="new-post-btn" id="newPostBtn" onclick="openPostModal()">
+            <span style="font-size:22px;line-height:1">+</span>
+            <span>Start a New Discussion</span>
+          </button>
+        </div>
+      </div>
 
       <!-- My Level Widget -->
       <div class="sidebar-widget" id="memberLevelWidget">
@@ -354,6 +382,51 @@
   </div>
 </div>
 
+<!-- New post modal -->
+<div id="postModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1001;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closePostModal()">
+  <div class="post-modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="margin:0;font-size:18px;color:#e2e8f0">✍️ Start a New Discussion</h3>
+      <button onclick="closePostModal()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#9aa0b4;width:30px;height:30px;border-radius:8px;cursor:pointer">✕</button>
+    </div>
+    <select class="form-input-dark" id="modalPostSection" style="margin-bottom:12px">
+      <option value="">Select forum section…</option>
+      <option value="venue-design">🏗️ Venue Design & Planning</option>
+      <option value="equipment-reviews">🎮 Equipment Reviews & Recommendations</option>
+      <option value="business-strategy">📊 Business & Revenue Strategy</option>
+      <option value="exhibitions">🎪 Exhibition Reports & Networking</option>
+      <option value="technical">🔧 Technical Support & Maintenance</option>
+      <option value="buy-sell">🛒 Buy / Sell / Trade Equipment</option>
+      <option value="park-operations">🎡 Amusement Park Operations</option>
+    </select>
+    <input type="text" class="form-input-dark" id="modalPostTitle" placeholder="Thread title (5–100 characters)…" style="margin-bottom:12px">
+    <div class="rich-editor">
+      <div class="rich-toolbar">
+        <button type="button" onclick="editorCmd('bold')" title="Bold"><b>B</b></button>
+        <button type="button" onclick="editorCmd('italic')" title="Italic"><i>I</i></button>
+        <button type="button" onclick="editorCmd('underline')" title="Underline"><u>U</u></button>
+        <button type="button" onclick="editorCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+        <button type="button" onclick="editorCmd('formatBlock','H3')" title="Heading">H</button>
+        <button type="button" onclick="editorCmd('insertUnorderedList')" title="Bullet list">•</button>
+        <button type="button" onclick="editorCmd('insertOrderedList')" title="Numbered list">1.</button>
+        <button type="button" onclick="editorCmd('formatBlock','blockquote')" title="Quote">”</button>
+        <button type="button" onclick="editorLink()" title="Insert link">🔗</button>
+        <button type="button" onclick="document.getElementById('editorImageInput').click()" title="Insert image">🖼️</button>
+      </div>
+      <div id="modalPostEditor" class="editor-content" contenteditable="true" placeholder="Share your thoughts, questions or insights… (min 20 characters)"></div>
+    </div>
+    <input type="file" id="editorImageInput" accept="image/*" style="display:none" onchange="editorImageUpload(this)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap;gap:10px">
+      <div style="font-size:12px;color:#6b7280" id="modalPostLimitInfo">💡 Standard members: 1 post per day · Comments: 1 per account total</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="font-size:12px;color:#6b7280" id="modalPostCharCount">0 chars</span>
+        <button class="btn-outline-sm" onclick="closePostModal()">Cancel</button>
+        <button class="btn-gold-sm" onclick="submitPost()">Post Thread 🚀</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="../assets/js/main.js"></script>
 <script>
 // ── Forum helpers ──────────────────────────────────────────────
@@ -397,6 +470,7 @@ async function loadForum() {
     renderRecent(data.recentActivity || []);
     renderActive(data.activeMembers || []);
     renderMyLevel();
+    renderUserProfile();
   } catch (e) {
     if (el) el.innerHTML = '<div style="color:#f87171;padding:20px;text-align:center">Failed to load forum. Please refresh.</div>';
   }
@@ -512,36 +586,139 @@ function renderMyLevel() {
   }
 }
 
-// ── Post form ──────────────────────────────────────────────────
-function checkPostAuth() {
+// ── User profile widget (Tieba style) ──────────────────────────
+function renderUserProfile() {
   const s = getSession();
-  const inner = document.getElementById('postFormInner');
-  const prompt = document.getElementById('postLoginPrompt');
+  const guest = document.getElementById('profileGuest');
+  const logged = document.getElementById('profileLoggedIn');
+  if (!guest || !logged) return;
   if (!s || !s.token) {
-    if (inner) inner.style.display = 'none';
-    if (prompt) prompt.style.display = 'block';
-  } else {
-    if (inner) inner.style.display = 'block';
-    if (prompt) prompt.style.display = 'none';
-    const info = document.getElementById('postLimitInfo');
-    if (info) {
-      if (s.level === 'VIP') info.textContent = '👑 VIP: unlimited posts & replies';
-      else if (s.level === 'Premium') info.textContent = '⭐ Premium: unlimited posts & replies';
-      else info.textContent = '💡 Standard: 1 post per day · 1 reply per account total';
-    }
+    guest.style.display = 'block';
+    logged.style.display = 'none';
+    return;
+  }
+  guest.style.display = 'none';
+  logged.style.display = 'block';
+
+  const avatarEl = document.getElementById('profileAvatar');
+  const nameEl = document.getElementById('profileName');
+  const badgeEl = document.getElementById('profileBadge');
+  const pointsEl = document.getElementById('profilePoints');
+  const postsEl = document.getElementById('profilePosts');
+
+  const displayName = s.username || s.name || 'User';
+  if (s.avatar) avatarEl.innerHTML = `<img src="${escapeHtml(s.avatar)}" alt="">`;
+  else avatarEl.textContent = initials(displayName);
+  nameEl.textContent = displayName;
+  const [cls, label] = levelInfo(s.level);
+  badgeEl.innerHTML = `<span class="lvl-badge ${cls}">${label}</span>`;
+  pointsEl.textContent = s.points || 0;
+  postsEl.textContent = (s.threads_count || 0) + (s.replies_count || 0);
+
+  // Refresh latest profile + post counts
+  fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + s.token } })
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (!data || !data.user) return;
+      const u = data.user;
+      const merged = Object.assign({}, s, {
+        name: u.username || s.name,
+        username: u.username || s.username,
+        email: u.email || s.email,
+        avatar: u.avatar || s.avatar,
+        level: u.level || s.level || 'Standard',
+        points: typeof u.points === 'number' ? u.points : (s.points || 0),
+        threads_count: u.threads_count || 0,
+        replies_count: u.replies_count || 0
+      });
+      localStorage.setItem('nexamuse_user', JSON.stringify(merged));
+      const dname = merged.username || merged.name || 'User';
+      nameEl.textContent = dname;
+      if (merged.avatar) avatarEl.innerHTML = `<img src="${escapeHtml(merged.avatar)}" alt="">`;
+      else avatarEl.textContent = initials(dname);
+      const [c2, l2] = levelInfo(merged.level);
+      badgeEl.innerHTML = `<span class="lvl-badge ${c2}">${l2}</span>`;
+      pointsEl.textContent = merged.points || 0;
+      postsEl.textContent = (merged.threads_count || 0) + (merged.replies_count || 0);
+    }).catch(() => {});
+}
+
+// ── Post modal / rich editor ───────────────────────────────────
+function openPostModal() {
+  const s = getSession();
+  if (!s || !s.token) { window.location.href = 'login.html'; return; }
+  document.getElementById('postModal').style.display = 'flex';
+  const info = document.getElementById('modalPostLimitInfo');
+  if (info) {
+    if (s.level === 'VIP') info.textContent = '👑 VIP: unlimited posts & replies';
+    else if (s.level === 'Premium') info.textContent = '⭐ Premium: unlimited posts & replies';
+    else info.textContent = '💡 Standard: 1 post per day · 1 reply per account total';
+  }
+  setTimeout(() => document.getElementById('modalPostEditor').focus(), 50);
+}
+function closePostModal() {
+  document.getElementById('postModal').style.display = 'none';
+}
+function clearPostModal() {
+  document.getElementById('modalPostTitle').value = '';
+  document.getElementById('modalPostSection').value = '';
+  document.getElementById('modalPostEditor').innerHTML = '';
+  setCharCount();
+}
+function getEditorText() {
+  const ed = document.getElementById('modalPostEditor');
+  return (ed.innerText || ed.textContent || '').trim();
+}
+function setCharCount() {
+  const el = document.getElementById('modalPostCharCount');
+  if (el) el.textContent = getEditorText().length + ' chars';
+}
+function editorCmd(cmd, val) {
+  document.execCommand(cmd, false, val || null);
+  document.getElementById('modalPostEditor').focus();
+  setCharCount();
+}
+function editorLink() {
+  const url = prompt('Enter link URL (https://…):', 'https://');
+  if (!url) return;
+  const text = window.getSelection().toString() || url;
+  document.execCommand('insertHTML', false, `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`);
+  document.getElementById('modalPostEditor').focus();
+  setCharCount();
+}
+async function editorImageUpload(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  const token = getToken();
+  if (!token) { alert('Please log in to upload images.'); return; }
+  const btn = document.querySelector('.rich-toolbar button[title="Insert image"]');
+  if (btn) btn.textContent = '⏳';
+  try {
+    const form = new FormData();
+    form.append('image', file);
+    const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: form });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Upload failed'); return; }
+    document.execCommand('insertHTML', false, `<img src="${escapeHtml(data.url)}" alt="" style="max-width:100%;border-radius:8px;display:block;margin:8px 0;">`);
+    setCharCount();
+  } catch (e) {
+    alert('Image upload failed. Please try again.');
+  } finally {
+    if (btn) btn.textContent = '🖼️';
   }
 }
-checkPostAuth();
 
 async function submitPost() {
-  const title = document.getElementById('postTitle').value.trim();
-  const content = document.getElementById('postContent').value.trim();
-  const section = document.getElementById('postSection').value;
+  const title = document.getElementById('modalPostTitle').value.trim();
+  const section = document.getElementById('modalPostSection').value;
+  const content = sanitizeHtml(document.getElementById('modalPostEditor').innerHTML);
+  const text = getEditorText();
   const token = getToken();
   if (!token) { alert('Please log in to post.'); return; }
   if (!section) { alert('Please select a section.'); return; }
   if (title.length < 5) { alert('Title too short (min 5 chars).'); return; }
-  if (content.length < 20) { alert('Content too short (min 20 chars).'); return; }
+  if (text.length < 20) { alert('Content too short (min 20 chars).'); return; }
   try {
     const res = await fetch('/api/forum', {
       method: 'POST',
@@ -550,22 +727,20 @@ async function submitPost() {
     });
     const data = await res.json();
     if (!res.ok) { alert(data.error || 'Failed to post.'); return; }
-    document.getElementById('postTitle').value = '';
-    document.getElementById('postContent').value = '';
-    document.getElementById('postSection').value = '';
+    closePostModal();
+    clearPostModal();
     if (typeof showToast === 'function') showToast('Thread posted! +1 point earned 🎉', 'success');
     else alert('Thread posted successfully! You earned +1 point.');
     loadForum();
     const s = getSession();
     if (s && typeof s.points === 'number') { s.points += 1; localStorage.setItem('nexamuse_user', JSON.stringify(s)); }
+    renderUserProfile();
   } catch (e) {
     alert('Network error. Please try again.');
   }
 }
-function clearPost() {
-  document.getElementById('postTitle').value = '';
-  document.getElementById('postContent').value = '';
-}
+
+document.getElementById('modalPostEditor').addEventListener('input', setCharCount);
 
 // ── Thread detail modal ────────────────────────────────────────
 async function openThread(id) {
@@ -588,7 +763,7 @@ async function openThread(id) {
         <span class="lvl-badge ${cls}" style="font-size:10px">${label}</span>
         <span style="font-size:11px;color:#6b7280">${fmtDate(t.created_at)}</span>
       </div>
-      <div style="font-size:14px;color:#d1d5db;line-height:1.8;white-space:pre-wrap;border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:18px;margin-bottom:18px">${escapeHtml(t.content)}</div>
+      <div style="font-size:14px;color:#d1d5db;line-height:1.8;border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:18px;margin-bottom:18px" class="thread-content">${sanitizeHtml(t.content)}</div>
       <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:12px">💬 Replies (${nfmt(t.replies)})</div>
       <div id="replyList">${(data.replies || []).length
         ? data.replies.map(r => {
@@ -599,7 +774,7 @@ async function openThread(id) {
                   <span style="font-size:12px;font-weight:600;color:#e2e8f0">${escapeHtml(r.username)}</span>
                   <span style="font-size:11px;color:#6b7280">${fmtDate(r.created_at)}</span>
                 </div>
-                <div style="font-size:13px;color:#cbd5e1;line-height:1.7;white-space:pre-wrap">${escapeHtml(r.content)}</div>
+                <div style="font-size:13px;color:#cbd5e1;line-height:1.7" class="reply-content">${sanitizeHtml(r.content)}</div>
               </div>`;
           }).join('')
         : '<div style="font-size:12px;color:#6b7280;padding:8px 0">No replies yet — be the first to reply.</div>'}
@@ -617,7 +792,6 @@ async function openThread(id) {
     if (!s || !s.token) {
       document.getElementById('replyFormWrap').innerHTML = '<div style="text-align:center;padding:10px;font-size:12px;color:#6b7280"><a href="login.html" style="color:#c9a227">Log in</a> to reply.</div>';
     }
-    checkPostAuth();
   } catch (e) {
     alert('Network error. Please try again.');
   }
@@ -644,6 +818,41 @@ async function submitReply(threadId) {
   } catch (e) {
     alert('Network error. Please try again.');
   }
+}
+
+// ── HTML sanitizer (for rich text) ─────────────────────────────
+function sanitizeHtml(html) {
+  if (!html) return '';
+  const text = String(html).trim();
+  const hasHtml = /<[a-z][\s\S]*>/i.test(text);
+  let h = hasHtml ? text : text.replace(/\n/g, '<br>');
+  // Remove script/style blocks and event handlers
+  h = h
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+  const allowed = new Set(['p','br','b','strong','i','em','u','s','strike','h1','h2','h3','h4','h5','h6','ul','ol','li','blockquote','a','img','span','div']);
+  return h.replace(/<(\/?)([a-zA-Z][a-zA-Z0-9]*)[^>]*>/g, (match, slash, tag) => {
+    const t = tag.toLowerCase();
+    if (!allowed.has(t)) return '';
+    const startIdx = match.toLowerCase().indexOf(t) + t.length;
+    const attrPart = match.slice(startIdx, -1).trim();
+    const attrs = {};
+    attrPart.replace(/([a-zA-Z0-9-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*)))?/g, (m, k, v1, v2, v3) => {
+      const key = k.toLowerCase();
+      const val = v1 !== undefined ? v1 : (v2 !== undefined ? v2 : (v3 !== undefined ? v3 : ''));
+      if (key === 'style') attrs.style = val;
+      else if (t === 'a' && key === 'href' && /^(https?:|mailto:|\/|#)/i.test(val)) attrs.href = val;
+      else if (t === 'a' && (key === 'target' || key === 'rel')) attrs[key] = val;
+      else if (t === 'img' && key === 'src' && /^(https?:|data:image\/)/i.test(val)) attrs.src = val;
+      else if (t === 'img' && (key === 'alt' || key === 'title')) attrs[key] = val;
+      return '';
+    });
+    if (t === 'a') { attrs.target = '_blank'; attrs.rel = 'noopener noreferrer'; }
+    if (t === 'img' && !attrs.style) attrs.style = 'max-width:100%;border-radius:8px;display:block;margin:8px 0;';
+    const attrPairs = Object.entries(attrs).map(([k, v]) => `${k}="${escapeHtml(v)}"`).join(' ');
+    return `<${slash}${t}${attrPairs ? ' ' + attrPairs : ''}>`;
+  });
 }
 
 // ── Escape helper ──────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import { json, fail, now } from '../../_lib/db.js';
 import { authUser } from '../../_lib/auth.js';
+import { sanitizeHtml } from '../../_lib/sanitize.js';
 
 // GET  /api/forum/:id  → thread detail + replies (bumps views)
 // POST /api/forum/:id  → reply to the thread (auth required, level-gated)
@@ -33,7 +34,7 @@ export async function onRequest(context) {
 
     let body;
     try { body = await request.json(); } catch (e) { return fail('Invalid JSON'); }
-    const content = (body.content || '').trim();
+    const content = sanitizeHtml((body.content || '').trim());
     if (!content || content.length < 2) return fail('Reply too short');
     if (content.length > 2000) return fail('Reply too long (max 2000 chars)');
 
