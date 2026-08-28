@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Add News — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.add-wrap{max-width:680px}
+.frm{display:flex;flex-direction:column;gap:16px;margin-top:8px}
+.frm label{font-size:12px;color:var(--text-muted)}
+.frm input,.frm textarea,.frm select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:#e2e8f0;font-size:14px;width:100%}
+.frm textarea{resize:vertical;min-height:120px}
+.frm .hint{font-size:11px;color:var(--text-muted);margin-top:-8px}
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal-mask.open{display:flex}
+.modal-box{background:#0f1424;border:1px solid var(--border);border-radius:14px;padding:24px;max-width:440px;text-align:center}
+.modal-box h3{margin:0 0 10px;color:#e2e8f0}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="breadcrumb">News / <span>Add News</span></div>
+      </div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Settings</a>
+            <div class="user-dropdown-item" onclick="adminLogout()" style="cursor:pointer;color:#ef4444">🚪 Sign Out</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="card add-wrap">
+        <div class="card-header"><h3>➕ Add News</h3></div>
+        <div class="card-body">
+          <div class="frm">
+            <div><label>Title *</label><input id="aTitle" type="text" placeholder="Headline of the story"></div>
+            <div><label>Summary</label><textarea id="aSummary" placeholder="Short summary (optional)"></textarea></div>
+            <div><label>Source URL</label><input id="aUrl" type="text" placeholder="https://… (leave empty for manual post)"><div class="hint">If empty, the story is treated as a manually written post.</div></div>
+            <div><label>Source Name</label><input id="aSource" type="text" placeholder="e.g. NexAmuse / Blooloop"></div>
+            <div><label>Category</label><select id="aCat"></select></div>
+            <div><label>Status</label>
+              <select id="aStatus"><option value="published">Published</option><option value="pending">Pending (review later)</option></select>
+            </div>
+            <div class="modal-foot" style="display:flex;gap:10px;justify-content:flex-end">
+              <a href="news-list.html" class="btn btn-outline btn-sm">Cancel</a>
+              <button class="btn btn-gold btn-sm" id="submitBtn" onclick="submitNews()">Publish News</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="okMask">
+  <div class="modal-box">
+    <h3>✅ News added</h3>
+    <p style="color:var(--text-muted);font-size:13px;margin:0 0 16px">The story has been saved.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <a href="news-list.html" class="btn btn-outline btn-sm">View List</a>
+      <button class="btn btn-gold btn-sm" onclick="document.getElementById('okMask').classList.remove('open');resetForm()">Add Another</button>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+async function loadCats() {
+  try {
+    const d = await apiGet('/api/news-categories');
+    const sel = document.getElementById('aCat');
+    (d.categories || []).forEach(c => {
+      sel.insertAdjacentHTML('beforeend', `<option value="${c.code}">${c.name}</option>`);
+    });
+  } catch (e) {}
+}
+
+function resetForm() {
+  ['aTitle','aSummary','aUrl','aSource'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('aStatus').value = 'published';
+}
+
+async function submitNews() {
+  const title = document.getElementById('aTitle').value.trim();
+  if (!title) { showToast('Title is required.', 'error'); return; }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.innerHTML = '⏳ Saving…';
+  const payload = {
+    title,
+    summary: document.getElementById('aSummary').value.trim(),
+    url: document.getElementById('aUrl').value.trim(),
+    source: document.getElementById('aSource').value.trim() || 'NexAmuse',
+    category: document.getElementById('aCat').value || 'industry',
+    status: document.getElementById('aStatus').value
+  };
+  try {
+    await apiSend('/api/news', 'POST', payload);
+    document.getElementById('okMask').classList.add('open');
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = 'Publish News';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initPage('news-add');
+  loadCats();
+});
+</script>
+</body>
+</html>

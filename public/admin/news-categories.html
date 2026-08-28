@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>News Categories — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.cat-table{width:100%;border-collapse:collapse;background:var(--surface2);border-radius:10px;overflow:hidden;margin-bottom:18px}
+.cat-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);padding:12px 14px;border-bottom:1px solid var(--border)}
+.cat-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:#cbd5e1}
+.cat-table tr:hover{background:rgba(255,255,255,.03)}
+.code-pill{font-family:monospace;font-size:12px;background:rgba(201,162,39,.12);color:#f0c040;padding:2px 8px;border-radius:4px}
+.row-actions{display:flex;gap:8px}
+.btn-mini{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;color:#e2e8f0;cursor:pointer}
+.btn-mini:hover{border-color:var(--accent)}
+.btn-mini.danger{color:#ef4444;border-color:rgba(239,68,68,.3)}
+
+.add-card{max-width:520px}
+.frm{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.frm .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px}
+.frm label{font-size:12px;color:var(--text-muted)}
+.frm input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:#e2e8f0;font-size:13px}
+
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal-mask.open{display:flex}
+.modal-box{background:#0f1424;border:1px solid var(--border);border-radius:14px;padding:24px;width:100%;max-width:440px}
+.modal-box h3{margin:0 0 16px;color:#e2e8f0}
+.em-frm{display:flex;flex-direction:column;gap:14px}
+.em-frm label{font-size:12px;color:var(--text-muted)}
+.em-frm input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:#e2e8f0;font-size:13px}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🎮</span>
+      <div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="breadcrumb">News / <span>News Categories</span></div>
+      </div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Settings</a>
+            <div class="user-dropdown-item" onclick="adminLogout()" style="cursor:pointer;color:#ef4444">🚪 Sign Out</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="card">
+        <div class="card-header"><h3>🏷️ News Categories</h3></div>
+        <div class="card-body">
+          <div id="catWrap"><p style="color:var(--text-muted);font-size:13px;">Loading…</p></div>
+        </div>
+      </div>
+
+      <div class="card add-card">
+        <div class="card-header"><h3>➕ Add Category</h3></div>
+        <div class="card-body">
+          <div class="frm">
+            <div class="field"><label>Code (unique, e.g. industry)</label><input id="nCode" type="text"></div>
+            <div class="field"><label>Display Name</label><input id="nName" type="text"></div>
+            <div class="field"><label>Sort</label><input id="nSort" type="number" value="10"></div>
+            <button class="btn btn-gold btn-sm" id="addBtn" onclick="addCat()">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="editMask">
+  <div class="modal-box">
+    <h3>✏️ Edit Category</h3>
+    <div class="em-frm">
+      <div><label>Code</label><input id="eCode" type="text"></div>
+      <div><label>Display Name</label><input id="eName" type="text"></div>
+      <div><label>Sort</label><input id="eSort" type="number"></div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-sm" onclick="closeEdit()">Cancel</button>
+        <button class="btn btn-gold btn-sm" onclick="saveEdit()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+let editId = null;
+
+async function loadCats() {
+  const wrap = document.getElementById('catWrap');
+  wrap.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Loading…</p>';
+  let d;
+  try { d = await apiGet('/api/news-categories'); } catch (e) {
+    wrap.innerHTML = '<p style="color:#ef4444">Failed to load categories.</p>';
+    return;
+  }
+  const rows = d.categories || [];
+  if (!rows.length) { wrap.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No categories yet.</p>'; return; }
+  wrap.innerHTML = `<table class="cat-table"><thead><tr>
+    <th>Display Name</th><th>Code</th><th>Sort</th><th></th>
+  </tr></thead><tbody>${rows.map(c => `
+    <tr>
+      <td style="color:#e2e8f0;font-weight:600">${escapeHtml(c.name)}</td>
+      <td><span class="code-pill">${escapeHtml(c.code)}</span></td>
+      <td>${c.sort}</td>
+      <td><div class="row-actions">
+        <button class="btn-mini" onclick="openEdit(${c.id},'${escapeAttr(c.code)}','${escapeAttr(c.name)}',${c.sort})">Edit</button>
+        <button class="btn-mini danger" onclick="delCat(${c.id})">Delete</button>
+      </div></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function escapeAttr(s){return String(s||'').replace(/'/g,"\\'");}
+
+async function addCat() {
+  const code = document.getElementById('nCode').value.trim();
+  const name = document.getElementById('nName').value.trim();
+  if (!code || !name) { showToast('Code and name required.', 'error'); return; }
+  const btn = document.getElementById('addBtn');
+  btn.disabled = true;
+  try {
+    await apiSend('/api/news-categories', 'POST', { code, name, sort: parseInt(document.getElementById('nSort').value,10)||0 });
+    showToast('Category added.', 'success');
+    document.getElementById('nCode').value='';
+    document.getElementById('nName').value='';
+    loadCats();
+  } catch (e) { showToast(e.message, 'error'); }
+  finally { btn.disabled = false; }
+}
+
+function openEdit(id, code, name, sort) {
+  editId = id;
+  document.getElementById('eCode').value = code;
+  document.getElementById('eName').value = name;
+  document.getElementById('eSort').value = sort;
+  document.getElementById('editMask').classList.add('open');
+}
+function closeEdit() { document.getElementById('editMask').classList.remove('open'); editId = null; }
+
+async function saveEdit() {
+  if (!editId) return;
+  try {
+    await apiSend('/api/news-categories', 'PUT', {
+      id: editId,
+      code: document.getElementById('eCode').value.trim(),
+      name: document.getElementById('eName').value.trim(),
+      sort: parseInt(document.getElementById('eSort').value,10)||0
+    });
+    showToast('Category updated.', 'success');
+    closeEdit();
+    loadCats();
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function delCat(id) {
+  if (!confirm('Delete this category? News items keep their category code but will show unlabeled.')) return;
+  try {
+    await apiSend('/api/news-categories', 'DELETE', { id });
+    showToast('Category deleted.', 'success');
+    loadCats();
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initPage('news-categories');
+  loadCats();
+});
+</script>
+</body>
+</html>

@@ -71,7 +71,12 @@ const NAV = [
     { href: 'articles-add.html',        icon: '✍️', label: 'Add Article',      page: 'articles-add' },
     { href: 'articles-ai.html',         icon: '🤖', label: 'AI Batch Write',   page: 'articles-ai', badge:'NEW' },
     { href: 'articles-categories.html', icon: '📁', label: 'Article Categories',page:'articles-categories' },
-    { href: 'news-crawler.html',        icon: '📡', label: 'News Management',  page: 'news-crawler', badge:'NEW' },
+  ]},
+  { section: 'News', items: [
+    { href: 'news-list.html',         icon: '🗞️', label: 'Manage News',     page: 'news-list', badge:'NEW' },
+    { href: 'news-add.html',          icon: '➕', label: 'Add News',        page: 'news-add', badge:'NEW' },
+    { href: 'news-crawler.html',      icon: '📡', label: 'RSS News',        page: 'news-crawler' },
+    { href: 'news-categories.html',   icon: '🏷️', label: 'News Categories', page: 'news-categories', badge:'NEW' },
   ]},
   { section: 'Directory', items: [
     { href: 'companies.html',     icon: '🏭', label: 'Company Directory', page: 'companies', badge:'NEW' },
@@ -185,3 +190,6 @@ window.addEventListener('resize', () => {
   if (!sb) return;
   if (window.innerWidth > 768) sb.style.transform = '';
 });
+
+// Safe no-op hook for per-page init (called from individual admin pages).
+function initPage(){}
