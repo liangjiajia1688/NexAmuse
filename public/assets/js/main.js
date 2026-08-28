@@ -10,7 +10,54 @@ function frontendLogout() {
   window.location.reload();
 }
 
+// ── Sync user profile from server (keeps level/points/role fresh) ──
+// The session stored at login is a snapshot; if an admin upgrades a member
+// (e.g. Standard -> VIP) the cached level would be stale forever. This pulls
+// the latest profile from /api/me and merges it into the local session.
+async function syncUser() {
+  const s = getSession();
+  if (!s || !s.token) return null;
+  try {
+    const res = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + s.token } });
+    if (!res.ok) {
+      // Token invalid/expired — drop the stale session so pages show the right state.
+      if (res.status === 401) localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    const data = await res.json();
+    const u = data.user || {};
+    const merged = Object.assign({}, s, {
+      id: u.id || s.id,
+      name: u.username || s.name,
+      username: u.username || s.username,
+      email: u.email || s.email,
+      role: u.role || s.role,
+      avatar: u.avatar || s.avatar,
+      level: u.level || 'Standard',
+      points: typeof u.points === 'number' ? u.points : (s.points || 0),
+      status: u.status || 'active',
+      is_super: u.is_super || 0
+    });
+    localStorage.setItem(SESSION_KEY, JSON.stringify(merged));
+    return merged;
+  } catch (e) {
+    return s; // network hiccup — keep the cached session, don't break the page
+  }
+}
+
 // ── Render Nav Auth State ─────────────────────────────────────────
+function levelBadge(user) {
+  if (!user) return '';
+  const lvl = user.level || 'Standard';
+  const map = {
+    'VIP': ['👑 VIP', 'background:rgba(245,208,110,.18);color:#f5d06e;border:1px solid rgba(245,208,110,.35)'],
+    'Premium': ['⭐ Premium', 'background:rgba(201,162,39,.15);color:#c9a227;border:1px solid rgba(201,162,39,.3)'],
+    'Standard': ['🔵 Standard', 'background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.25)']
+  };
+  const [label, style] = map[lvl] || map['Standard'];
+  return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.3px;flex-shrink:0;${style}">${label}</span>`;
+}
+
 function renderAuthNav() {
   const session = getSession();
   // Desktop nav-actions: find Login & Register btns
@@ -34,6 +81,7 @@ function renderAuthNav() {
       <button class="auth-avatar-btn" id="frontUserBtn" onclick="toggleFrontUserMenu(event)" title="${session.name}" style="display:flex;align-items:center;gap:8px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.35);border-radius:8px;padding:6px 12px;cursor:pointer;transition:.2s;">
         <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#c9a227,#f5d06e);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0a0e1a;">${initials}</div>
         <span style="font-size:13px;color:#e2e8f0;font-weight:500;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${session.name}</span>
+        ${levelBadge(session)}
         <span style="font-size:10px;color:#9aa0b4;">▼</span>
       </button>
       <div id="frontUserDropdown" style="position:absolute;top:calc(100% + 10px);right:0;width:210px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;">
@@ -80,7 +128,7 @@ function renderAuthNav() {
     if (mobileAuthWrap) {
       if (session) {
         mobileAuthWrap.innerHTML = `
-          <div style="padding:12px 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;">Signed in as ${session.name}</div>
+          <div style="padding:12px 0 4px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px;">Signed in as ${session.name} ${levelBadge(session)}</div>
         ${session.role === 'admin' ? `<a href="${isInPages ? '../' : ''}admin/index.html" style="display:block;padding:10px 0;color:#c9a227;font-size:14px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.07);">🛠️ Admin Dashboard</a>` : ''}
           <a href="${isInPages ? '' : 'pages/'}member-points.html" style="display:block;padding:10px 0;color:#e2e8f0;font-size:14px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.07);">⭐ Member Center</a>
           <button onclick="frontendLogout()" style="width:100%;margin-top:12px;padding:12px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);border-radius:10px;color:#f87171;font-size:14px;font-weight:600;cursor:pointer;">🚪 Sign Out</button>`;
@@ -113,6 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Run auth nav render
   renderAuthNav();
+
+  // Refresh the user's latest profile (level/points/role/is_super) from the
+  // server, then re-render the nav so an admin's upgrade takes effect on the
+  // very next page load — no re-login needed.
+  syncUser().then(() => renderAuthNav());
 
   /* ── Search Overlay ── */
   const searchOverlay = document.getElementById('searchOverlay');

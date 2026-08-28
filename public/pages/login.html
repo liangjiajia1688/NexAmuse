@@ -484,6 +484,10 @@ async function handleLogin(e) {
       username: u.username,
       role: u.role,
       avatar: u.avatar || null,
+      level: u.level || 'Standard',
+      points: u.points || 0,
+      status: u.status || 'active',
+      is_super: u.is_super || 0,
       loginTime: Date.now()
     };
     localStorage.setItem('nexamuse_user', JSON.stringify(session));

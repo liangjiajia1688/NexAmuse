@@ -179,17 +179,17 @@
         <div style="display:flex;gap:28px;margin-top:22px;flex-wrap:wrap">
           <div class="fstat" style="text-align:left"><div style="font-size:1.8rem;font-weight:800;color:#c9a227" id="heroPoints">24</div><div style="font-size:12px;color:#6b7280;margin-top:2px">My Points</div></div>
           <div class="fstat" style="text-align:left"><div style="font-size:1.8rem;font-weight:800;color:#818cf8" id="heroLevel">Standard</div><div style="font-size:12px;color:#6b7280;margin-top:2px">Current Level</div></div>
-          <div class="fstat" style="text-align:left"><div style="font-size:1.8rem;font-weight:800;color:#34d399">6</div><div style="font-size:12px;color:#6b7280;margin-top:2px">Points to Premium</div></div>
+          <div class="fstat" style="text-align:left"><div style="font-size:1.8rem;font-weight:800;color:#34d399" id="heroNext">6</div><div style="font-size:12px;color:#6b7280;margin-top:2px">Points to Premium</div></div>
           <div class="fstat" style="text-align:left"><div style="font-size:1.8rem;font-weight:800;color:#f5d06e">18d</div><div style="font-size:12px;color:#6b7280;margin-top:2px">Login Streak</div></div>
         </div>
       </div>
       <!-- Mini rank badge -->
       <div id="rankBadge" style="background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(99,102,241,.05));border:1px solid rgba(99,102,241,.3);border-radius:16px;padding:24px 28px;min-width:180px;text-align:center;flex-shrink:0">
         <div style="font-size:40px;margin-bottom:8px">🎖️</div>
-        <div style="font-size:18px;font-weight:700;color:#a5b4fc">Standard</div>
-        <div style="font-size:12px;color:#6b7280;margin-top:4px">24 / 30 pts to Premium</div>
+        <div id="rankLevel" style="font-size:18px;font-weight:700;color:#a5b4fc">Standard</div>
+        <div id="rankPts" style="font-size:12px;color:#6b7280;margin-top:4px">24 / 30 pts to Premium</div>
         <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;margin-top:12px;overflow:hidden">
-          <div style="height:100%;width:80%;background:linear-gradient(90deg,#818cf8,#a5b4fc);border-radius:3px"></div>
+          <div id="rankFill" style="height:100%;width:24%;background:linear-gradient(90deg,#818cf8,#a5b4fc);border-radius:3px"></div>
         </div>
       </div>
     </div>
@@ -207,7 +207,7 @@
       <div class="progress-section">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
           <h3 style="margin:0;font-size:16px;color:#e2e8f0">📈 Level Progress</h3>
-          <span style="font-size:13px;color:#6b7280">24 pts · 6 more to Premium</span>
+          <span style="font-size:13px;color:#6b7280" id="progTitle">24 pts · 6 more to Premium</span>
         </div>
         <!-- Multi-level progress bar -->
         <div style="position:relative;margin:20px 0 10px">
@@ -229,8 +229,8 @@
         <div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.15);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-top:8px">
           <div style="font-size:22px">🎯</div>
           <div>
-            <div style="font-size:13px;font-weight:600;color:#e2e8f0">You're at 24 pts — Standard Member</div>
-            <div style="font-size:12px;color:#6b7280;margin-top:2px">Earn <strong style="color:#c9a227">6 more points</strong> to reach <strong style="color:#c9a227">Premium</strong> and unlock product upload + article publishing.</div>
+            <div id="curText" style="font-size:13px;font-weight:600;color:#e2e8f0">You're at 24 pts — Standard Member</div>
+            <div id="curHint" style="font-size:12px;color:#6b7280;margin-top:2px">Earn <strong style="color:#c9a227">6 more points</strong> to reach <strong style="color:#c9a227">Premium</strong> and unlock product upload + article publishing.</div>
           </div>
         </div>
       </div>
@@ -485,7 +485,7 @@
           <div style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:12px 14px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
               <span style="font-size:13px;font-weight:700;color:#818cf8">🥉 Standard</span>
-              <span style="font-size:11px;background:rgba(52,211,153,.12);color:#34d399;padding:2px 8px;border-radius:6px">You are here</span>
+              <span id="ovStdBadge" style="font-size:11px;background:rgba(52,211,153,.12);color:#34d399;padding:2px 8px;border-radius:6px">You are here</span>
             </div>
             <div style="font-size:12px;color:#6b7280">7 pts required · Forum 1/day · Basic access</div>
           </div>
@@ -493,7 +493,7 @@
           <div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.2);border-radius:10px;padding:12px 14px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
               <span style="font-size:13px;font-weight:700;color:#c9a227">⭐ Premium</span>
-              <span style="font-size:11px;color:#f59e0b;background:rgba(245,158,11,.08);padding:2px 8px;border-radius:6px">6 pts away</span>
+              <span id="ovPreBadge" style="font-size:11px;color:#f59e0b;background:rgba(245,158,11,.08);padding:2px 8px;border-radius:6px">6 pts away</span>
             </div>
             <div style="font-size:12px;color:#6b7280">30 pts · Products + Articles</div>
           </div>
@@ -501,7 +501,7 @@
           <div style="background:rgba(245,208,110,.04);border:1px solid rgba(245,208,110,.15);border-radius:10px;padding:12px 14px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
               <span style="font-size:13px;font-weight:700;color:#f5d06e">👑 VIP</span>
-              <span style="font-size:11px;color:#6b7280">76 pts away</span>
+              <span id="ovVipBadge" style="font-size:11px;color:#6b7280">76 pts away</span>
             </div>
             <div style="font-size:12px;color:#6b7280">100 pts · Company + Priority listing</div>
           </div>
@@ -549,6 +549,93 @@
 
 <script src="../assets/js/main.js"></script>
 <script>
+// ── Real member level & points ──────────────────────────────
+// Reads the live profile from localStorage (kept fresh by main.js syncUser()).
+function levelStyle(l) {
+  const map = {
+    'VIP':      { color:'#f5d06e', grad:'rgba(245,208,110,.2),rgba(245,208,110,.05)', border:'rgba(245,208,110,.45)' },
+    'Premium':  { color:'#c9a227', grad:'rgba(201,162,39,.2),rgba(201,162,39,.05)', border:'rgba(201,162,39,.4)' },
+    'Standard': { color:'#818cf8', grad:'rgba(99,102,241,.2),rgba(99,102,241,.05)', border:'rgba(99,102,241,.4)' }
+  };
+  return map[l] || map['Standard'];
+}
+const LVL_THRESHOLD = { Standard: 7, Premium: 30, VIP: 100 };
+function setHtml(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
+function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+
+function renderMyLevel() {
+  const s = JSON.parse(localStorage.getItem('nexamuse_user') || 'null');
+  const level = (s && s.level) || 'Standard';
+  const pts = (s && typeof s.points === 'number') ? s.points : 0;
+  const style = levelStyle(level);
+  const isVip = level === 'VIP';
+  const isPre = level === 'Premium';
+  const nextName = isPre ? 'VIP' : 'Premium';
+  const nextCap = isVip ? LVL_THRESHOLD.VIP : (isPre ? LVL_THRESHOLD.VIP : LVL_THRESHOLD.Premium);
+  const away = Math.max(0, nextCap - pts);
+
+  const hl = document.getElementById('heroLevel');
+  if (hl) { setText('heroLevel', level); hl.style.color = style.color; }
+  setText('heroPoints', pts);
+  setHtml('heroNext', isVip ? '—' : away);
+
+  setText('rankLevel', level);
+  const rl = document.getElementById('rankLevel'); if (rl) rl.style.color = style.color;
+  setText('rankPts', isVip ? pts + ' pts · 🎉 Top tier reached' : pts + ' / ' + nextCap + ' pts to ' + nextName);
+  const rf = document.getElementById('rankFill');
+  if (rf) {
+    rf.style.width = Math.min(100, Math.round(pts / LVL_THRESHOLD.VIP * 100)) + '%';
+    rf.style.background = isVip ? 'linear-gradient(90deg,#c9a227,#f5d06e)' : 'linear-gradient(90deg,#818cf8,#a5b4fc)';
+  }
+
+  setText('progTitle', isVip ? pts + ' pts · VIP unlocked 🎉' : pts + ' pts · ' + away + ' more to ' + nextName);
+  const mp = document.getElementById('mainProgress');
+  if (mp) {
+    mp.style.width = Math.min(100, Math.round(pts / LVL_THRESHOLD.VIP * 100)) + '%';
+    if (isVip) mp.style.background = 'linear-gradient(90deg,#c9a227,#f5d06e)';
+  }
+
+  setText('curText', isVip ? "You're at " + pts + ' pts — 👑 VIP Member' : "You're at " + pts + ' pts — ' + level + ' Member');
+  setHtml('curHint', isVip
+    ? 'You have reached the <strong style="color:#f5d06e">top tier</strong>. Enjoy company profile, priority listing, VIP forum access and more.'
+    : 'Earn <strong style="color:#c9a227">' + away + ' more points</strong> to reach <strong style="color:#c9a227">' + nextName + '</strong> and unlock ' + (isPre ? 'company profile + priority listing.' : 'product upload + article publishing.'));
+
+  const here = '<span style="font-size:11px;background:rgba(52,211,153,.12);color:#34d399;padding:2px 8px;border-radius:6px">You are here</span>';
+  if (isVip) {
+    setHtml('ovStdBadge', ''); setHtml('ovPreBadge', '');
+    setHtml('ovVipBadge', here);
+  } else if (isPre) {
+    setHtml('ovStdBadge', '');
+    setHtml('ovPreBadge', here);
+    setHtml('ovVipBadge', '<span style="font-size:11px;color:#6b7280">' + Math.max(0, LVL_THRESHOLD.VIP - pts) + ' pts away</span>');
+  } else {
+    setHtml('ovStdBadge', here);
+    setHtml('ovPreBadge', '<span style="font-size:11px;color:#f59e0b;background:rgba(245,158,11,.08);padding:2px 8px;border-radius:6px">' + Math.max(0, LVL_THRESHOLD.Premium - pts) + ' pts away</span>');
+    setHtml('ovVipBadge', '<span style="font-size:11px;color:#6b7280">' + Math.max(0, LVL_THRESHOLD.VIP - pts) + ' pts away</span>');
+  }
+
+  const rb = document.getElementById('rankBadge');
+  if (rb) { rb.style.background = 'linear-gradient(135deg,' + style.grad + ')'; rb.style.borderColor = style.border; }
+
+  // Leaderboard "You" row gets the real level/points
+  const meIdx = LB.findIndex(u => u.isMe);
+  if (meIdx >= 0) { LB[meIdx].pts = pts; LB[meIdx].level = level; }
+  renderLB();
+}
+function renderLB() {
+  document.getElementById('lbList').innerHTML = LB.map(u=>`
+  <div class="lb-row" style="${u.isMe?'background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.2);border-radius:8px;':''}">
+    <div class="lb-rank ${u.rank<=3?'top3':''}">${u.rank}</div>
+    <div class="lb-avatar" style="${u.isMe?'background:linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a':'background:rgba(99,102,241,.3);color:#a5b4fc'}">${u.name[0]}</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:${u.isMe?'700':'500'};color:${u.isMe?'#f5d06e':'#e2e8f0'}">${u.name}${u.isMe?' (You)':''}</div>
+      <div style="font-size:11px;color:#6b7280">${u.level} · ${u.group}</div>
+    </div>
+    <div class="lb-pts">${u.pts}</div>
+  </div>
+`).join('<div class="lb-divider"></div>');
+}
+
 // ── Streak calendar ─────────────────────────────────────────
 (function(){
   const cal = document.getElementById('streakCal');
@@ -580,17 +667,9 @@ const LB = [
   {rank:9,name:'SaraP',pts:15,level:'Regular',group:'Buyer'},
   {rank:10,name:'NeilVR',pts:11,level:'Regular',group:'Media'},
 ];
-document.getElementById('lbList').innerHTML = LB.map(u=>`
-  <div class="lb-row" style="${u.isMe?'background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.2);border-radius:8px;':''}">
-    <div class="lb-rank ${u.rank<=3?'top3':''}">${u.rank}</div>
-    <div class="lb-avatar" style="${u.isMe?'background:linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a':'background:rgba(99,102,241,.3);color:#a5b4fc'}">${u.name[0]}</div>
-    <div style="flex:1">
-      <div style="font-size:13px;font-weight:${u.isMe?'700':'500'};color:${u.isMe?'#f5d06e':'#e2e8f0'}">${u.name}${u.isMe?' (You)':''}</div>
-      <div style="font-size:11px;color:#6b7280">${u.level} · ${u.group}</div>
-    </div>
-    <div class="lb-pts">${u.pts}</div>
-  </div>
-`).join('<div class="lb-divider"></div>');
+// Render leaderboard with the real "You" row, then show live level/points everywhere.
+renderLB();
+renderMyLevel();
 
 // ── Tab switching ────────────────────────────────────────────
 function showTab(id, btn){
