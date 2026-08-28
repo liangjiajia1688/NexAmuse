@@ -23,10 +23,18 @@ export async function onRequest(context) {
 
   let form;
   try { form = await request.formData(); } catch (e) { return fail('Invalid form data'); }
-  const file = form.get('image');
-  if (!file || typeof file.arrayBuffer !== 'function') return fail('No image provided');
+  const image = form.get('image');
+  if (!image) return fail('No image provided');
 
-  const b64 = toBase64(await file.arrayBuffer());
+  let b64;
+  if (typeof image === 'string') {
+    b64 = image;
+  } else if (image && typeof image.arrayBuffer === 'function') {
+    b64 = toBase64(await image.arrayBuffer());
+  } else {
+    return fail('No image provided');
+  }
+
   try {
     const url = await uploadToImgBB(b64, env.IMGBB_API_KEY);
     return json({ url });
