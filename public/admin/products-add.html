@@ -87,24 +87,24 @@
                 <div class="editor-area" id="pDesc" contenteditable="true" data-placeholder="Enter full product description here..."></div>
                 <div style="margin-top:16px">
                   <label style="display:block;margin-bottom:8px;font-size:13px;color:var(--text-secondary)">Detail Images <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 10, &gt;10MB auto-compressed to WebP)</span></label>
-                  <div class="image-drop" onclick="document.getElementById('pDetailImages').click()">
+                  <label class="image-drop" for="pDetailImages" style="display:block">
                     <div style="font-size:28px;margin-bottom:6px">🖼</div>
                     <div>Click to upload detail images</div>
                     <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP</div>
-                    <input type="file" id="pDetailImages" multiple accept="image/*" style="display:none" onchange="addFiles(this.files,'detail')">
-                  </div>
+                  </label>
+                  <input type="file" id="pDetailImages" multiple accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden" onchange="addFiles(this.files,'detail')">
                   <div id="pDetailPreview" class="img-preview-grid"></div>
                 </div>
               </div>
             </div>
             <div class="form-section">
               <h3>Product Images <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 5, &gt;10MB auto-compressed to WebP)</span></h3>
-              <div class="image-drop" onclick="document.getElementById('pProductImages').click()">
+              <label class="image-drop" for="pProductImages" style="display:block">
                 <div style="font-size:28px;margin-bottom:6px">🖼</div>
                 <div>Click to upload product images</div>
                 <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP</div>
-                <input type="file" id="pProductImages" multiple accept="image/*" style="display:none" onchange="addFiles(this.files,'product')">
-              </div>
+              </label>
+              <input type="file" id="pProductImages" multiple accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden" onchange="addFiles(this.files,'product')">
               <div id="pProductPreview" class="img-preview-grid"></div>
             </div>
             <div class="form-section">
