@@ -28,7 +28,9 @@ export async function onRequest(context) {
 
   let b64;
   if (typeof image === 'string') {
-    b64 = image;
+    // Strip data URL prefix if present; ImgBB expects raw base64.
+    const m = image.match(/^data:image\/[^;]+;base64,(.*)$/);
+    b64 = m ? m[1] : image;
   } else if (image && typeof image.arrayBuffer === 'function') {
     b64 = toBase64(await image.arrayBuffer());
   } else {
