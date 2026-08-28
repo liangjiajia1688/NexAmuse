@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>News Crawler — NexAmuse Admin</title>
+<title>News Management — NexAmuse Admin</title>
 <link rel="stylesheet" href="admin.css">
 <style>
 .source-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
@@ -37,6 +37,15 @@
 
 .schedule-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--text-muted)}
 .schedule-row .ok-note{color:#22c55e}
+
+.timeline-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.timeline-label{font-size:13px;color:var(--text-muted);margin-right:6px}
+.timeline-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:13px;color:#e2e8f0;cursor:pointer;transition:.2s}
+.timeline-btn:hover{border-color:var(--accent)}
+.timeline-btn.active{background:rgba(201,162,39,.15);border-color:var(--accent);color:#f0c040;font-weight:600}
+
+.action-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.publish-hint{font-size:12px;color:var(--text-muted);line-height:1.5;margin-top:8px}
 </style>
 </head>
 <body>
@@ -52,7 +61,7 @@
     <header class="admin-header">
       <div class="header-left">
         <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
-        <div class="breadcrumb">Articles / <span>Global News Crawler</span></div>
+        <div class="breadcrumb">Articles / <span>News Management</span></div>
       </div>
       <div class="header-right">
         <div class="header-user-wrap" style="position:relative;">
@@ -78,6 +87,8 @@
       <!-- Stats Row -->
       <div class="stats-row" id="statsRow">
         <div class="stat-mini"><div class="val" id="statTotal">0</div><div class="lbl">Total Collected</div></div>
+        <div class="stat-mini"><div class="val" id="statPublished">0</div><div class="lbl">Published</div></div>
+        <div class="stat-mini"><div class="val" id="statPending">0</div><div class="lbl">Pending Sync</div></div>
         <div class="stat-mini"><div class="val" id="statSources">8</div><div class="lbl">RSS Sources</div></div>
         <div class="stat-mini"><div class="val" id="statLastPublished">—</div><div class="lbl">Newest Story</div></div>
         <div class="stat-mini"><div class="val" id="statLastRun">—</div><div class="lbl">Last Manual Refresh</div></div>
@@ -91,7 +102,7 @@
         <div class="card-body">
           <div class="schedule-row">
             <span>✅ <span class="ok-note">Cloudflare Worker cron 已启用</span> — 每天 <strong style="color:#e2e8f0">08:15 (Beijing)</strong> 自动拉取 8 个行业 RSS 源。</span>
-            <span style="opacity:.7">也可以在下方点击「🚀 Refresh Now」手动立即刷新。</span>
+            <span style="opacity:.7">也可以在下方选择时间范围后点击「🚀 Refresh Now」手动立即刷新。</span>
           </div>
         </div>
       </div>
@@ -114,14 +125,31 @@
       <div class="card" style="margin-bottom:20px">
         <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
           <h3>🔍 Refresh RSS News</h3>
-          <button class="btn btn-gold" id="scanBtn" onclick="startScan()">🚀 Refresh Now</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-outline" id="previewBtn" onclick="previewSite()" style="display:none">👁 Preview News Page</button>
+            <button class="btn btn-gold" id="scanBtn" onclick="startScan()">🚀 Refresh Now</button>
+          </div>
         </div>
         <div class="card-body">
+          <div class="timeline-row">
+            <span class="timeline-label">⏱ Pull articles published within:</span>
+            <button class="timeline-btn" data-days="1" onclick="setDays(1)">1 Day</button>
+            <button class="timeline-btn" data-days="3" onclick="setDays(3)">3 Days</button>
+            <button class="timeline-btn active" data-days="7" onclick="setDays(7)">7 Days</button>
+            <button class="timeline-btn" data-days="30" onclick="setDays(30)">30 Days</button>
+          </div>
           <div class="progress-wrap" id="progressWrap" style="display:none">
             <div class="progress-bar" id="progressBar" style="width:0%"></div>
           </div>
           <div class="log-box" id="logBox">
-            <div class="log-line info">[ System ] Click "Refresh Now" to pull the latest stories from the 8 industry RSS feeds.</div>
+            <div class="log-line info">[ System ] Select sources and a time range, then click "Refresh Now" to pull the latest stories.</div>
+          </div>
+          <div id="syncPanel" style="display:none;margin-top:16px">
+            <div class="action-row">
+              <button class="btn btn-gold" id="syncBtn" onclick="syncToSite()">🌐 One-click Sync to News Page</button>
+              <button class="btn btn-outline btn-sm" onclick="publishAll()">Publish All Pending</button>
+            </div>
+            <p class="publish-hint">Sync makes the freshly crawled news visible on the public news page. Unpublished stories remain in the database for later review.</p>
           </div>
         </div>
       </div>
@@ -158,6 +186,8 @@ const SOURCES = [
 ];
 
 let selectedSources = new Set(SOURCES.map(s => s.id));
+let scanDays = 7;
+let lastScanResult = null;
 
 function log(msg, type = 'info') {
   const box = document.getElementById('logBox');
@@ -166,6 +196,13 @@ function log(msg, type = 'info') {
   line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
   box.appendChild(line);
   box.scrollTop = box.scrollHeight;
+}
+
+function setDays(days) {
+  scanDays = days;
+  document.querySelectorAll('.timeline-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.days, 10) === days);
+  });
 }
 
 function renderSources() {
@@ -186,8 +223,11 @@ function renderSources() {
 function toggleSource(id) {
   if (selectedSources.has(id)) selectedSources.delete(id); else selectedSources.add(id);
   const card = document.getElementById('sc_' + id);
-  card.classList.toggle('selected', selectedSources.has(id));
-  card.querySelector('input').checked = selectedSources.has(id);
+  if (card) {
+    card.classList.toggle('selected', selectedSources.has(id));
+    const cb = card.querySelector('input');
+    if (cb) cb.checked = selectedSources.has(id);
+  }
   updateSrcCount();
 }
 
@@ -195,7 +235,11 @@ function selectAllSources(sel) {
   SOURCES.forEach(s => {
     if (sel) selectedSources.add(s.id); else selectedSources.delete(s.id);
     const card = document.getElementById('sc_' + s.id);
-    if (card) { card.classList.toggle('selected', sel); card.querySelector('input').checked = sel; }
+    if (card) {
+      card.classList.toggle('selected', sel);
+      const cb = card.querySelector('input');
+      if (cb) cb.checked = sel;
+    }
   });
   updateSrcCount();
 }
@@ -216,11 +260,22 @@ async function startScan() {
   document.getElementById('progressWrap').style.display = 'block';
   document.getElementById('progressBar').style.width = '15%';
   document.getElementById('resultsPanel').style.display = 'none';
+  document.getElementById('syncPanel').style.display = 'none';
+  document.getElementById('previewBtn').style.display = 'none';
+  lastScanResult = null;
 
-  log('Starting refresh — ' + selectedSources.size + ' / ' + SOURCES.length + ' sources enabled…', 'info');
+  log('Starting refresh — ' + selectedSources.size + ' / ' + SOURCES.length + ' sources enabled · time range: last ' + scanDays + ' day(s)…', 'info');
 
   try {
-    const res = await fetch('/api/news-refresh', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+    const payload = {
+      sources: Array.from(selectedSources),
+      days: scanDays
+    };
+    const res = await fetch('/api/news-refresh', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
     const data = await res.json();
     document.getElementById('progressBar').style.width = '100%';
 
@@ -230,6 +285,7 @@ async function startScan() {
       return;
     }
 
+    lastScanResult = data;
     log('─────────────────────────────────────', 'info');
     log('Done! ' + data.added + ' new stories added · total ' + data.total + ' in database.', data.added ? 'ok' : 'warn');
     localStorage.setItem('nexamuse_news_lastcrawl', new Date().toLocaleString());
@@ -252,6 +308,15 @@ async function startScan() {
     document.getElementById('resultsPanel').style.display = 'block';
 
     (data.errors || []).forEach(e => log('⚠ ' + e, 'err'));
+
+    // Show sync controls if we pulled anything
+    if (data.added > 0) {
+      document.getElementById('syncPanel').style.display = 'block';
+      document.getElementById('previewBtn').style.display = 'inline-flex';
+      log('✅ Crawl finished. Click "One-click Sync to News Page" to publish.', 'ok');
+    } else {
+      log('ℹ No new stories in the selected window. Try a wider time range.', 'warn');
+    }
     await loadStats();
   } catch (e) {
     log('Error: ' + e.message, 'err');
@@ -259,6 +324,50 @@ async function startScan() {
   } finally {
     btn.disabled = false; btn.innerHTML = '🚀 Refresh Now';
   }
+}
+
+// ── Publish / Sync ─────────────────────────────────────────────────────────
+async function syncToSite() {
+  // Publishes the stories added in the most recent scan
+  if (!lastScanResult || !lastScanResult.added) {
+    showToast('No fresh stories to sync. Run a refresh first.', 'warning');
+    return;
+  }
+  await publishBatch('last-scan');
+}
+
+async function publishAll() {
+  await publishBatch('all');
+}
+
+async function publishBatch(scope) {
+  const token = getApiToken();
+  if (!token) { showToast('Please log in first.', 'error'); return; }
+  const btn = document.getElementById('syncBtn') || document.activeElement;
+  const original = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Publishing…'; }
+  try {
+    const res = await fetch('/api/news-refresh/publish', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Publish failed');
+    log('✅ ' + data.published + ' story(s) published to the public news page.', 'ok');
+    showToast(data.published + ' story(s) synced to the news page.', 'success');
+    document.getElementById('previewBtn').style.display = 'inline-flex';
+    await loadStats();
+  } catch (e) {
+    log('Publish error: ' + e.message, 'err');
+    showToast(e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = original || '🌐 One-click Sync to News Page'; }
+  }
+}
+
+function previewSite() {
+  window.open('../pages/news.html', '_blank');
 }
 
 // ── Real stats from the API ───────────────────────────────────────────────
@@ -270,6 +379,8 @@ async function loadStats() {
     const data = await res.json();
     if (data.ok) {
       document.getElementById('statTotal').textContent = data.total || 0;
+      document.getElementById('statPublished').textContent = data.published || 0;
+      document.getElementById('statPending').textContent = (data.total || 0) - (data.published || 0);
       document.getElementById('statSources').textContent = SOURCES.length;
       const t = data.lastPublishedAt;
       document.getElementById('statLastPublished').textContent = t ? new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—';
@@ -282,6 +393,7 @@ async function loadStats() {
 document.addEventListener('DOMContentLoaded', () => {
   initPage('news-crawler');
   renderSources();
+  setDays(7);
   loadStats();
 });
 </script>

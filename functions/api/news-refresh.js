@@ -2,17 +2,15 @@ import { json, fail } from '../_lib/db.js';
 import { authUser } from '../_lib/auth.js';
 
 // Global amusement / attractions industry RSS feeds.
-// Risk-safe aggregation: store only title + short summary + source + original link.
-// All rights belong to the original publishers.
 const FEEDS = [
-  { url: 'https://blooloop.com/feed/',                      source: 'Blooloop',              category: 'industry',  country: 'Global' },
-  { url: 'https://attractionsmagazine.com/feed/',           source: 'Attractions Magazine',  category: 'industry',  country: 'USA' },
-  { url: 'https://www.parkworld-online.com/feed/',          source: 'Park World',            category: 'industry',  country: 'UK' },
-  { url: 'https://amusementtoday.com/feed/',                source: 'Amusement Today',       category: 'industry',  country: 'USA' },
-  { url: 'https://www.laughingplace.com/feed/',             source: 'Laughing Place',        category: 'industry',  country: 'USA' },
-  { url: 'https://www.coaster101.com/feed/',                source: 'Coaster101',            category: 'industry',  country: 'USA' },
-  { url: 'https://www.iaapa.org/rss.xml',                   source: 'IAAPA',                 category: 'industry',  country: 'USA' },
-  { url: 'https://orlandoattractions.com/feed/',            source: 'Orlando Attractions',   category: 'industry',  country: 'USA' }
+  { id: 'blooloop',       url: 'https://blooloop.com/feed/',                      source: 'Blooloop',              category: 'industry',  country: 'Global' },
+  { id: 'attractions',    url: 'https://attractionsmagazine.com/feed/',           source: 'Attractions Magazine',  category: 'industry',  country: 'USA' },
+  { id: 'parkworld',      url: 'https://www.parkworld-online.com/feed/',          source: 'Park World',            category: 'industry',  country: 'UK' },
+  { id: 'amusementtoday', url: 'https://amusementtoday.com/feed/',                source: 'Amusement Today',       category: 'industry',  country: 'USA' },
+  { id: 'laughingplace',  url: 'https://www.laughingplace.com/feed/',             source: 'Laughing Place',        category: 'industry',  country: 'USA' },
+  { id: 'coaster101',     url: 'https://www.coaster101.com/feed/',                source: 'Coaster101',            category: 'industry',  country: 'USA' },
+  { id: 'iaapa',          url: 'https://www.iaapa.org/rss.xml',                   source: 'IAAPA',                 category: 'industry',  country: 'USA' },
+  { id: 'orlando',        url: 'https://orlandoattractions.com/feed/',            source: 'Orlando Attractions',   category: 'industry',  country: 'USA' }
 ];
 
 // Lightweight keyword category guesser so the frontend filter tabs work.
@@ -67,7 +65,7 @@ function parseFeed(xml, feed) {
   return items;
 }
 
-function authed(context) {
+async function authed(context) {
   const { request, env } = context;
   const key = new URL(request.url).searchParams.get('key');
   const cronHeader = request.headers.get('x-cron-secret') || '';
@@ -75,39 +73,93 @@ function authed(context) {
   const keyOk = !!cronKey && (key === cronKey || cronHeader === cronKey);
   if (keyOk) return true;
   try {
-    return authUser(request, env).then((u) => !!(u && u.role === 'admin'));
+    const u = await authUser(request, env);
+    return !!(u && u.role === 'admin');
   } catch (e) {
     return false;
   }
 }
 
+async function getStats(env) {
+  const total = await env.DB.prepare('SELECT COUNT(*) AS c FROM news').first();
+  const published = await env.DB.prepare("SELECT COUNT(*) AS c FROM news WHERE status = 'published'").first();
+  const bySource = await env.DB.prepare('SELECT source, COUNT(*) AS c FROM news GROUP BY source ORDER BY c DESC').all();
+  const newest = await env.DB.prepare('SELECT MAX(published_at) AS t FROM news WHERE status = \'published\'').first();
+  return {
+    total: total ? total.c : 0,
+    published: published ? published.c : 0,
+    pending: (total ? total.c : 0) - (published ? published.c : 0),
+    bySource: (bySource.results || []).map((r) => ({ source: r.source, count: r.c })),
+    lastPublishedAt: newest && newest.t ? newest.t : null
+  };
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/\/$/, '');
 
-  // GET — stats for the admin panel (no crawl).
+  // ── GET /api/news-refresh ── stats for admin panel
   if (request.method === 'GET') {
     if (!(await authed(context))) return fail('Unauthorized', 401);
-    const total = await env.DB.prepare('SELECT COUNT(*) AS c FROM news').first();
-    const bySource = await env.DB.prepare('SELECT source, COUNT(*) AS c FROM news GROUP BY source ORDER BY c DESC').all();
-    const newest = await env.DB.prepare('SELECT MAX(published_at) AS t FROM news').first();
-    return json({
-      ok: true,
-      total: total ? total.c : 0,
-      bySource: (bySource.results || []).map((r) => ({ source: r.source, count: r.c })),
-      lastPublishedAt: newest && newest.t ? newest.t : null
-    });
+    const stats = await getStats(env);
+    return json({ ok: true, ...stats });
   }
 
+  // ── POST /api/news-refresh/publish ── make crawled stories public
+  if (request.method === 'POST' && path.endsWith('/publish')) {
+    if (!(await authed(context))) return fail('Unauthorized', 401);
+    let body = { scope: 'all' };
+    try {
+      const text = await request.text();
+      if (text) body = JSON.parse(text);
+    } catch (e) {
+      return fail('Invalid JSON body', 400);
+    }
+
+    let result;
+    if (body.scope === 'last-scan') {
+      // Publish stories that are pending and were created in the last 5 minutes.
+      const since = Date.now() - 5 * 60 * 1000;
+      result = await env.DB.prepare(
+        "UPDATE news SET status = 'published' WHERE status = 'pending' AND created_at >= ?"
+      ).bind(since).run();
+    } else {
+      // Publish all pending stories.
+      result = await env.DB.prepare(
+        "UPDATE news SET status = 'published' WHERE status = 'pending'"
+      ).run();
+    }
+    const published = result && result.meta ? result.meta.changes : 0;
+    const stats = await getStats(env);
+    return json({ ok: true, published, ...stats });
+  }
+
+  // ── POST /api/news-refresh ── crawl selected feeds within a time window
   if (request.method !== 'POST') return fail('Method not allowed', 405);
   if (!(await authed(context))) return fail('Unauthorized', 401);
+
+  let body = {};
+  try {
+    const text = await request.text();
+    if (text) body = JSON.parse(text);
+  } catch (e) {
+    return fail('Invalid JSON body', 400);
+  }
+
+  const days = Math.max(1, Math.min(90, parseInt(body.days, 10) || 7));
+  const selectedIds = Array.isArray(body.sources) && body.sources.length > 0
+    ? new Set(body.sources)
+    : new Set(FEEDS.map(f => f.id));
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
 
   let added = 0;
   const errors = [];
   const bySource = {};
 
   for (const f of FEEDS) {
+    if (!selectedIds.has(f.id)) continue;
     try {
-      // Retry once on transient 503/429 (Google News sometimes throttles datacenter IPs).
       let r = null;
       for (let attempt = 0; attempt < 2; attempt++) {
         r = await fetch(f.url, {
@@ -123,12 +175,12 @@ export async function onRequest(context) {
       }
       if (!r.ok) { errors.push(f.source + ':HTTP' + r.status); continue; }
       const xml = await r.text();
-      const items = parseFeed(xml, f);
+      const items = parseFeed(xml, f).filter(it => it.published_at >= cutoff);
       let sourceAdded = 0;
       for (const it of items.slice(0, 15)) {
         const res = await env.DB.prepare(
-          'INSERT OR IGNORE INTO news (title, summary, url, source, category, published_at) VALUES (?,?,?,?,?,?)'
-        ).bind(it.title, it.summary, it.url, it.source, it.category, it.published_at).run();
+          'INSERT OR IGNORE INTO news (title, summary, url, source, category, published_at, status, created_at) VALUES (?,?,?,?,?,?,?,?)'
+        ).bind(it.title, it.summary, it.url, it.source, it.category, it.published_at, 'pending', Date.now()).run();
         if (res.meta && res.meta.changes) { added++; sourceAdded++; }
       }
       bySource[f.source] = sourceAdded;
@@ -144,6 +196,18 @@ export async function onRequest(context) {
     ).run();
   } catch (e) {}
 
-  const total = await env.DB.prepare('SELECT COUNT(*) AS c FROM news').first();
-  return json({ ok: true, added, total: total ? total.c : 0, bySource, errors });
+  // Auto-publish when triggered by the daily cron worker so the public news page stays fresh.
+  const cronHeader = request.headers.get('x-cron-secret') || '';
+  const cronKey = env.CRON_KEY || env.TOKEN_SECRET;
+  const fromCron = !!cronKey && cronHeader === cronKey;
+  if (fromCron && added > 0) {
+    try {
+      await env.DB.prepare(
+        "UPDATE news SET status = 'published' WHERE status = 'pending' AND created_at >= ?"
+      ).bind(Date.now() - 5 * 60 * 1000).run();
+    } catch (e) {}
+  }
+
+  const stats = await getStats(env);
+  return json({ ok: true, added, bySource, errors, cronAutoPublish: fromCron && added > 0, ...stats });
 }
