@@ -71,6 +71,7 @@ const NAV = [
     { href: 'articles-add.html',        icon: '✍️', label: 'Add Article',      page: 'articles-add' },
     { href: 'articles-ai.html',         icon: '🤖', label: 'AI Batch Write',   page: 'articles-ai', badge:'NEW' },
     { href: 'articles-categories.html', icon: '📁', label: 'Article Categories',page:'articles-categories' },
+    { href: 'comments.html',            icon: '💬', label: 'Comments',        page: 'comments', badge:'NEW' },
   ]},
   { section: 'News', items: [
     { href: 'news-list.html',         icon: '🗞️', label: 'Manage News',     page: 'news-list', badge:'NEW' },

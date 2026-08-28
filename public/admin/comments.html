@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Article Comments — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.comment-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;transition:.2s}
+.comment-card:hover{border-color:rgba(201,162,39,.3)}
+.comment-card.pending{border-left:3px solid #f59e0b}
+.comment-card.approved{border-left:3px solid #34d399}
+.comment-card.rejected{border-left:3px solid #f87171}
+.status-badge{padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600}
+.st-pending{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3)}
+.st-approved{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3)}
+.st-rejected{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+.comment-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);margin-bottom:8px}
+.comment-author{display:flex;align-items:center;gap:8px;color:#e2e8f0;font-weight:600;font-size:13px}
+.avatar-xs{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#c9a227,#00c9ff);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#06101f;flex-shrink:0}
+.comment-body{font-size:14px;color:#cbd5e1;line-height:1.65;margin:6px 0 4px;white-space:pre-wrap;word-break:break-word}
+.comment-article{font-size:12px;color:var(--text-muted);margin-top:6px}
+.comment-article a{color:var(--accent);text-decoration:none}
+.action-row{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);flex-wrap:wrap}
+.stat-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center}
+.stat-item .num{font-size:26px;font-weight:700}
+.stat-item .lab{font-size:12px;color:var(--text-muted);margin-top:3px}
+.tab-row{display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.tab-btn{padding:9px 18px;font-size:13px;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.2s;background:none;border-top:none;border-left:none;border-right:none}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.filter-bar input{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none;min-width:220px}
+.empty-state{text-align:center;color:var(--text-muted);padding:40px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" onclick="toggleSidebar()">☰</button><div class="breadcrumb">Articles / <span>Comments</span></div></div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;">
+            <div class="user-avatar">A</div><span style="color:var(--text-muted);font-size:13px;">Admin</span><span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info"><div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div><div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div></div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="admin-content">
+      <div class="page-header" style="margin-bottom:20px">
+        <div>
+          <h1 class="page-title">💬 Article Comments</h1>
+          <p class="page-subtitle">Moderate user comments — review, approve and remove</p>
+        </div>
+      </div>
+
+      <div class="stat-summary" id="statSummary">
+        <div class="stat-item"><div class="num" id="cntPending" style="color:#f59e0b">0</div><div class="lab">Pending Review</div></div>
+        <div class="stat-item"><div class="num" id="cntApproved" style="color:#34d399">0</div><div class="lab">Approved</div></div>
+        <div class="stat-item"><div class="num" id="cntRejected" style="color:#f87171">0</div><div class="lab">Rejected</div></div>
+        <div class="stat-item"><div class="num" id="cntAll" style="color:var(--gold)">0</div><div class="lab">Total</div></div>
+      </div>
+
+      <div class="tab-row" id="tabRow">
+        <button class="tab-btn active" data-status="">All</button>
+        <button class="tab-btn" data-status="pending">Pending</button>
+        <button class="tab-btn" data-status="approved">Approved</button>
+        <button class="tab-btn" data-status="rejected">Rejected</button>
+      </div>
+
+      <div class="filter-bar">
+        <input id="searchInput" placeholder="Search by author or content…" onkeydown="if(event.key==='Enter')loadComments()">
+        <button class="btn btn-sm btn-outline" onclick="loadComments()">🔍 Search</button>
+      </div>
+
+      <div id="commentList"></div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+let currentStatus = '';
+
+function esc(s){ return (s==null?'':String(s)).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(ts){ return ts ? new Date(ts).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ''; }
+
+document.querySelectorAll('#tabRow .tab-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('#tabRow .tab-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    currentStatus = b.getAttribute('data-status');
+    loadComments();
+  });
+});
+
+async function loadComments(){
+  const list = document.getElementById('commentList');
+  list.innerHTML = '<div class="empty-state">Loading…</div>';
+  let url = '/api/admin/comments';
+  const params = [];
+  if(currentStatus) params.push('status=' + currentStatus);
+  const q = document.getElementById('searchInput').value.trim();
+  if(q) params.push('q=' + encodeURIComponent(q));
+  if(params.length) url += '?' + params.join('&');
+  try{
+    const data = await apiGet(url);
+    document.getElementById('cntPending').textContent = data.counts.pending;
+    document.getElementById('cntApproved').textContent = data.counts.approved;
+    document.getElementById('cntRejected').textContent = data.counts.rejected;
+    document.getElementById('cntAll').textContent = data.counts.all;
+    const cs = data.comments || [];
+    if(!cs.length){ list.innerHTML = '<div class="empty-state">No comments found.</div>'; return; }
+    list.innerHTML = cs.map(c=>{
+      const st = c.status || 'pending';
+      const articleLink = c.article_id ? `<a href="../pages/article.html?id=${c.article_id}" target="_blank">${esc(c.article_title || 'Article #'+c.article_id)}</a>` : 'Unknown article';
+      return `
+      <div class="comment-card ${st}" data-id="${c.id}">
+        <div class="comment-meta">
+          <span class="comment-author"><span class="avatar-xs">${esc((c.name||'G').slice(0,1).toUpperCase())}</span>${esc(c.name||'Guest')}</span>
+          <span>·</span><span>${fmtDate(c.created_at)}</span>
+          <span>·</span><span>User #${c.user_id || 'guest'}</span>
+          <span class="status-badge st-${st}">${st.toUpperCase()}</span>
+        </div>
+        <div class="comment-body">${esc(c.content)}</div>
+        <div class="comment-article">📄 On: ${articleLink}</div>
+        <div class="action-row">
+          ${st !== 'approved' ? `<button class="btn btn-sm" style="background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3)" onclick="setStatus(${c.id},'approved')">✓ Approve</button>` : ''}
+          ${st !== 'rejected' ? `<button class="btn btn-sm btn-outline" style="color:#f87171;border-color:rgba(248,113,113,.4)" onclick="setStatus(${c.id},'rejected')">⛔ Reject</button>` : ''}
+          <button class="btn btn-sm" style="background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.3)" onclick="delComment(${c.id})">🗑 Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    list.innerHTML = '<div class="empty-state">Failed to load comments (' + esc(e.message) + ').</div>';
+  }
+}
+
+async function setStatus(id, status){
+  try{
+    await apiSend('/api/admin/comments/' + id, 'PUT', { status });
+    showToast('Comment ' + status, 'success');
+    loadComments();
+  }catch(e){ showToast(e.message || 'Failed', 'error'); }
+}
+
+async function delComment(id){
+  if(!confirm('Permanently delete this comment?')) return;
+  try{
+    await apiSend('/api/admin/comments/' + id, 'DELETE');
+    showToast('Comment deleted', 'success');
+    loadComments();
+  }catch(e){ showToast(e.message || 'Failed', 'error'); }
+}
+
+loadComments();
+</script>
+</body>
+</html>

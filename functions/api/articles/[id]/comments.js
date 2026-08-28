@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
   if (!articleId) return fail('Invalid article id', 400);
   try {
     const { results } = await env.DB.prepare(
-      `SELECT id, article_id, user_id, name, email, content, created_at
+      `SELECT id, article_id, user_id, name, email, content, status, created_at
        FROM comments WHERE article_id = ? AND status = 'approved'
        ORDER BY created_at ASC`
     ).bind(articleId).all();
@@ -33,16 +33,18 @@ export async function onRequestPost(context) {
   // Optional: attach logged-in user (frontend token from /api/login)
   const user = await authUser(request, env);
   let userId = null;
+  let isAdmin = false;
   if (user && user.id) {
     userId = user.id;
+    isAdmin = user.role === 'admin';
     if (!name) name = user.username || 'Member';
 
     // Standard members are limited to 1 comment per account total.
     // Premium/VIP members have unlimited comments.
     if (!canCommentUnlimited(user)) {
       const existing = await env.DB.prepare(
-        'SELECT id FROM comments WHERE user_id=? AND status=? LIMIT 1'
-      ).bind(userId, 'approved').first();
+        'SELECT id FROM comments WHERE user_id=? LIMIT 1'
+      ).bind(userId).first();
       if (existing) {
         return fail('Standard members may leave one comment. Upgrade to Premium for unlimited comments.', 403);
       }
@@ -52,15 +54,20 @@ export async function onRequestPost(context) {
   if (content.length < 2) return fail('Comment cannot be empty', 400);
   if (!name) name = 'Guest';
 
+  // New comments from non-admins go into a pending review queue.
+  // Admin-submitted comments are approved immediately.
+  const status = isAdmin ? 'approved' : 'pending';
+
   try {
     const { success, meta } = await env.DB.prepare(
       `INSERT INTO comments (article_id, user_id, name, email, content, status, created_at)
-       VALUES (?, ?, ?, ?, ?, 'approved', ?)`
-    ).bind(articleId, userId, name, email, content, now()).run();
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).bind(articleId, userId, name, email, content, status, now()).run();
     if (!success) return fail('Failed to save comment', 500);
     const id = meta?.last_row_id;
     return json({
-      comment: { id, article_id: articleId, user_id: userId, name, email, content, created_at: now() }
+      comment: { id, article_id: articleId, user_id: userId, name, email, content, status, created_at: now() },
+      pending: !isAdmin
     }, 201);
   } catch (e) {
     return fail('DB error: ' + e.message, 500);
