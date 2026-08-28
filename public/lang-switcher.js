@@ -91,11 +91,13 @@
   var current = localStorage.getItem(STORAGE_KEY) || 'en';
 
   function translateEl(el) {
-    var txt = el.textContent.trim();
-    if (!txt || !(txt in DICT)) return;
+    // Always key the dictionary lookup off the original (English) text, so
+    // repeated switches keep working even after the element was already translated.
     if (!el.__i18nOrig) el.__i18nOrig = el.textContent;
-    var t = DICT[txt][current];
-    el.textContent = (current === 'en' || !t) ? el.__i18nOrig : t;
+    var key = el.__i18nOrig.trim();
+    if (!key || !(key in DICT)) return;
+    var t = DICT[key][current];
+    el.textContent = (current === 'en' || !t) ? key : t;
   }
 
   function scan() {
