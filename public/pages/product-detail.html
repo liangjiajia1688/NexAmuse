@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Product Detail — NexAmuse Global</title>
+  <meta name="description" content="View product details and request a quote from verified amusement equipment suppliers."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .detail-layout{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start;}
+    .detail-main{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:28px;}
+    .detail-sidebar{display:flex;flex-direction:column;gap:24px;}
+    .detail-sidebar .widget{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
+    .gallery{position:relative;border-radius:12px;overflow:hidden;background:var(--secondary);aspect-ratio:16/10;margin-bottom:20px;background-size:cover;background-position:center;}
+    .gallery-nav{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:12px;pointer-events:none;}
+    .gallery-btn{pointer-events:auto;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+    .gallery-btn:hover{background:var(--accent);color:var(--primary);}
+    .thumb-list{display:flex;gap:10px;overflow-x:auto;margin-bottom:24px;}
+    .thumb-list .thumb{width:80px;height:80px;border-radius:8px;background:var(--secondary);border:2px solid transparent;cursor:pointer;background-size:cover;background-position:center;flex-shrink:0;}
+    .thumb-list .thumb.active{border-color:var(--accent);}
+    .product-tag{display:inline-block;background:rgba(201,162,39,.12);color:var(--accent);font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:5px 12px;border-radius:20px;margin-bottom:12px;}
+    .product-title{color:#fff;font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:12px;line-height:1.25;}
+    .product-meta{display:flex;gap:16px;flex-wrap:wrap;color:var(--text-secondary);font-size:.9rem;margin-bottom:20px;}
+    .product-price{font-size:1.6rem;font-weight:700;color:var(--accent);margin-bottom:16px;}
+    .product-desc{color:var(--text-secondary);line-height:1.8;margin-bottom:24px;}
+    .spec-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+    .spec-item{background:var(--secondary);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+    .spec-item .label{font-size:.75rem;color:var(--text-secondary);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;}
+    .spec-item .value{font-size:.9rem;color:#fff;font-weight:600;}
+    .company-card{display:flex;align-items:center;gap:14px;}
+    .company-avatar{width:56px;height:56px;border-radius:50%;background:var(--secondary);display:flex;align-items:center;justify-content:center;font-size:1.5rem;border:1px solid var(--border);}
+    .company-info{flex:1;}
+    .company-info .name{color:#fff;font-weight:700;font-size:1rem;margin-bottom:2px;}
+    .company-info .loc{color:var(--text-secondary);font-size:.82rem;}
+    .btn-quote{width:100%;justify-content:center;margin-top:16px;}
+    .tag-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+    .tag-list .tag-item{background:var(--secondary);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.78rem;color:var(--text-secondary);}
+    .section-title{color:#fff;font-size:1.15rem;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+    .empty-state{text-align:center;padding:80px 20px;color:var(--text-secondary);}
+    .breadcrumb-back{display:inline-flex;align-items:center;gap:6px;color:var(--text-secondary);font-size:.85rem;margin-bottom:16px;cursor:pointer;}
+    .breadcrumb-back:hover{color:var(--accent);}
+    @media(max-width:900px){.detail-layout{grid-template-columns:1fr}.detail-sidebar{order:-1}}
+    @media(max-width:600px){.spec-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<!-- Top Bar -->
+<div class="top-bar"><div class="container"><div class="top-bar-left"><span><span class="live-badge"><span class="live-dot"></span>LIVE</span> &nbsp;GTI Asia Pacific 2026 — March 28–30, Guangzhou</span></div><div class="top-bar-right"><a href="#">Industry Report 2026</a><a href="contact.html">Contact</a></div></div></div>
+<!-- Nav -->
+<nav class="navbar"><div class="container">
+  <a href="../index.html" class="logo"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li>
+      <a href="products.html" class="active">Products ▾</a>
+      <div class="dropdown-menu">
+        <a href="products.html?cat=arcade">Arcade Machines</a>
+        <a href="products.html?cat=vr">VR / XR Attractions</a>
+        <a href="products.html?cat=kids">Kids &amp; Family Rides</a>
+        <a href="products.html?cat=redemption">Redemption &amp; Prize</a>
+        <a href="products.html?cat=simulation">Simulation Rides</a>
+        <a href="products.html?cat=outdoor">Outdoor Attractions</a>
+        <a href="products.html?cat=waterpark">Water Park Equipment</a>
+        <a href="products.html?cat=accessories">Accessories &amp; Parts</a>
+      </div>
+    </li>
+    <li>
+      <a href="news.html">News ▾</a>
+      <div class="dropdown-menu">
+        <a href="news.html?cat=industry">Industry Dynamics</a>
+        <a href="news.html?cat=companies">Company News</a>
+        <a href="news.html?cat=interviews">Executive Interviews</a>
+        <a href="news.html?cat=newproducts">New Product Releases</a>
+        <a href="news.html?cat=regulations">Regulations &amp; Compliance</a>
+      </div>
+    </li>
+    <li><a href="suppliers.html">Suppliers</a></li>
+    <li>
+      <a href="exhibitions.html">Exhibitions ▾</a>
+      <div class="dropdown-menu">
+        <a href="exhibitions.html#calendar">Exhibition Calendar</a>
+        <a href="exhibitions.html#reports">Show Reports</a>
+        <a href="exhibitions.html#register">Pre-Register</a>
+      </div>
+    </li>
+    <li><a href="news.html">Articles</a></li>
+    <li><a href="forum.html">Forum</a></li>
+    <li><a href="member-points.html">Points</a></li>
+    <li><a href="magazine.html">Videos</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="search-btn js-open-search">🔍 Search</button>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</div></nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu"><button class="mobile-menu-close" id="mobileClose">✕</button><ul class="mobile-nav-links"><li><a href="../index.html">🏠 Home</a></li><li><a href="products.html">🎮 Products</a></li><li><a href="news.html">📰 News &amp; Articles</a></li><li><a href="suppliers.html">🏭 Suppliers</a></li><li><a href="exhibitions.html">🎪 Exhibitions</a></li><li><a href="forum.html">💬 Forum</a></li><li><a href="member-points.html">⭐ Points</a></li><li><a href="magazine.html">🎬 Videos</a></li><li><a href="contact.html">📩 Contact</a></li></ul></div>
+<!-- Search Overlay -->
+<div class="search-overlay" id="searchOverlay"><button class="search-close" id="searchClose">✕</button><div class="search-box"><h2>Search NexAmuse Global</h2><div class="search-input-wrap"><input type="text" placeholder="Search products, suppliers, news..." autofocus/><button>Search</button></div></div></div>
+
+<section class="section" style="padding-top:28px;">
+  <div class="container" id="productContainer">
+    <div class="empty-state">Loading product…</div>
+  </div>
+</section>
+
+<footer><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="../index.html" class="logo" style="margin-bottom:16px;"><div class="logo-icon">N</div><div><div class="logo-text">Nex<span>Amuse</span></div><div class="logo-sub">Global Portal</div></div></a><p style="color:var(--text-secondary);font-size:.88rem;">The world's premier B2B intelligence platform for the global amusement industry.</p></div><div class="footer-col"><h4>Products</h4><ul class="footer-links"><li><a href="products.html">Arcade Machines</a></li><li><a href="products.html">VR / XR</a></li><li><a href="products.html">Kids Rides</a></li><li><a href="products.html">Redemption</a></li></ul></div><div class="footer-col"><h4>Resources</h4><ul class="footer-links"><li><a href="news.html">Industry News</a></li><li><a href="exhibitions.html">Exhibitions</a></li><li><a href="magazine.html">Videos</a></li><li><a href="suppliers.html">Suppliers</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul class="footer-links"><li><a href="#">About Us</a></li><li><a href="contact.html">Contact</a></li><li><a href="#">Privacy Policy</a></li></ul></div></div><div class="footer-bottom"><p>© 2026 NexAmuse Global. All rights reserved.</p></div></div></footer>
+<button class="scroll-top" id="scrollTop">↑</button>
+<script src="../assets/js/main.js"></script>
+<script>
+(function(){
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const container = document.getElementById('productContainer');
+
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtPrice(p){
+    if (!p) return 'Price on Request';
+    if (p.price_type === 'fixed' && p.price) return '$' + esc(p.price) + ' USD';
+    if (p.min_price || p.max_price) return '$' + esc(p.min_price||0) + ' - $' + esc(p.max_price||0) + ' USD';
+    if (p.price) return 'From $' + esc(p.price) + ' USD';
+    return 'Price on Request';
+  }
+  function fmtFlag(country){
+    if (!country) return '';
+    const map = { China: '🇨🇳', USA: '🇺🇸', 'United States': '🇺🇸', Germany: '🇩🇪', Japan: '🇯🇵', 'South Korea': '🇰🇷', Belgium: '🇧🇪' };
+    return map[country] || '🌍';
+  }
+
+  function renderError(msg){
+    container.innerHTML = `<div class="empty-state"><div style="font-size:3rem;margin-bottom:16px;">📦</div><h2 style="color:#fff;margin-bottom:8px;">Product Not Found</h2><p>${esc(msg)}</p><a href="products.html" class="btn btn-primary" style="margin-top:20px;">Browse Products →</a></div>`;
+  }
+
+  function render(p){
+    document.title = esc(p.name) + ' — NexAmuse Global';
+    const allImages = [p.image, ...(p.images||[]), ...(p.detail_images||[])].filter(Boolean);
+    const uniqueImages = [...new Set(allImages)];
+    const hasImages = uniqueImages.length > 0;
+    let currentIdx = 0;
+
+    function galleryHtml(){
+      const bg = hasImages ? `background-image:url('${esc(uniqueImages[currentIdx])}')` : `background:linear-gradient(135deg,#1e3a5f,#0d1f3c)`;
+      return `<div class="gallery" id="mainGallery" style="${bg};display:flex;align-items:center;justify-content:center;">
+        ${hasImages?'':`<div style="font-size:4rem;">🎮</div>`}
+        ${uniqueImages.length>1?`<div class="gallery-nav"><button class="gallery-btn" id="prevImg">‹</button><button class="gallery-btn" id="nextImg">›</button></div>`:''}
+      </div>`;
+    }
+
+    function thumbsHtml(){
+      if (uniqueImages.length <= 1) return '';
+      return `<div class="thumb-list" id="thumbList">
+        ${uniqueImages.map((url,i)=>`<div class="thumb ${i===currentIdx?'active':''}" data-idx="${i}" style="background-image:url('${esc(url)}')"></div>`).join('')}
+      </div>`;
+    }
+
+    const specs = [
+      { label: 'Dimensions', value: p.dimensions },
+      { label: 'Weight', value: p.weight },
+      { label: 'Power Supply', value: p.power_supply },
+      { label: 'Power Consumption', value: p.power_consumption },
+      { label: 'Players', value: (p.min_players||p.max_players) ? `${p.min_players||1}-${p.max_players||1}` : '' },
+      { label: 'Age Range', value: p.age_range },
+      { label: 'Certification', value: p.certification },
+      { label: 'MOQ', value: p.moq }
+    ].filter(s => s.value);
+
+    const tags = p.tags ? p.tags.split(',').map(t=>t.trim()).filter(Boolean) : [];
+
+    container.innerHTML = `
+      <div class="breadcrumb-back" onclick="history.back();">← Back to Products</div>
+      <div class="detail-layout">
+        <div class="detail-main">
+          ${galleryHtml()}
+          ${thumbsHtml()}
+          <div class="product-tag">${esc(p.category || 'Product')}</div>
+          <h1 class="product-title">${esc(p.name)}</h1>
+          <div class="product-meta">
+            ${p.company_name?`<span>🏭 ${esc(p.company_name)}</span>`:''}
+            ${p.company_country?`<span>${fmtFlag(p.company_country)} ${esc(p.company_country)}</span>`:''}
+          </div>
+          <div class="product-price">${fmtPrice(p)}</div>
+          <div class="product-desc">${p.description ? p.description.replace(/\n/g,'<br>') : esc(p.short_description || 'No description available.')}</div>
+
+          ${specs.length?`<h3 class="section-title">Technical Specifications</h3><div class="spec-grid">${specs.map(s=>`<div class="spec-item"><div class="label">${esc(s.label)}</div><div class="value">${esc(s.value)}</div></div>`).join('')}</div>`:''}
+
+          ${tags.length?`<div class="tag-list">${tags.map(t=>`<span class="tag-item">${esc(t)}</span>`).join('')}</div>`:''}
+        </div>
+
+        <aside class="detail-sidebar">
+          <div class="widget">
+            <h3 class="section-title" style="margin-top:0;">Supplier</h3>
+            <div class="company-card">
+              <div class="company-avatar">🏭</div>
+              <div class="company-info">
+                <div class="name">${esc(p.company_name || 'NexAmuse Supplier')}</div>
+                <div class="loc">${p.company_country?fmtFlag(p.company_country)+' '+esc(p.company_country):'Global Supplier'}</div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-quote" onclick="openInquiry(${p.id},'${esc(p.name).replace(/'/g,'\\\'')}')">Get Quote →</button>
+          </div>
+          <div class="widget">
+            <h3 class="section-title" style="margin-top:0;">Need Help?</h3>
+            <p style="color:var(--text-secondary);font-size:.85rem;line-height:1.7;margin-bottom:14px;">Submit an inquiry and our team will connect you with the supplier within 24 hours.</p>
+            <a href="contact.html" class="btn btn-outline btn-sm" style="display:block;text-align:center;">Contact Support</a>
+          </div>
+        </aside>
+      </div>
+    `;
+
+    if (uniqueImages.length > 1) {
+      function updateGallery(idx){
+        currentIdx = idx;
+        const main = document.getElementById('mainGallery');
+        if (main) main.style.backgroundImage = `url('${esc(uniqueImages[idx])}')`;
+        document.querySelectorAll('#thumbList .thumb').forEach((el,i)=>el.classList.toggle('active', i===idx));
+      }
+      document.getElementById('prevImg')?.addEventListener('click',()=>updateGallery((currentIdx-1+uniqueImages.length)%uniqueImages.length));
+      document.getElementById('nextImg')?.addEventListener('click',()=>updateGallery((currentIdx+1)%uniqueImages.length));
+      document.getElementById('thumbList')?.addEventListener('click',(e)=>{
+        const t = e.target.closest('.thumb');
+        if (t) updateGallery(parseInt(t.dataset.idx,10));
+      });
+    }
+  }
+
+  window.openInquiry = function(id,name){
+    // Future: open inquiry modal pre-filled with product id
+    alert('Quote request for: ' + name + '\n\nThis feature will open the inquiry form pre-filled with this product.');
+  };
+
+  if (!id) { renderError('Missing product ID.'); return; }
+
+  fetch('/api/products?id=' + encodeURIComponent(id))
+    .then(r=>r.json().catch(()=>({ok:false,error:'Invalid response'})))
+    .then(data=>{
+      if (!data.ok || !data.product) return renderError(data.error || 'Product not found.');
+      render(data.product);
+    })
+    .catch(e=>{ console.error(e); renderError('Failed to load product.'); });
+})();
+</script>
+</body>
+</html>

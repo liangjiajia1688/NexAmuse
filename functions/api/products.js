@@ -38,12 +38,64 @@ async function loadProduct(env, row) {
   };
 }
 
-// GET /api/products?cat=&q=&page=&limit=&sort=
+async function loadProductDetail(env, row) {
+  const images = await loadImages(env, row.id);
+  const detailImages = images.filter(i => i.image_type === 'detail');
+  const productImages = images.filter(i => i.image_type === 'product' || !i.image_type);
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    short_description: row.short_description,
+    description: row.description,
+    price: row.price,
+    moq: row.moq,
+    min_price: row.min_price,
+    max_price: row.max_price,
+    price_type: row.price_type,
+    dimensions: row.dimensions,
+    weight: row.weight,
+    power_supply: row.power_supply,
+    power_consumption: row.power_consumption,
+    min_players: row.min_players,
+    max_players: row.max_players,
+    age_range: row.age_range,
+    certification: row.certification,
+    additional_specs: row.additional_specs,
+    tags: row.tags,
+    visibility: row.visibility,
+    status: row.status,
+    featured: row.featured,
+    company_id: row.company_id,
+    company_name: row.company_name,
+    company_slug: row.company_slug,
+    company_country: row.company_country,
+    created_at: row.created_at,
+    image: productImages[0] ? (productImages[0].compressed_url || productImages[0].original_url) : (row.image || null),
+    images: productImages.map(i => i.compressed_url || i.original_url).filter(Boolean),
+    detail_images: detailImages.map(i => i.compressed_url || i.original_url).filter(Boolean)
+  };
+}
+
+// GET /api/products?id=xxx  or  /api/products?cat=&q=&page=&limit=&sort=
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const user = await authUser(request, env);
   const isAdmin = user && (user.role === 'admin' || user.is_super);
+  const id = url.searchParams.get('id');
+
+  // Single product detail
+  if (id) {
+    const row = await env.DB.prepare(
+      `SELECT p.*, c.name AS company_name, c.slug AS company_slug, c.country AS company_country
+       FROM company_products p LEFT JOIN companies c ON c.id=p.company_id
+       WHERE p.id=?`
+    ).bind(id).first();
+    if (!row) return json({ ok: false, error: 'Product not found' }, 404);
+    if (row.status !== 'active' && !isAdmin) return json({ ok: false, error: 'Product not available' }, 403);
+    return json({ ok: true, product: await loadProductDetail(env, row) });
+  }
 
   const cat = url.searchParams.get('cat') || '';
   const q = (url.searchParams.get('q') || '').trim();
