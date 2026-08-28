@@ -6,8 +6,66 @@ import { authUser } from '../_lib/auth.js';
 export async function onRequest(context) {
   const { request, env } = context;
 
-  // ── GET: overview ─────────────────────────────────────────────
+  // ── GET: overview, or admin post list when ?manage=1 ──────────
   if (request.method === 'GET') {
+    const url = new URL(request.url);
+    if (url.searchParams.get('manage') === '1') {
+      const u = await authUser(request, env);
+      if (!u || u.role !== 'admin') return fail('Unauthorized', 401);
+
+      const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+      const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
+      const offset = (page - 1) * limit;
+      const q = (url.searchParams.get('q') || '').trim();
+      const section = (url.searchParams.get('section') || '').trim();
+      const tab = url.searchParams.get('tab') || 'all';
+
+      const where = [];
+      const params = [];
+      if (q) { where.push('(LOWER(t.title) LIKE ? OR LOWER(t.username) LIKE ?)'); params.push('%' + q.toLowerCase() + '%', '%' + q.toLowerCase() + '%'); }
+      if (section) { where.push('s.name = ?'); params.push(section); }
+      if (tab === 'pinned') where.push('t.pinned = 1');
+      else if (tab === 'locked') where.push('t.locked = 1');
+      else if (tab === 'reported') where.push('t.reported = 1');
+      const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : '';
+
+      const countRes = await env.DB.prepare(
+        `SELECT COUNT(*) c FROM forum_threads t LEFT JOIN forum_sections s ON t.section_id = s.id ${whereSql}`
+      ).bind(...params).first();
+      const total = countRes?.c || 0;
+
+      const rows = await env.DB.prepare(
+        `SELECT t.id, t.title, t.content, t.username, t.user_level, t.views, t.replies,
+                t.pinned, t.locked, t.reported, t.status, t.created_at,
+                COALESCE(s.name,'Uncategorized') AS section
+         FROM forum_threads t LEFT JOIN forum_sections s ON t.section_id = s.id
+         ${whereSql}
+         ORDER BY t.pinned DESC, t.created_at DESC LIMIT ? OFFSET ?`
+      ).bind(...params, limit, offset).all();
+
+      const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+      const statAll = await env.DB.prepare('SELECT COUNT(*) c FROM forum_threads').first();
+      const statToday = await env.DB.prepare('SELECT COUNT(*) c FROM forum_threads WHERE created_at >= ?').bind(todayStart.getTime()).first();
+      const statReported = await env.DB.prepare('SELECT COUNT(*) c FROM forum_threads WHERE reported = 1').first();
+      const statPinned = await env.DB.prepare('SELECT COUNT(*) c FROM forum_threads WHERE pinned = 1').first();
+
+      const sectionsRes = await env.DB.prepare('SELECT name FROM forum_sections ORDER BY sort_order').all();
+
+      return json({
+        ok: true,
+        posts: rows.results || [],
+        total, page, limit,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+        stats: {
+          total: statAll?.c || 0,
+          today: statToday?.c || 0,
+          reported: statReported?.c || 0,
+          pinned: statPinned?.c || 0
+        },
+        sections: (sectionsRes.results || []).map(s => s.name)
+      });
+    }
+
     const tCount = await env.DB.prepare('SELECT COUNT(*) c FROM forum_threads').first();
     const rCount = await env.DB.prepare('SELECT COUNT(*) c FROM forum_replies').first();
     const uCount = await env.DB.prepare("SELECT COUNT(*) c FROM users WHERE role='user'").first();
@@ -92,6 +150,33 @@ export async function onRequest(context) {
     await env.DB.prepare('UPDATE users SET points=points+1 WHERE id=?').bind(user.id).run();
 
     return json({ ok: true, id: res.meta.last_row_id, message: 'Thread posted' }, 201);
+  }
+
+  // ── PATCH: admin moderation (pin / lock / hide / delete) ───────
+  if (request.method === 'PATCH') {
+    const u = await authUser(request, env);
+    if (!u || u.role !== 'admin') return fail('Unauthorized', 401);
+    let body;
+    try { body = await request.json(); } catch (e) { return fail('Invalid JSON'); }
+    const id = parseInt(body.id, 10);
+    if (!id) return fail('Post id required');
+
+    if (body.action === 'delete') {
+      await env.DB.prepare('DELETE FROM forum_replies WHERE thread_id=?').bind(id).run();
+      await env.DB.prepare('DELETE FROM forum_threads WHERE id=?').bind(id).run();
+      return json({ ok: true, action: 'delete', id });
+    }
+
+    const sets = [];
+    const params = [];
+    if (body.pinned !== undefined) { sets.push('pinned=?'); params.push(body.pinned ? 1 : 0); }
+    if (body.locked !== undefined) { sets.push('locked=?'); params.push(body.locked ? 1 : 0); }
+    if (body.reported !== undefined) { sets.push('reported=?'); params.push(body.reported ? 1 : 0); }
+    if (body.status) { sets.push('status=?'); params.push(body.status); }
+    if (!sets.length) return fail('Nothing to update');
+    params.push(id);
+    await env.DB.prepare(`UPDATE forum_threads SET ${sets.join(',')} WHERE id=?`).bind(...params).run();
+    return json({ ok: true, id });
   }
 
   return fail('Method not allowed', 405);

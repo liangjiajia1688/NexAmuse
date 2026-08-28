@@ -83,10 +83,10 @@
 
       <!-- Stats -->
       <div class="stat-row">
-        <div class="stat-card"><div class="num">1,248</div><div class="lab">Total Posts</div></div>
-        <div class="stat-card"><div class="num" style="color:#34d399">87</div><div class="lab">Today's Posts</div></div>
-        <div class="stat-card"><div class="num" style="color:#f87171">3</div><div class="lab">Reported</div></div>
-        <div class="stat-card"><div class="num" style="color:#818cf8">24</div><div class="lab">Pinned</div></div>
+        <div class="stat-card"><div class="num" id="statTotal">—</div><div class="lab">Total Posts</div></div>
+        <div class="stat-card"><div class="num" id="statToday" style="color:#34d399">—</div><div class="lab">Today's Posts</div></div>
+        <div class="stat-card"><div class="num" id="statReported" style="color:#f87171">—</div><div class="lab">Reported</div></div>
+        <div class="stat-card"><div class="num" id="statPinned" style="color:#818cf8">—</div><div class="lab">Pinned</div></div>
       </div>
 
       <!-- Tabs -->
@@ -122,6 +122,7 @@
           <option>This Month</option>
         </select>
         <button class="btn btn-outline btn-sm" onclick="resetFilters()">✕ Reset</button>
+        <button class="btn btn-outline btn-sm" onclick="loadPosts()">🔄 Refresh</button>
       </div>
 
       <!-- Bulk Bar -->
@@ -154,15 +155,9 @@
           </tbody>
         </table>
         <!-- Pagination -->
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;border-top:1px solid var(--border);margin-top:10px">
-          <span style="font-size:13px;color:var(--text-muted)">Showing 1–20 of 1,248 posts</span>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-outline btn-sm">‹ Prev</button>
-            <button class="btn btn-gold btn-sm">1</button>
-            <button class="btn btn-outline btn-sm">2</button>
-            <button class="btn btn-outline btn-sm">3</button>
-            <button class="btn btn-outline btn-sm">Next ›</button>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;border-top:1px solid var(--border);margin-top:10px;flex-wrap:wrap;gap:10px">
+          <span style="font-size:13px;color:var(--text-muted)" id="pageInfo">Loading…</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="pager"></div>
         </div>
       </div>
     </div>
@@ -193,46 +188,97 @@
 
 <script src="admin.js"></script>
 <script>
-const posts = [
-  {id:1, title:'Best roller coaster manufacturers in 2026?', excerpt:'Looking for recommendations on top-tier coaster builders for our new park expansion...', section:'General Discussion', author:'ParkOwner_Mike', avatar:'M', views:1842, replies:47, likes:89, date:'2026-03-25', status:'published', pinned:false, locked:false},
-  {id:2, title:'VR Dark Ride Experience — Full Review', excerpt:'We recently installed the VORTEX VR system and here is our comprehensive 6-month review...', section:'Product Reviews', author:'TechReviewer_Jess', avatar:'J', views:3210, replies:92, likes:214, date:'2026-03-24', status:'published', pinned:true, locked:false},
-  {id:3, title:'[ANNOUNCEMENT] New supplier verification process', excerpt:'Starting April 1st, all new supplier registrations will undergo enhanced verification...', section:'Industry News', author:'Admin_Sarah', avatar:'S', views:5670, replies:33, likes:128, date:'2026-03-23', status:'published', pinned:true, locked:false},
-  {id:4, title:'Water park filter system troubleshooting guide', excerpt:'Comprehensive guide to diagnosing and fixing common filtration issues in water attractions...', section:'Technical Support', author:'WaterTech_Pro', avatar:'W', views:987, replies:28, likes:65, date:'2026-03-22', status:'published', pinned:false, locked:false},
-  {id:5, title:'Our new inflatable obstacle course product line', excerpt:'Excited to showcase our latest 2026 inflatable obstacle course designs featuring...', section:'Supplier Showcase', author:'InflatableCo', avatar:'I', views:756, replies:19, likes:44, date:'2026-03-21', status:'published', pinned:false, locked:false},
-  {id:6, title:'Spam advertising links', excerpt:'Check out these great deals at www.spam-site.com ...', section:'General Discussion', author:'SpamUser123', avatar:'X', views:12, replies:0, likes:0, date:'2026-03-20', status:'pending', pinned:false, locked:false, reported:true},
-  {id:7, title:'Asia Pacific amusement market outlook Q2 2026', excerpt:'Analysis of key trends driving growth in Southeast Asia and Greater China park openings...', section:'Industry News', author:'MarketAnalyst', avatar:'A', views:4320, replies:67, likes:183, date:'2026-03-19', status:'published', pinned:false, locked:false},
-  {id:8, title:'Safety certification requirements for ride operators', excerpt:'Summary of updated ASTM F24 standards and international equivalents for 2026...', section:'Technical Support', author:'SafetyExpert_Lisa', avatar:'L', views:2100, replies:41, likes:97, date:'2026-03-18', status:'published', pinned:false, locked:false},
-  {id:9, title:'Inappropriate content post', excerpt:'This post contains content that violates community guidelines...', section:'General Discussion', author:'TrollAccount', avatar:'T', views:43, replies:2, likes:0, date:'2026-03-17', status:'hidden', pinned:false, locked:true, reported:true},
-  {id:10, title:'LED lighting upgrades for existing attractions', excerpt:'Cost-effective LED retrofit solutions for legacy dark rides and themed environments...', section:'Product Reviews', author:'LightingPro', avatar:'L', views:1567, replies:35, likes:78, date:'2026-03-16', status:'published', pinned:false, locked:false},
-  {id:11, title:'Seeking experienced ride maintenance technicians', excerpt:'Our expanding park network is looking for certified ride maintenance staff across 3 regions...', section:'General Discussion', author:'HRManager_Phil', avatar:'P', views:890, replies:23, likes:31, date:'2026-03-15', status:'published', pinned:false, locked:false},
-  {id:12, title:'Soft play equipment supplier comparison', excerpt:'Detailed comparison of 8 leading soft play manufacturers across price, quality, and lead time...', section:'Supplier Showcase', author:'ProcurementTeam', avatar:'P', views:2340, replies:56, likes:122, date:'2026-03-14', status:'published', pinned:false, locked:false},
-];
-
+// ── Live forum posts loaded from /api/forum?manage=1 ───────────────
+let posts = [];            // current page rows
 let currentPostId = null;
-let filteredPosts = [...posts];
+let currentTab = 'all';
+let currentPage = 1;
+const PER_PAGE = 20;
+let totalPosts = 0, totalPages = 1;
+let searchTimer = null;
 
-function renderPosts(data){
+function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(ts){
+  if(!ts) return '—';
+  try { return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+  catch(e){ return '—'; }
+}
+
+async function loadPosts(page){
+  const token = getApiToken();
+  if(!token){ showToast('Session expired — please log in again'); return; }
+  const p = page || currentPage;
+  const q = (document.getElementById('searchInput').value||'').trim();
+  const section = document.getElementById('sectionFilter').value || '';
+  const tab = currentTab;
+
+  const usp = new URLSearchParams({
+    manage:'1', page:String(p), limit:String(PER_PAGE), tab
+  });
+  if(q) usp.set('q', q);
+  if(section) usp.set('section', section);
+
   const tb = document.getElementById('postBody');
-  if(!data.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-muted)">No posts found</td></tr>';return;}
-  tb.innerHTML = data.map(p=>`
-    <tr>
+  try{
+    const r = await fetch('/api/forum?'+usp.toString(), { headers:{ 'Authorization':'Bearer '+token } });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    posts = data.posts || [];
+    currentPage = data.page || 1;
+    totalPosts = data.total || 0;
+    totalPages = data.totalPages || 1;
+
+    // stats
+    const s = data.stats || {};
+    document.getElementById('statTotal').textContent = (s.total||0).toLocaleString();
+    document.getElementById('statToday').textContent = (s.today||0).toLocaleString();
+    document.getElementById('statReported').textContent = (s.reported||0).toLocaleString();
+    document.getElementById('statPinned').textContent = (s.pinned||0).toLocaleString();
+
+    // populate section filter once
+    const secSel = document.getElementById('sectionFilter');
+    if(data.sections && data.sections.length && secSel.dataset.loaded !== '1'){
+      secSel.innerHTML = '<option value="">All Sections</option>' +
+        data.sections.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join('');
+      secSel.dataset.loaded = '1';
+      if(section) secSel.value = section;
+    }
+
+    renderPosts();
+    renderPager();
+  }catch(e){
+    tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#f87171">Failed to load posts: '+esc(e.message)+'</td></tr>';
+    console.error(e);
+  }
+}
+
+function renderPosts(){
+  const tb = document.getElementById('postBody');
+  if(!posts.length){
+    tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-muted)">No posts found</td></tr>';
+    return;
+  }
+  tb.innerHTML = posts.map(p=>{
+    const excerpt = (p.content||'').replace(/<[^>]*>/g,'').slice(0,110);
+    const avatar = (p.username||'?').charAt(0).toUpperCase();
+    return `<tr>
       <td><input type="checkbox" class="row-check" data-id="${p.id}" onchange="updateBulkBar()"></td>
       <td>
-        <div class="post-title" onclick="viewPost(${p.id})">${p.title}</div>
-        <div class="post-excerpt">${p.excerpt}</div>
-        <div style="margin-top:5px;display:flex;gap:5px">
+        <div class="post-title" onclick="viewPost(${p.id})">${esc(p.title)}</div>
+        <div class="post-excerpt">${esc(excerpt)}</div>
+        <div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">
           ${p.pinned?'<span class="badge-pinned" style="padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600">📌 Pinned</span>':''}
           ${p.locked?'<span class="badge-locked" style="padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600">🔒 Locked</span>':''}
           ${p.reported?'<span style="padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;background:rgba(248,113,113,.1);color:#f87171">🚩 Reported</span>':''}
-          ${p.status==='hidden'?'<span style="padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;background:rgba(148,163,184,.1);color:#94a3b8">🙈 Hidden</span>':''}
+          ${p.status&&p.status!=='published'?'<span style="padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;background:rgba(148,163,184,.1);color:#94a3b8">🙈 '+esc(p.status)+'</span>':''}
         </div>
       </td>
-      <td><span class="badge-section">${p.section}</span></td>
-      <td><div class="author-pill"><div class="avatar-xs">${p.avatar}</div><span style="font-size:13px">${p.author}</span></div></td>
-      <td class="stat-cell">${p.views.toLocaleString()}</td>
-      <td class="stat-cell">${p.replies}</td>
-      <td class="stat-cell">${p.likes}</td>
-      <td style="font-size:12px;color:var(--text-muted)">${p.date}</td>
+      <td><span class="badge-section">${esc(p.section||'Uncategorized')}</span></td>
+      <td><div class="author-pill"><div class="avatar-xs">${esc(avatar)}</div><span style="font-size:13px">${esc(p.username||'Anonymous')}</span></div></td>
+      <td class="stat-cell">${(p.views||0).toLocaleString()}</td>
+      <td class="stat-cell">${p.replies||0}</td>
+      <td class="stat-cell">${esc(p.user_level||'')}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${fmtDate(p.created_at)}</td>
       <td>
         <div class="action-btns">
           <button class="btn-icon" title="View" onclick="viewPost(${p.id})">👁</button>
@@ -241,31 +287,49 @@ function renderPosts(data){
           <button class="btn-icon danger" title="Delete" onclick="deletePost(${p.id})">🗑</button>
         </div>
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
+
+function renderPager(){
+  const info = document.getElementById('pageInfo');
+  const pager = document.getElementById('pager');
+  const from = totalPosts ? (currentPage-1)*PER_PAGE + 1 : 0;
+  const to = Math.min(currentPage*PER_PAGE, totalPosts);
+  info.textContent = `Showing ${from}–${to} of ${totalPosts} posts`;
+
+  let html = `<button class="btn btn-outline btn-sm" data-page="${currentPage-1}" ${currentPage<=1?'disabled':''}>‹ Prev</button>`;
+  const maxBtns = 7;
+  let start = Math.max(1, currentPage - Math.floor(maxBtns/2));
+  let end = Math.min(totalPages, start + maxBtns - 1);
+  start = Math.max(1, end - maxBtns + 1);
+  for(let i=start;i<=end;i++){
+    html += `<button class="btn ${i===currentPage?'btn-gold':'btn-outline'} btn-sm" data-page="${i}">${i}</button>`;
+  }
+  html += `<button class="btn btn-outline btn-sm" data-page="${currentPage+1}" ${currentPage>=totalPages?'disabled':''}>Next ›</button>`;
+  pager.innerHTML = html;
+}
+
+// Event delegation so pagination survives innerHTML rewrites
+document.getElementById('pager').addEventListener('click', function(e){
+  const btn = e.target.closest('button[data-page]');
+  if(!btn || btn.disabled) return;
+  const p = parseInt(btn.dataset.page, 10);
+  if(!p || p === currentPage) return;
+  loadPosts(p);
+});
 
 function switchTab(el,tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  if(tab==='pinned') filteredPosts=posts.filter(p=>p.pinned);
-  else if(tab==='reported') filteredPosts=posts.filter(p=>p.reported);
-  else if(tab==='locked') filteredPosts=posts.filter(p=>p.locked);
-  else filteredPosts=[...posts];
-  renderPosts(filteredPosts);
+  currentTab = tab;
+  currentPage = 1;
+  loadPosts(1);
 }
 
 function filterPosts(){
-  const q=document.getElementById('searchInput').value.toLowerCase();
-  const sec=document.getElementById('sectionFilter').value;
-  const status=document.getElementById('statusFilter').value.toLowerCase();
-  filteredPosts=posts.filter(p=>{
-    const matchQ=!q||p.title.toLowerCase().includes(q)||p.author.toLowerCase().includes(q);
-    const matchSec=!sec||p.section===sec;
-    const matchStatus=!status||p.status===status;
-    return matchQ&&matchSec&&matchStatus;
-  });
-  renderPosts(filteredPosts);
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=>{ currentPage = 1; loadPosts(1); }, 250);
 }
 
 function resetFilters(){
@@ -273,28 +337,54 @@ function resetFilters(){
   document.getElementById('sectionFilter').value='';
   document.getElementById('statusFilter').value='';
   document.getElementById('dateFilter').value='';
-  filteredPosts=[...posts];
-  renderPosts(filteredPosts);
+  currentTab='all'; currentPage=1;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active', i===0));
+  loadPosts(1);
+}
+
+async function moderate(id, payload){
+  const token = getApiToken();
+  try{
+    const r = await fetch('/api/forum', {
+      method:'PATCH',
+      headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' },
+      body: JSON.stringify(Object.assign({ id }, payload))
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return true;
+  }catch(e){ showToast('Action failed: '+e.message); return false; }
 }
 
 function viewPost(id){
-  const p=posts.find(x=>x.id===id);
-  if(!p)return;
-  currentPostId=id;
-  document.getElementById('modalTitle').textContent=p.title;
-  document.getElementById('modalSection').textContent=p.section;
-  document.getElementById('modalAuthor').textContent='by '+p.author;
-  document.getElementById('modalDate').textContent=p.date;
-  document.getElementById('modalContent').innerHTML=p.excerpt+'<br><br><em style="color:var(--text-muted);font-size:12px">[ Full post content would appear here in production ]</em>';
+  const p = posts.find(x=>x.id===id);
+  if(!p) return;
+  currentPostId = id;
+  document.getElementById('modalTitle').textContent = p.title;
+  document.getElementById('modalSection').textContent = p.section || 'Uncategorized';
+  document.getElementById('modalAuthor').textContent = 'by ' + (p.username||'Anonymous');
+  document.getElementById('modalDate').textContent = fmtDate(p.created_at);
+  document.getElementById('modalContent').innerHTML = esc(p.content||'');
   document.getElementById('postModal').classList.add('show');
 }
-function closeModal(){document.getElementById('postModal').classList.remove('show')}
+function closeModal(){ document.getElementById('postModal').classList.remove('show'); }
 
-function togglePin(id){const p=posts.find(x=>x.id===id);if(p){p.pinned=!p.pinned;renderPosts(filteredPosts);showToast(p.pinned?'Post pinned':'Post unpinned')}}
-function toggleLock(id){const p=posts.find(x=>x.id===id);if(p){p.locked=!p.locked;renderPosts(filteredPosts);showToast(p.locked?'Post locked':'Post unlocked')}}
-function deletePost(id){if(confirm('Delete this post?')){const i=posts.findIndex(x=>x.id===id);if(i>-1){posts.splice(i,1);filteredPosts=filteredPosts.filter(x=>x.id!==id);renderPosts(filteredPosts);closeModal();showToast('Post deleted')}}}
-function pinPost(id){togglePin(id);closeModal()}
-function lockPost(id){toggleLock(id);closeModal()}
+async function togglePin(id){
+  const p = posts.find(x=>x.id===id); if(!p) return;
+  const ok = await moderate(id, { pinned: p.pinned ? 0 : 1 });
+  if(ok){ showToast(p.pinned?'Post unpinned':'Post pinned'); loadPosts(); }
+}
+async function toggleLock(id){
+  const p = posts.find(x=>x.id===id); if(!p) return;
+  const ok = await moderate(id, { locked: p.locked ? 0 : 1 });
+  if(ok){ showToast(p.locked?'Post unlocked':'Post locked'); loadPosts(); }
+}
+async function deletePost(id){
+  if(!confirm('Delete this post and all its replies?')) return;
+  const ok = await moderate(id, { action:'delete' });
+  if(ok){ showToast('Post deleted'); closeModal(); loadPosts(); }
+}
+function pinPost(id){ togglePin(id); closeModal(); }
+function lockPost(id){ toggleLock(id); closeModal(); }
 
 function updateBulkBar(){
   const checks=document.querySelectorAll('.row-check:checked');
@@ -306,11 +396,34 @@ function toggleCheckAll(el){
   document.querySelectorAll('.row-check').forEach(c=>c.checked=el.checked);
   updateBulkBar();
 }
-function bulkPin(){showToast('Selected posts pinned')}
-function bulkLock(){showToast('Selected posts locked')}
-function bulkHide(){showToast('Selected posts hidden')}
-function bulkDelete(){if(confirm('Delete selected posts?'))showToast('Selected posts deleted')}
-function exportPosts(){showToast('Exporting posts...')}
+async function bulkAction(payload, label){
+  const ids=[...document.querySelectorAll('.row-check:checked')].map(c=>parseInt(c.dataset.id,10));
+  if(!ids.length) return;
+  if(!confirm(label+' '+ids.length+' post(s)?')) return;
+  for(const id of ids) await moderate(id, payload);
+  showToast(ids.length+' post(s) updated');
+  loadPosts();
+}
+function bulkPin(){ bulkAction({ pinned:1 }, 'Pin'); }
+function bulkLock(){ bulkAction({ locked:1 }, 'Lock'); }
+function bulkHide(){ bulkAction({ status:'hidden' }, 'Hide'); }
+async function bulkDelete(){
+  const ids=[...document.querySelectorAll('.row-check:checked')].map(c=>parseInt(c.dataset.id,10));
+  if(!ids.length) return;
+  if(!confirm('Delete '+ids.length+' post(s)?')) return;
+  for(const id of ids) await moderate(id, { action:'delete' });
+  showToast(ids.length+' post(s) deleted');
+  loadPosts();
+}
+function exportPosts(){
+  const rows=[['ID','Title','Section','Author','Views','Replies','Posted']];
+  posts.forEach(p=>rows.push([p.id,p.title,p.section,p.username,p.views,p.replies,fmtDate(p.created_at)]));
+  const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='forum-posts.csv'; a.click();
+  showToast('Exported current page');
+}
 
 function showToast(msg){
   const t=document.createElement('div');
@@ -320,7 +433,7 @@ function showToast(msg){
   setTimeout(()=>t.remove(),2500);
 }
 
-document.addEventListener('DOMContentLoaded',()=>{renderPosts(filteredPosts)});
+document.addEventListener('DOMContentLoaded',()=>{ loadPosts(1); });
 </script>
 </body>
 </html>

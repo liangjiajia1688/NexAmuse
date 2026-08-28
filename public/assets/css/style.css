@@ -335,7 +335,7 @@ img { max-width: 100%; display: block; }
 .news-card.list-item .card-image { width: 120px; flex-shrink: 0; aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; }
 .news-card.list-item .card-body { padding: 0; flex: 1; }
 .news-sidebar { display: flex; flex-direction: column; gap: 0; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.news-sidebar-item { padding: 16px 20px; border-bottom: 1px solid var(--border); transition: var(--transition); cursor: pointer; }
+.news-sidebar-item { display: block; padding: 16px 20px; border-bottom: 1px solid var(--border); transition: var(--transition); cursor: pointer; color: inherit; text-decoration: none; }
 .news-sidebar-item:last-child { border-bottom: none; }
 .news-sidebar-item:hover { background: var(--card-hover); }
 .news-sidebar-item .title { font-size: 0.88rem; color: var(--white); font-weight: 500; margin-bottom: 4px; line-height: 1.4; }
@@ -640,6 +640,9 @@ footer {
   margin-top: 32px;
 }
 .pagination .page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 38px;
   height: 38px;
   padding: 0 12px;
@@ -651,6 +654,7 @@ footer {
   font-weight: 600;
   cursor: pointer;
   transition: all .18s ease;
+  user-select: none;
 }
 .pagination .page-btn:hover {
   border-color: var(--accent, #c9a227);

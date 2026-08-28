@@ -23,6 +23,10 @@
     .news-item-full .title{font-size:1.05rem;font-weight:600;color:#fff;line-height:1.45;margin-bottom:6px;}
     .news-item-full .excerpt{font-size:.85rem;color:var(--text-secondary);line-height:1.6;margin-bottom:8px;}
     .news-item-full .meta{font-size:.75rem;color:var(--text-secondary);display:flex;gap:12px;flex-wrap:wrap;}
+    .side-read-item{display:block;text-decoration:none;color:inherit;padding:10px 0;border-bottom:1px solid var(--border);transition:.15s}
+    .side-read-item:first-child{padding-top:0}
+    .side-read-item:last-child{border-bottom:none;padding-bottom:0}
+    .side-read-item:hover .title{color:var(--accent)}
     @media(max-width:900px){.news-layout{grid-template-columns:1fr}.news-sidebar-col{position:static}.news-item-full .thumb{width:110px}}
   </style>
 </head>
@@ -167,7 +171,7 @@
     document.getElementById('pagination').innerHTML = `<div class="page-btn" onclick="goPage(${Math.max(1,page-1)})">‹</div>${pg}<div class="page-btn" onclick="goPage(${Math.min(pages,page+1)})">›</div>`;
 
     // Sidebar top reads
-    document.getElementById('sideTop').innerHTML = data.slice(0,5).map(a=>`<div><div class="title" style="font-size:.85rem;font-weight:600;color:#fff">${esc(a.title)}</div><div class="meta" style="font-size:.72rem;color:var(--text-secondary)">${fmtDate(a.published_at)} · ${(a.views||0).toLocaleString()} views</div></div>`).join('');
+    document.getElementById('sideTop').innerHTML = data.slice(0,5).map(a=>`<a class="side-read-item" href="article.html?id=${a.id}"><div class="title" style="font-size:.85rem;font-weight:600;color:#fff;line-height:1.4;margin-bottom:4px;">${esc(a.title)}</div><div class="meta" style="font-size:.72rem;color:var(--text-secondary)">${fmtDate(a.published_at)} · ${(a.views||0).toLocaleString()} views</div></a>`).join('');
   }
   window.goPage = function(p){ page=p; render(currentCat()); };
   function currentCat(){ const b=bar.querySelector('.filter-btn.active'); return b?b.dataset.cat:''; }

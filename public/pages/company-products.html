@@ -102,43 +102,13 @@
   </div>
 </section>
 
-<div class="modal-overlay" id="productModal">
-  <div class="modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+<div class="modal-overlay" id="productModal" style="padding:0;">
+  <div class="modal-box" style="max-width:960px;width:95%;height:92vh;padding:0;background:var(--card-bg);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);">
       <h3 style="margin:0;color:#e2e8f0;" id="modalTitle">Add Product</h3>
       <button onclick="closeModal()" style="background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;">×</button>
     </div>
-    <form id="productForm">
-      <input type="hidden" id="productId"/>
-      <div class="form-group"><label>Product Name *</label><input type="text" id="pName" required/></div>
-      <div class="form-row">
-        <div class="form-group"><label>Category</label><select id="pCategory">
-          <option value="">Same as company</option><option>Arcade Machines</option><option>VR / XR Attractions</option><option>Kids &amp; Family Rides</option><option>Redemption Games</option><option>Simulation Rides</option><option>Outdoor Attractions</option><option>Water Park Equipment</option><option>Payment Technology</option><option>Accessories &amp; Parts</option>
-        </select></div>
-        <div class="form-group"><label>Featured</label><select id="pFeatured"><option value="0">No</option><option value="1">Yes</option></select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Price / Unit</label><input type="text" id="pPrice" placeholder="e.g. $5,000 - $8,000"/></div>
-        <div class="form-group"><label>MOQ</label><input type="text" id="pMoq" placeholder="e.g. 1 set"/></div>
-      </div>
-      <div class="form-group">
-        <label>Product Images <span style="color:var(--text-secondary);font-size:11px;font-weight:400">(max 5, >1MB auto-compressed to WebP)</span></label>
-        <input type="file" id="pProductImages" accept="image/*" multiple style="display:none"/>
-        <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('pProductImages').click()">+ Choose Images</button>
-        <div id="pProductPreview" class="img-preview-grid"></div>
-      </div>
-      <div class="form-group">
-        <label>Detail Images <span style="color:var(--text-secondary);font-size:11px;font-weight:400">(max 10, >1MB auto-compressed to WebP)</span></label>
-        <input type="file" id="pDetailImages" accept="image/*" multiple style="display:none"/>
-        <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('pDetailImages').click()">+ Choose Detail Images</button>
-        <div id="pDetailPreview" class="img-preview-grid"></div>
-      </div>
-      <div class="form-group"><label>Description</label><textarea id="pDesc" placeholder="Key features, specifications, applications..."></textarea></div>
-      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;">
-        <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="saveBtn">Save Product</button>
-      </div>
-    </form>
+    <iframe id="productFrame" style="flex:1;width:100%;border:none;background:var(--bg);" src=""></iframe>
   </div>
 </div>
 
@@ -324,20 +294,18 @@ function renderProducts(){
   });
 }
 
-function openModal(){ document.getElementById('productId').value=''; document.getElementById('productForm').reset(); pendingImages=[]; renderPreviews(); document.getElementById('modalTitle').textContent='Add Product'; document.getElementById('productModal').classList.add('open'); }
-function closeModal(){ document.getElementById('productModal').classList.remove('open'); }
+function openModal(){
+  document.getElementById('modalTitle').textContent='Add Product';
+  document.getElementById('productFrame').src='../admin/products-add.html?modal=1';
+  document.getElementById('productModal').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('productModal').classList.remove('open');
+  document.getElementById('productFrame').src='';
+}
 function editProduct(id){
-  const p=products.find(x=>x.id===id); if(!p) return;
-  document.getElementById('productId').value=p.id;
-  document.getElementById('pName').value=p.name||'';
-  document.getElementById('pCategory').value=p.category||'';
-  document.getElementById('pFeatured').value=p.featured?1:0;
-  document.getElementById('pPrice').value=p.price||'';
-  document.getElementById('pMoq').value=p.moq||'';
-  document.getElementById('pDesc').value=p.description||'';
-  pendingImages=(p.images||[]).map(i=>({...i, status:'done'}));
-  renderPreviews();
   document.getElementById('modalTitle').textContent='Edit Product';
+  document.getElementById('productFrame').src='../admin/products-add.html?id='+id+'&modal=1';
   document.getElementById('productModal').classList.add('open');
 }
 
@@ -351,47 +319,20 @@ async function deleteProduct(id){
   }catch(e){ alert(e.message); }
 }
 
-document.getElementById('pProductImages').addEventListener('change',(e)=>{ addFiles([...e.target.files],'product'); e.target.value=''; });
-document.getElementById('pDetailImages').addEventListener('change',(e)=>{ addFiles([...e.target.files],'detail'); e.target.value=''; });
-
-document.getElementById('productForm').addEventListener('submit', async function(ev){
-  ev.preventDefault();
-  if(!company || company.status!=='approved') return alert('Company must be approved before adding products.');
-  const btn=document.getElementById('saveBtn'); btn.textContent='Saving...'; btn.disabled=true;
-
-  const id=document.getElementById('productId').value;
-  const images=pendingImages.filter(i=>i.status==='done').map((i,idx)=>({
-    id: i.id && String(i.id).startsWith('temp_') ? undefined : i.id,
-    image_type: i.image_type,
-    original_url: i.original_url,
-    compressed_url: i.compressed_url,
-    original_size: i.original_size,
-    compressed_size: i.compressed_size,
-    mime_type: i.mime_type,
-    sort_order: idx
-  }));
-  const payload={
-    name: document.getElementById('pName').value.trim(),
-    category: document.getElementById('pCategory').value || null,
-    featured: document.getElementById('pFeatured').value==='1',
-    price: document.getElementById('pPrice').value.trim() || null,
-    moq: document.getElementById('pMoq').value.trim() || null,
-    image: images[0]?.compressed_url || images[0]?.original_url || null,
-    description: document.getElementById('pDesc').value.trim() || null,
-    images: images
-  };
-
+async function refreshProducts(){
   try{
-    const method = id ? 'PUT' : 'POST';
-    const url = id ? '/api/company-products?id='+id : '/api/company-products';
-    const r=await fetch(url,{method,headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const data=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(data.error || 'Save failed');
-    if(id){ const i=products.findIndex(x=>x.id===parseInt(id,10)); products[i]=data.product; }
-    else { products.unshift(data.product); }
-    closeModal(); renderProducts();
-  }catch(e){ alert(e.message); }
-  finally{ btn.textContent='Save Product'; btn.disabled=false; }
+    const r=await fetch('/api/company-products',{headers:{'Authorization':'Bearer '+token}});
+    const data=await r.json();
+    products=data.products||[];
+    renderProducts();
+  }catch(e){ console.error(e); }
+}
+
+window.addEventListener('message', async (e)=>{
+  if(e.data && e.data.type==='nexamuse:product-saved'){
+    closeModal();
+    await refreshProducts();
+  }
 });
 
 document.addEventListener('DOMContentLoaded', init);

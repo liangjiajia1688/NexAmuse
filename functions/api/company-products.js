@@ -17,7 +17,22 @@ function pickProduct(row, images) {
     name: row.name,
     slug: row.slug,
     category: row.category,
+    short_description: row.short_description,
     description: row.description,
+    dimensions: row.dimensions,
+    weight: row.weight,
+    power_supply: row.power_supply,
+    power_consumption: row.power_consumption,
+    min_players: row.min_players,
+    max_players: row.max_players,
+    age_range: row.age_range,
+    certification: row.certification,
+    additional_specs: row.additional_specs,
+    visibility: row.visibility,
+    tags: row.tags,
+    price_type: row.price_type,
+    min_price: row.min_price,
+    max_price: row.max_price,
     price: row.price,
     moq: row.moq,
     image: row.image,
@@ -145,8 +160,23 @@ export async function onRequest(context) {
     if (!name || name.length < 2) return fail('Product name too short');
     if (name.length > 120) return fail('Product name too long');
     const category = (body.category || '').trim() || company.primary_category;
+    const short_description = (body.short_description || '').trim();
     const description = (body.description || '').trim();
-    if (description.length > 2000) return fail('Description too long (max 2000)');
+    if (description.length > 8000) return fail('Description too long (max 8000)');
+    const dimensions = (body.dimensions || '').trim() || null;
+    const weight = (body.weight || '').trim() || null;
+    const power_supply = (body.power_supply || '').trim() || null;
+    const power_consumption = (body.power_consumption || '').trim() || null;
+    const min_players = body.min_players ? parseInt(body.min_players, 10) || null : null;
+    const max_players = body.max_players ? parseInt(body.max_players, 10) || null : null;
+    const age_range = (body.age_range || '').trim() || null;
+    const certification = (body.certification || '').trim() || null;
+    const additional_specs = (body.additional_specs || '').trim() || null;
+    const visibility = (body.visibility || 'all').trim();
+    const tags = (body.tags || '').trim() || null;
+    const price_type = (body.price_type || '').trim() || null;
+    const min_price = (body.min_price || '').trim() || null;
+    const max_price = (body.max_price || '').trim() || null;
     const price = (body.price || '').trim() || null;
     const moq = (body.moq || '').trim() || null;
     const image = (body.image || '').trim() || null;
@@ -155,9 +185,16 @@ export async function onRequest(context) {
     const slug = slugify(name) + '-' + Date.now();
 
     const res = await env.DB.prepare(
-      `INSERT INTO company_products (company_id,owner_id,name,slug,category,description,price,moq,image,status,featured,created_at,updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
-    ).bind(company.id, user.id, name, slug, category, description, price, moq, image, 'active', featured, ts, ts).run();
+      `INSERT INTO company_products (
+        company_id,owner_id,name,slug,category,short_description,description,
+        dimensions,weight,power_supply,power_consumption,min_players,max_players,age_range,certification,additional_specs,
+        visibility,tags,price_type,min_price,max_price,price,moq,image,status,featured,created_at,updated_at
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+    ).bind(
+      company.id, user.id, name, slug, category, short_description, description,
+      dimensions, weight, power_supply, power_consumption, min_players, max_players, age_range, certification, additional_specs,
+      visibility, tags, price_type, min_price, max_price, price, moq, image, 'active', featured, ts, ts
+    ).run();
 
     const productId = res.meta.last_row_id;
     await syncProductImages(env, productId, body.images || []);
@@ -183,19 +220,41 @@ export async function onRequest(context) {
     try { body = await request.json(); } catch (e) { return fail('Invalid JSON'); }
 
     const name = (body.name || existing.name).trim();
-    const category = (body.category || existing.category || '').trim();
-    const description = (body.description || '').trim();
-    const price = (body.price !== undefined ? (body.price || '').trim() : existing.price) || null;
-    const moq = (body.moq !== undefined ? (body.moq || '').trim() : existing.moq) || null;
-    const image = (body.image !== undefined ? (body.image || '').trim() : existing.image) || null;
+    const category = (body.category !== undefined ? (body.category || '').trim() : existing.category || '').trim();
+    const short_description = body.short_description !== undefined ? (body.short_description || '').trim() : existing.short_description;
+    const description = body.description !== undefined ? (body.description || '').trim() : existing.description;
+    const dimensions = body.dimensions !== undefined ? ((body.dimensions || '').trim() || null) : existing.dimensions;
+    const weight = body.weight !== undefined ? ((body.weight || '').trim() || null) : existing.weight;
+    const power_supply = body.power_supply !== undefined ? ((body.power_supply || '').trim() || null) : existing.power_supply;
+    const power_consumption = body.power_consumption !== undefined ? ((body.power_consumption || '').trim() || null) : existing.power_consumption;
+    const min_players = body.min_players !== undefined ? (parseInt(body.min_players, 10) || null) : existing.min_players;
+    const max_players = body.max_players !== undefined ? (parseInt(body.max_players, 10) || null) : existing.max_players;
+    const age_range = body.age_range !== undefined ? ((body.age_range || '').trim() || null) : existing.age_range;
+    const certification = body.certification !== undefined ? ((body.certification || '').trim() || null) : existing.certification;
+    const additional_specs = body.additional_specs !== undefined ? ((body.additional_specs || '').trim() || null) : existing.additional_specs;
+    const visibility = body.visibility !== undefined ? ((body.visibility || '').trim() || existing.visibility || 'all') : (existing.visibility || 'all');
+    const tags = body.tags !== undefined ? ((body.tags || '').trim() || null) : existing.tags;
+    const price_type = body.price_type !== undefined ? ((body.price_type || '').trim() || null) : existing.price_type;
+    const min_price = body.min_price !== undefined ? ((body.min_price || '').trim() || null) : existing.min_price;
+    const max_price = body.max_price !== undefined ? ((body.max_price || '').trim() || null) : existing.max_price;
+    const price = body.price !== undefined ? ((body.price || '').trim() || null) : existing.price;
+    const moq = body.moq !== undefined ? ((body.moq || '').trim() || null) : existing.moq;
+    const image = body.image !== undefined ? ((body.image || '').trim() || null) : existing.image;
     const featured = body.featured !== undefined ? (body.featured ? 1 : 0) : existing.featured;
     const status = isAdmin && body.status ? body.status : existing.status;
     const ts = now();
 
     await env.DB.prepare(
-      `UPDATE company_products SET name=?, category=?, description=?, price=?, moq=?, image=?, featured=?, status=?, updated_at=?
+      `UPDATE company_products SET
+        name=?, category=?, short_description=?, description=?,
+        dimensions=?, weight=?, power_supply=?, power_consumption=?, min_players=?, max_players=?, age_range=?, certification=?, additional_specs=?,
+        visibility=?, tags=?, price_type=?, min_price=?, max_price=?, price=?, moq=?, image=?, featured=?, status=?, updated_at=?
        WHERE id=?`
-    ).bind(name, category, description, price, moq, image, featured, status, ts, id).run();
+    ).bind(
+      name, category, short_description, description,
+      dimensions, weight, power_supply, power_consumption, min_players, max_players, age_range, certification, additional_specs,
+      visibility, tags, price_type, min_price, max_price, price, moq, image, featured, status, ts, id
+    ).run();
 
     await syncProductImages(env, id, body.images || []);
     await refreshProductCount(env, existing.company_id);

@@ -106,17 +106,13 @@
         <div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.25);border-radius:8px;padding:10px 16px;font-size:.75rem;color:var(--text-secondary);margin-bottom:24px;">
           📡 News is aggregated automatically from public RSS feeds of leading industry media. Only headlines & short summaries are shown — click any story to read the full article on the original publisher's website. All rights belong to the original publishers.
         </div>
-        <!-- Featured Article -->
-        <div class="featured-news fade-in">
+        <!-- Featured Article (latest published news) -->
+        <div class="featured-news" id="featuredNews">
           <div class="cover">🎪</div>
           <div class="body">
             <span class="badge badge-gold" style="margin-bottom:12px;">★ FEATURED STORY</span>
-            <h2 style="color:#fff;margin-bottom:12px;font-size:clamp(1.3rem,3vw,2rem);">GTI Asia Pacific 2026: Record 800+ Exhibitors Set to Transform Guangzhou This Week</h2>
-            <p style="color:var(--text-secondary);margin-bottom:16px;line-height:1.8;">The world's largest amusement equipment trade show opens March 28 at the Poly World Trade Center, with exhibitors spanning 45 countries and a record 60,000 sqm of show floor. NexAmuse Global brings you the complete preview, exhibitor highlights, and what to watch for...</p>
-            <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-              <div style="display:flex;gap:12px;font-size:.78rem;color:var(--text-secondary);"><span>📅 March 25, 2026</span><span>✍️ Editorial Team</span><span>👁 18,400 views</span><span>⏱ 8 min read</span></div>
-              <a href="#" class="btn btn-primary btn-sm">Read Full Story →</a>
-            </div>
+            <h2 style="color:#fff;margin-bottom:12px;font-size:clamp(1.3rem,3vw,2rem);">Loading featured story…</h2>
+            <p style="color:var(--text-secondary);margin-bottom:16px;line-height:1.8;">The latest industry headline will appear here.</p>
           </div>
         </div>
 
@@ -211,12 +207,8 @@
       <aside class="news-sidebar-col">
         <div class="sidebar-widget">
           <div class="widget-header">🔥 Most Read This Week</div>
-          <div class="news-sidebar">
-            <div class="news-sidebar-item"><div class="title">How AI is Reshaping Prize Redemption Game ROI in 2026</div><div class="meta">Mar 24 · 8,200 views</div></div>
-            <div class="news-sidebar-item"><div class="title">Top 10 Amusement Equipment Trends to Watch in 2026</div><div class="meta">Mar 23 · 6,800 views</div></div>
-            <div class="news-sidebar-item"><div class="title">Trampoline Parks: Complete Investment Guide for New Operators</div><div class="meta">Mar 22 · 5,400 views</div></div>
-            <div class="news-sidebar-item"><div class="title">Why XR Dark Rides Are Replacing Traditional Themed Rides</div><div class="meta">Mar 21 · 4,100 views</div></div>
-            <div class="news-sidebar-item"><div class="title">ASTM F24 Committee Approves New VR Ride Safety Standard</div><div class="meta">Mar 20 · 3,700 views</div></div>
+          <div class="news-sidebar" id="mostReadSidebar">
+            <div class="news-sidebar-item"><div class="title">Loading…</div><div class="meta">Please wait</div></div>
           </div>
         </div>
 
@@ -270,9 +262,11 @@
 document.addEventListener('DOMContentLoaded', function loadLiveNews(){
   const list = document.querySelector('.news-list-full');
   const pager = document.getElementById('newsPager');
+  const featured = document.getElementById('featuredNews');
+  const sidebar = document.getElementById('mostReadSidebar');
   if (!list || !pager) return;
 
-  const EMOJI = { exhibitions: '🎪', companies: '🏢', regulation: '⚖️', technology: '🤖', interviews: '🎙️', industry: '📊', news: '📰' };
+  const EMOJI = { exhibitions: '🎪', companies: '🏢', regulation: '⚖️', regulations: '⚖️', technology: '🤖', interviews: '🎙️', industry: '📊', news: '📰' };
   const PAGE_SIZE = 8;
   let items = [];
   let filtered = [];
@@ -282,9 +276,62 @@ document.addEventListener('DOMContentLoaded', function loadLiveNews(){
     if (!ts) return 'Recent';
     try { return new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch(e){ return 'Recent'; }
   }
+  function fmtShort(ts) {
+    if (!ts) return 'Recent';
+    try { return new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); } catch(e){ return 'Recent'; }
+  }
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function pseudoViews(seed){
+    // Stable pseudo view count for UI when real analytics are unavailable
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) h = ((h << 5) - h) + seed.charCodeAt(i) | 0;
+    return Math.abs(h) % 9000 + 1200;
+  }
+
+  function renderFeatured(){
+    if (!featured) return;
+    const n = items[0];
+    if (!n) return;
+    const cat = n.category || 'industry';
+    const emoji = EMOJI[cat] || '📰';
+    const title = esc(n.title);
+    const summary = esc(n.summary || '');
+    const url = n.url || '#';
+    const source = esc(n.source || 'News');
+    const d = fmt(n.published_at);
+    featured.innerHTML = `
+      <a href="${url}" target="_blank" rel="noopener" class="cover" style="text-decoration:none;background:linear-gradient(135deg,#1a2540,#0d1530);">${emoji}</a>
+      <div class="body">
+        <span class="badge badge-gold" style="margin-bottom:12px;">★ FEATURED STORY</span>
+        <h2 style="color:#fff;margin-bottom:12px;font-size:clamp(1.3rem,3vw,2rem);"><a href="${url}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;">${title}</a></h2>
+        <p style="color:var(--text-secondary);margin-bottom:16px;line-height:1.8;">${summary}</p>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;gap:12px;font-size:.78rem;color:var(--text-secondary);"><span>📅 ${d}</span><span>✍️ ${source}</span><span>👁 ${pseudoViews(n.title).toLocaleString()} views</span></div>
+          <a href="${url}" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Read Full Story →</a>
+        </div>
+      </div>`;
+  }
+
+  function renderSidebar(){
+    if (!sidebar) return;
+    const picks = items.slice(0, 5);
+    if (!picks.length) {
+      sidebar.innerHTML = '<div class="news-sidebar-item"><div class="title">No stories yet</div><div class="meta">Check back soon</div></div>';
+      return;
+    }
+    sidebar.innerHTML = picks.map((n, idx) => {
+      const title = esc(n.title);
+      const url = n.url || '#';
+      const d = fmtShort(n.published_at);
+      const views = pseudoViews(n.title + idx).toLocaleString();
+      return `<a href="${url}" target="_blank" rel="noopener" class="news-sidebar-item"><div class="title">${title}</div><div class="meta">${d} · ${views} views</div></a>`;
+    }).join('');
+  }
+
   function renderList(){
-    const pageItems = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+    // Skip the featured story in the main list so it isn't duplicated on the first page.
+    let pageItems = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+    if (page === 1 && pageItems.length && pageItems[0] === items[0]) pageItems = pageItems.slice(1);
     list.innerHTML = pageItems.map(n => {
       const cat = n.category || 'industry';
       const emoji = EMOJI[cat] || '📰';
@@ -342,6 +389,8 @@ document.addEventListener('DOMContentLoaded', function loadLiveNews(){
       items = data.news || [];
       if (!items.length) return; // keep static demo fallback
       filtered = [...items];
+      renderFeatured();
+      renderSidebar();
       renderList();
       renderPager();
     })

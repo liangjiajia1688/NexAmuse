@@ -2,8 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Add Product — NexAmuse Admin</title>
+<title>Add Product — NexAmuse</title>
 <link rel="stylesheet" href="admin.css">
+<script>
+(function(){
+  if (new URLSearchParams(location.search).get('modal') === '1') {
+    document.documentElement.classList.add('modal-mode');
+    var s = document.createElement('style');
+    s.textContent = '.modal-mode body{padding:0;background:transparent} .modal-mode .sidebar,.modal-mode .admin-header{display:none!important} .modal-mode .admin-main{margin-left:0!important;min-height:auto!important} .modal-mode .admin-content{padding:0!important} .modal-mode .admin-wrapper{display:block!important;min-height:auto!important} .modal-mode .page-title{display:none!important}';
+    document.head.appendChild(s);
+  }
+})();
+</script>
+<style>
+  .modal-body{background:transparent;padding:0}
+  .modal-body .admin-wrapper{display:block;min-height:auto}
+  .modal-body .sidebar,.modal-body .admin-header{display:none}
+  .modal-body .admin-main{margin-left:0}
+  .modal-body .admin-content{padding:0}
+  .modal-body .form-section{margin-bottom:16px}
+  .modal-body .page-title{display:none}
+  .image-drop{border:2px dashed rgba(212,175,55,.3);border-radius:10px;padding:24px;text-align:center;cursor:pointer;color:var(--text-muted);font-size:13px;transition:all .2s}
+  .image-drop:hover{border-color:var(--gold)}
+  .img-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px;margin-top:12px}
+  .img-preview{position:relative;aspect-ratio:1;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);overflow:hidden;background-size:cover;background-position:center}
+  .img-preview .rm{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .img-preview .rm:hover{background:#ef4444}
+  .img-preview .badge{position:absolute;bottom:4px;left:4px;padding:2px 6px;border-radius:4px;background:rgba(0,0,0,.6);color:#fff;font-size:10px}
+  .img-preview .spin{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);font-size:12px}
+  .company-banner{background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--text)}
+  .company-banner strong{color:var(--gold)}
+</style>
 </head>
 <body>
 <div class="admin-wrapper">
@@ -13,17 +42,17 @@
   </aside>
   <div class="admin-main">
     <header class="admin-header">
-      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">Products › <span>Add Product</span></div></div>
+      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">Products › <span id="breadcrumbTitle">Add Product</span></div></div>
       <div class="header-right"><div class="header-user-wrap" style="position:relative;">
           <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
-            <div class="user-avatar">A</div>
-            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <div class="user-avatar" id="headerAvatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;" id="headerName">Admin</span>
             <span style="color:var(--text-muted);font-size:10px;">▼</span>
           </button>
           <div id="userDropdown" class="user-dropdown">
             <div class="user-dropdown-info">
-              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
-              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;" id="dropName">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);" id="dropEmail">admin@nexamuse.com</div>
             </div>
             <div class="user-dropdown-divider"></div>
             <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
@@ -34,97 +63,122 @@
         </div></div>
     </header>
     <div class="admin-content">
-      <div class="page-title"><h1>Add New Product</h1><p>Create a new product listing for the catalog.</p></div>
-      <form onsubmit="submitProduct(event)">
+      <div class="page-title"><h1 id="pageH1">Add New Product</h1><p id="pageSub">Create a new product listing for the catalog.</p></div>
+
+      <div class="company-banner" id="companyBanner" style="display:none">
+        Posting as: <strong id="companyName">—</strong>
+        <span id="adminCompanySelect" style="display:none; margin-left:12px"></span>
+      </div>
+
+      <form id="productForm">
         <div style="display:grid;grid-template-columns:1fr 320px;gap:24px">
-          <!-- Left: Main Info -->
           <div>
             <div class="form-section">
               <h3>Basic Information</h3>
-              <div class="form-group"><label>Product Name (English) *</label><input type="text" placeholder="e.g. VR Racing Simulator Pro X9" required></div>
-              <div class="form-group" style="margin-top:12px"><label>Short Description</label><input type="text" placeholder="One-line summary for catalog listing"></div>
+              <div class="form-group"><label>Product Name (English) *</label><input type="text" id="pName" placeholder="e.g. VR Racing Simulator Pro X9" required></div>
+              <div class="form-group" style="margin-top:12px"><label>Short Description</label><input type="text" id="pShortDesc" placeholder="One-line summary for catalog listing"></div>
               <div class="form-group" style="margin-top:12px"><label>Full Description</label>
                 <div class="editor-toolbar">
-                  <button type="button" class="editor-btn"><b>B</b></button>
-                  <button type="button" class="editor-btn"><i>I</i></button>
-                  <button type="button" class="editor-btn"><u>U</u></button>
-                  <button type="button" class="editor-btn">H1</button>
-                  <button type="button" class="editor-btn">H2</button>
-                  <button type="button" class="editor-btn">• List</button>
-                  <button type="button" class="editor-btn">🔗 Link</button>
-                  <button type="button" class="editor-btn">🖼 Image</button>
+                  <button type="button" class="editor-btn" onclick="exec('bold')"><b>B</b></button>
+                  <button type="button" class="editor-btn" onclick="exec('italic')"><i>I</i></button>
+                  <button type="button" class="editor-btn" onclick="exec('underline')"><u>U</u></button>
+                  <button type="button" class="editor-btn" onclick="exec('insertUnorderedList')">• List</button>
                 </div>
-                <div class="editor-area" contenteditable="true">Enter full product description here...</div>
+                <div class="editor-area" id="pDesc" contenteditable="true" data-placeholder="Enter full product description here..."></div>
               </div>
             </div>
             <div class="form-section">
               <h3>Technical Specifications</h3>
               <div class="form-grid">
-                <div class="form-group"><label>Dimensions (L×W×H)</label><input type="text" placeholder="e.g. 250×180×220 cm"></div>
-                <div class="form-group"><label>Weight (kg)</label><input type="number" placeholder="e.g. 380"></div>
-                <div class="form-group"><label>Power Supply</label><input type="text" placeholder="e.g. 220V/50Hz"></div>
-                <div class="form-group"><label>Power Consumption</label><input type="text" placeholder="e.g. 3.5 kW"></div>
-                <div class="form-group"><label>Min Players</label><input type="number" placeholder="1" min="1"></div>
-                <div class="form-group"><label>Max Players</label><input type="number" placeholder="4" min="1"></div>
-                <div class="form-group"><label>Age Range</label><input type="text" placeholder="e.g. 8+"></div>
-                <div class="form-group"><label>Certification</label><input type="text" placeholder="e.g. CE, TUV, SGS"></div>
+                <div class="form-group"><label>Dimensions (L×W×H)</label><input type="text" id="pDimensions" placeholder="e.g. 250×180×220 cm"></div>
+                <div class="form-group"><label>Weight (kg)</label><input type="text" id="pWeight" placeholder="e.g. 380"></div>
+                <div class="form-group"><label>Power Supply</label><input type="text" id="pPowerSupply" placeholder="e.g. 220V/50Hz"></div>
+                <div class="form-group"><label>Power Consumption</label><input type="text" id="pPowerConsumption" placeholder="e.g. 3.5 kW"></div>
+                <div class="form-group"><label>Min Players</label><input type="number" id="pMinPlayers" placeholder="1" min="1"></div>
+                <div class="form-group"><label>Max Players</label><input type="number" id="pMaxPlayers" placeholder="4" min="1"></div>
+                <div class="form-group"><label>Age Range</label><input type="text" id="pAgeRange" placeholder="e.g. 8+"></div>
+                <div class="form-group"><label>Certification</label><input type="text" id="pCertification" placeholder="e.g. CE, TUV, SGS"></div>
               </div>
-              <div class="form-group" style="margin-top:12px"><label>Additional Specs (Key: Value per line)</label><textarea placeholder="Screen Size: 55 inch 4K&#10;Seat Type: Motion Platform&#10;Network: WiFi + LAN"></textarea></div>
+              <div class="form-group" style="margin-top:12px"><label>Additional Specs (Key: Value per line)</label><textarea id="pAdditionalSpecs" placeholder="Screen Size: 55 inch 4K&#10;Seat Type: Motion Platform&#10;Network: WiFi + LAN"></textarea></div>
             </div>
           </div>
-          <!-- Right: Sidebar Settings -->
           <div>
             <div class="form-section">
               <h3>Publish Settings</h3>
               <div class="form-group"><label>Status</label>
-                <select>
-                  <option>Published</option><option>Draft</option><option>Pending Review</option>
+                <select id="pStatus">
+                  <option value="active">Published</option>
+                  <option value="draft">Draft</option>
+                  <option value="pending">Pending Review</option>
                 </select>
               </div>
               <div class="form-group" style="margin-top:12px"><label>Visibility</label>
-                <select>
-                  <option>All Members</option><option>Gold & Platinum</option><option>Platinum Only</option><option>Logged-in Only</option>
+                <select id="pVisibility">
+                  <option value="all">All Members</option>
+                  <option value="premium">Premium & VIP</option>
+                  <option value="vip">VIP Only</option>
+                  <option value="members">Logged-in Only</option>
                 </select>
               </div>
-              <button type="submit" class="btn-primary" style="width:100%;margin-top:16px">Publish Product</button>
-              <button type="button" class="btn-secondary" style="width:100%;margin-top:8px">Save as Draft</button>
+              <div class="form-group" style="margin-top:12px"><label>Featured</label>
+                <select id="pFeatured"><option value="0">No</option><option value="1">Yes</option></select>
+              </div>
+              <button type="submit" class="btn-primary" style="width:100%;margin-top:16px" id="publishBtn">Publish Product</button>
+              <button type="button" class="btn-secondary" style="width:100%;margin-top:8px" onclick="saveDraft()">Save as Draft</button>
             </div>
             <div class="form-section">
               <h3>Classification</h3>
               <div class="form-group"><label>Category *</label>
-                <select required>
+                <select id="pCategory" required>
                   <option value="">Select Category</option>
-                  <option>VR/AR Equipment</option><option>Redemption Machines</option><option>Kiddie Rides</option><option>Simulators</option><option>Claw Machines</option><option>Indoor Play</option><option>Bowling & Sports</option><option>Laser Tag</option><option>Trampolines</option><option>Token Systems</option>
+                  <option>Arcade Machines</option>
+                  <option>VR / XR Attractions</option>
+                  <option>Kids &amp; Family Rides</option>
+                  <option>Redemption Games</option>
+                  <option>Simulation Rides</option>
+                  <option>Outdoor Attractions</option>
+                  <option>Water Park Equipment</option>
+                  <option>Payment Technology</option>
+                  <option>Accessories &amp; Parts</option>
                 </select>
               </div>
-              <div class="form-group" style="margin-top:12px"><label>Tags</label><input type="text" placeholder="VR, Simulator, 2-Player (comma separated)"></div>
-              <div class="form-group" style="margin-top:12px"><label>Supplier</label>
-                <select>
-                  <option>TechPlay Corp.</option><option>ArcadeWorld Ltd.</option><option>ClawTech Co.</option><option>ImmersivePlay</option><option>FunRide Co.</option>
-                </select>
-              </div>
+              <div class="form-group" style="margin-top:12px"><label>Tags</label><input type="text" id="pTags" placeholder="VR, Simulator, 2-Player (comma separated)"></div>
             </div>
             <div class="form-section">
               <h3>Pricing</h3>
               <div class="form-group"><label>Price Type</label>
-                <select>
-                  <option>Price Range</option><option>Fixed Price</option><option>On Request</option>
+                <select id="pPriceType">
+                  <option value="range">Price Range</option>
+                  <option value="fixed">Fixed Price</option>
+                  <option value="request">On Request</option>
                 </select>
               </div>
               <div class="form-grid" style="margin-top:12px">
-                <div class="form-group"><label>Min Price (USD)</label><input type="number" placeholder="8500"></div>
-                <div class="form-group"><label>Max Price (USD)</label><input type="number" placeholder="12000"></div>
+                <div class="form-group"><label>Min Price (USD)</label><input type="text" id="pMinPrice" placeholder="8500"></div>
+                <div class="form-group"><label>Max Price (USD)</label><input type="text" id="pMaxPrice" placeholder="12000"></div>
               </div>
-              <div class="form-group" style="margin-top:12px"><label>MOQ</label><input type="number" placeholder="1" min="1"></div>
+              <div class="form-group" style="margin-top:12px"><label>MOQ</label><input type="text" id="pMoq" placeholder="e.g. 1 set"></div>
+              <div class="form-group" style="margin-top:12px"><label>Display Price</label><input type="text" id="pPrice" placeholder="e.g. $5,000 - $8,000"></div>
             </div>
             <div class="form-section">
-              <h3>Product Images</h3>
-              <div onclick="this.querySelector('input').click()" style="border:2px dashed rgba(212,175,55,.3);border-radius:10px;padding:30px;text-align:center;cursor:pointer;color:var(--text-muted);font-size:13px;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(212,175,55,.3)'">
-                <div style="font-size:32px;margin-bottom:8px">🖼</div>
-                <div>Click to upload images</div>
-                <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP — Max 5MB each</div>
-                <input type="file" multiple accept="image/*" style="display:none">
+              <h3>Product Images <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 5, &gt;1MB auto-compressed)</span></h3>
+              <div class="image-drop" onclick="document.getElementById('pProductImages').click()">
+                <div style="font-size:28px;margin-bottom:6px">🖼</div>
+                <div>Click to upload product images</div>
+                <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP</div>
+                <input type="file" id="pProductImages" multiple accept="image/*" style="display:none" onchange="addFiles(this.files,'product')">
               </div>
+              <div id="pProductPreview" class="img-preview-grid"></div>
+            </div>
+            <div class="form-section">
+              <h3>Detail Images <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 10, &gt;1MB auto-compressed)</span></h3>
+              <div class="image-drop" onclick="document.getElementById('pDetailImages').click()">
+                <div style="font-size:28px;margin-bottom:6px">🖼</div>
+                <div>Click to upload detail images</div>
+                <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP</div>
+                <input type="file" id="pDetailImages" multiple accept="image/*" style="display:none" onchange="addFiles(this.files,'detail')">
+              </div>
+              <div id="pDetailPreview" class="img-preview-grid"></div>
             </div>
           </div>
         </div>
@@ -134,11 +188,227 @@
 </div>
 <script src="admin.js"></script>
 <script>
-function submitProduct(e){
-  e.preventDefault();
-  alert('✅ Product published successfully!\n(In production: saves to database)');
-  location.href='products.html';
+const SESSION_KEY='nexamuse_user';
+function getSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null} }
+function getApiToken(){ const s=getSession(); return s&&s.token?s.token:''; }
+const params=new URLSearchParams(location.search);
+const isModal=params.get('modal')==='1';
+const editId=params.get('id')?parseInt(params.get('id'),10):0;
+let company=null,user=null,token='';
+let pendingImages=[];
+
+if(isModal) document.body.classList.add('modal-body');
+
+function formatBytes(b){ if(!b) return '0 B'; const k=1024, s=['B','KB','MB','GB']; const i=Math.floor(Math.log(b)/Math.log(k)); return (b/Math.pow(k,i)).toFixed(i?1:0)+' '+s[i]; }
+async function readFile(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(file); }); }
+async function compressImage(dataUrl, maxSize=1024*1024){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas'); const ctx=canvas.getContext('2d');
+      let {width,height}=img; const maxDim=1600;
+      if(width>maxDim||height>maxDim){ const scale=Math.min(maxDim/width,maxDim/height); width*=scale; height*=scale; }
+      canvas.width=width; canvas.height=height; ctx.drawImage(img,0,0,width,height);
+      let quality=0.85;
+      const tryBlob=(q)=>new Promise((res)=>canvas.toBlob((b)=>res(b),'image/webp',q));
+      const step=async()=>{
+        const blob=await tryBlob(quality);
+        if(!blob) return reject(new Error('Compression failed'));
+        if(blob.size<=maxSize||quality<=0.45){
+          const ab=await blob.arrayBuffer(); const uint=new Uint8Array(ab);
+          let bin=''; const chunk=0x8000;
+          for(let i=0;i<uint.length;i+=chunk){ bin+=String.fromCharCode.apply(null,uint.subarray(i,i+chunk)); }
+          resolve({dataUrl:'data:image/webp;base64,'+btoa(bin),size:blob.size});
+        } else { quality-=0.1; step(); }
+      };
+      step();
+    };
+    img.onerror=()=>reject(new Error('Load image failed'));
+    img.src=dataUrl;
+  });
 }
+async function uploadToImgBB(base64){
+  const fd=new FormData(); fd.append('image',base64);
+  const r=await fetch('/api/upload',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data.error||'Upload failed');
+  return data.url;
+}
+async function addFiles(files,type){
+  const maxCount=type==='product'?5:10;
+  const current=pendingImages.filter(i=>i.image_type===type).length;
+  if(current+files.length>maxCount){ alert(`Maximum ${maxCount} ${type} images allowed.`); return; }
+  for(const file of files){
+    const id='temp_'+Math.random().toString(36).slice(2);
+    const img={id,image_type:type,status:'reading',file,original_size:file.size,compressed_size:0,mime_type:file.type||'image/jpeg'};
+    pendingImages.push(img); renderPreviews();
+    try{
+      const dataUrl=await readFile(file);
+      let originalUrl=dataUrl, compressedUrl=dataUrl, compressedSize=file.size, compressedMime=file.type||'image/jpeg';
+      if(file.size>1024*1024){
+        img.status='compressing'; renderPreviews();
+        const comp=await compressImage(dataUrl);
+        compressedUrl=comp.dataUrl; compressedSize=comp.size; compressedMime='image/webp';
+      }
+      img.status='uploading'; renderPreviews();
+      originalUrl=await uploadToImgBB(dataUrl);
+      if(compressedUrl!==dataUrl) compressedUrl=await uploadToImgBB(compressedUrl);
+      else { compressedUrl=originalUrl; compressedSize=file.size; compressedMime=file.type||'image/jpeg'; }
+      img.original_url=originalUrl; img.compressed_url=compressedUrl; img.compressed_size=compressedSize; img.mime_type=compressedMime; img.status='done';
+    }catch(e){ console.error(e); img.status='error:'+(e.message||'failed'); }
+    renderPreviews();
+  }
+}
+function removePending(id){ pendingImages=pendingImages.filter(i=>i.id!==id); renderPreviews(); }
+function renderPreviews(){
+  const render=(items,containerId)=>{
+    const el=document.getElementById(containerId);
+    el.innerHTML=items.map(img=>{
+      const src=img.compressed_url && img.compressed_url.startsWith('http')?img.compressed_url:(img.original_url||'');
+      const bg=src?`style="background-image:url('${src}')"`:'';
+      let badge='';
+      if(img.status==='reading') badge='Reading…';
+      else if(img.status==='compressing') badge='Compressing…';
+      else if(img.status==='uploading') badge='Uploading…';
+      else if(img.status==='done') badge=`${formatBytes(img.original_size)} → ${formatBytes(img.compressed_size)}`;
+      else badge=String(img.status);
+      return `<div class="img-preview" ${bg}>
+        <button type="button" class="rm" onclick="removePending('${img.id}')">×</button>
+        <span class="badge">${badge}</span>
+        ${!src?'<div class="spin">?</div>':''}
+      </div>`;
+    }).join('');
+  };
+  render(pendingImages.filter(i=>i.image_type==='product'),'pProductPreview');
+  render(pendingImages.filter(i=>i.image_type==='detail'),'pDetailPreview');
+}
+function exec(cmd){ document.execCommand(cmd,false,null); document.getElementById('pDesc').focus(); }
+
+async function init(){
+  const s=getSession();
+  if(!s){ if(!isModal) location.href='login.html?redirect='+encodeURIComponent(location.pathname+location.search); return; }
+  token=s.token; user=s;
+  document.getElementById('headerName').textContent=s.username||s.email||'User';
+  document.getElementById('dropName').textContent=s.username||s.email||'User';
+  document.getElementById('dropEmail').textContent=s.email||'';
+  document.getElementById('headerAvatar').textContent=(s.username||s.email||'A').charAt(0).toUpperCase();
+
+  try{
+    const r=await fetch('/api/company-products',{headers:{'Authorization':'Bearer '+token}});
+    if(!r.ok) throw new Error('Failed to load company');
+    const data=await r.json();
+    company=data.company;
+  }catch(e){ console.error(e); }
+
+  const banner=document.getElementById('companyBanner');
+  if(company){
+    banner.style.display='block';
+    document.getElementById('companyName').textContent=company.name;
+  } else if(!isModal){
+    banner.style.display='block'; banner.innerHTML='You need to <a href="../pages/company-profile.html" style="color:var(--gold)">create a company profile</a> first.';
+  }
+
+  if(editId){
+    document.getElementById('pageH1').textContent='Edit Product';
+    document.getElementById('breadcrumbTitle').textContent='Edit Product';
+    document.getElementById('publishBtn').textContent='Update Product';
+    await loadProduct(editId);
+  }
+}
+
+async function loadProduct(id){
+  try{
+    const r=await fetch('/api/company-products',{headers:{'Authorization':'Bearer '+token}});
+    const data=await r.json();
+    const p=(data.products||[]).find(x=>x.id===id);
+    if(!p) return;
+    document.getElementById('pName').value=p.name||'';
+    document.getElementById('pShortDesc').value=p.short_description||'';
+    document.getElementById('pDesc').innerHTML=p.description||'';
+    document.getElementById('pCategory').value=p.category||'';
+    document.getElementById('pFeatured').value=p.featured?'1':'0';
+    document.getElementById('pStatus').value=p.status||'active';
+    document.getElementById('pVisibility').value=p.visibility||'all';
+    document.getElementById('pDimensions').value=p.dimensions||'';
+    document.getElementById('pWeight').value=p.weight||'';
+    document.getElementById('pPowerSupply').value=p.power_supply||'';
+    document.getElementById('pPowerConsumption').value=p.power_consumption||'';
+    document.getElementById('pMinPlayers').value=p.min_players||'';
+    document.getElementById('pMaxPlayers').value=p.max_players||'';
+    document.getElementById('pAgeRange').value=p.age_range||'';
+    document.getElementById('pCertification').value=p.certification||'';
+    document.getElementById('pAdditionalSpecs').value=p.additional_specs||'';
+    document.getElementById('pTags').value=p.tags||'';
+    document.getElementById('pPriceType').value=p.price_type||'range';
+    document.getElementById('pMinPrice').value=p.min_price||'';
+    document.getElementById('pMaxPrice').value=p.max_price||'';
+    document.getElementById('pMoq').value=p.moq||'';
+    document.getElementById('pPrice').value=p.price||'';
+    pendingImages=(p.images||[]).map(i=>({...i,status:'done'}));
+    renderPreviews();
+  }catch(e){ console.error(e); }
+}
+
+function buildPayload(status){
+  const images=pendingImages.filter(i=>i.status==='done').map((i,idx)=>({
+    id: i.id && String(i.id).startsWith('temp_')?undefined:i.id,
+    image_type:i.image_type, original_url:i.original_url, compressed_url:i.compressed_url,
+    original_size:i.original_size, compressed_size:i.compressed_size, mime_type:i.mime_type, sort_order:idx
+  }));
+  const firstProduct=pendingImages.filter(i=>i.status==='done' && i.image_type==='product')[0];
+  return {
+    name: document.getElementById('pName').value.trim(),
+    short_description: document.getElementById('pShortDesc').value.trim(),
+    description: document.getElementById('pDesc').innerHTML.trim(),
+    category: document.getElementById('pCategory').value||null,
+    featured: document.getElementById('pFeatured').value==='1',
+    status: (user && (user.role==='admin'||user.is_super)) ? (status || document.getElementById('pStatus').value) : 'active',
+    visibility: document.getElementById('pVisibility').value,
+    dimensions: document.getElementById('pDimensions').value.trim()||null,
+    weight: document.getElementById('pWeight').value.trim()||null,
+    power_supply: document.getElementById('pPowerSupply').value.trim()||null,
+    power_consumption: document.getElementById('pPowerConsumption').value.trim()||null,
+    min_players: document.getElementById('pMinPlayers').value||null,
+    max_players: document.getElementById('pMaxPlayers').value||null,
+    age_range: document.getElementById('pAgeRange').value.trim()||null,
+    certification: document.getElementById('pCertification').value.trim()||null,
+    additional_specs: document.getElementById('pAdditionalSpecs').value.trim()||null,
+    tags: document.getElementById('pTags').value.trim()||null,
+    price_type: document.getElementById('pPriceType').value,
+    min_price: document.getElementById('pMinPrice').value.trim()||null,
+    max_price: document.getElementById('pMaxPrice').value.trim()||null,
+    price: document.getElementById('pPrice').value.trim()||null,
+    moq: document.getElementById('pMoq').value.trim()||null,
+    image: firstProduct?.compressed_url || firstProduct?.original_url || null,
+    images: images
+  };
+}
+
+async function submitForm(status){
+  if(!company) return alert('Create your company profile first.');
+  const btn=document.getElementById('publishBtn'); btn.disabled=true;
+  const originalText=btn.textContent;
+  btn.textContent='Saving...';
+  const payload=buildPayload(status);
+  try{
+    const url=editId?'/api/company-products?id='+editId:'/api/company-products';
+    const method=editId?'PUT':'POST';
+    const r=await fetch(url,{method,headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(data.error||'Save failed');
+    if(isModal){
+      window.parent.postMessage({type:'nexamuse:product-saved',product:data.product},'*');
+    } else {
+      showToast('Product saved successfully','success');
+      setTimeout(()=>location.href='products.html',800);
+    }
+  }catch(e){ alert(e.message); btn.disabled=false; btn.textContent=originalText; }
+}
+
+function saveDraft(){ submitForm('draft'); }
+
+document.getElementById('productForm').addEventListener('submit',function(e){ e.preventDefault(); submitForm(); });
+document.addEventListener('DOMContentLoaded',init);
 </script>
 
 <style id="user-dropdown-style">

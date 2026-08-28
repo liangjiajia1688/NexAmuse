@@ -180,13 +180,14 @@
       <!-- Product Grid -->
       <div>
         <div class="sort-bar">
-          <div class="result-count">Showing <strong>12,400+</strong> products</div>
+          <div class="result-count">Showing <strong id="resultCount">0</strong> products</div>
           <div style="display:flex;gap:10px;align-items:center;">
-            <select><option>Sort by: Featured</option><option>Newest First</option><option>Price: Low to High</option><option>Price: High to Low</option><option>Most Inquired</option></select>
+            <input type="text" id="searchBox" placeholder="Search products…" style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text-secondary);font-size:.85rem;outline:none;min-width:160px;" />
+            <select id="sortSelect"><option value="featured">Sort by: Featured</option><option value="newest">Newest First</option><option value="price_asc">Price: Low to High</option><option value="price_desc">Price: High to Low</option></select>
           </div>
         </div>
 
-        <div class="product-grid filterable-grid">
+        <div class="product-grid filterable-grid" id="productGrid">
           <!-- Products -->
           <div class="card product-card filterable-item" data-category="vr" style="position:relative;">
             <span class="product-badge">HOT</span>
@@ -374,15 +375,7 @@
         </div>
 
         <!-- Pagination -->
-        <div class="pagination">
-          <button class="page-btn active">1</button>
-          <button class="page-btn">2</button>
-          <button class="page-btn">3</button>
-          <button class="page-btn">4</button>
-          <button class="page-btn">5</button>
-          <button class="page-btn">…</button>
-          <button class="page-btn">248</button>
-        </div>
+        <div class="pagination" id="pager"></div>
       </div>
     </div>
   </div>
@@ -404,5 +397,105 @@
 <div class="inquiry-modal" id="inquiryModal"><div class="inquiry-box"><button class="modal-close-btn" id="modalClose">✕</button><h3>Submit an Inquiry</h3><p>Our team will connect you with the right supplier within 24 hours.</p><form id="inquiryForm"><div class="form-row"><div class="form-group"><label>First Name *</label><input type="text" placeholder="John" required/></div><div class="form-group"><label>Last Name *</label><input type="text" placeholder="Smith" required/></div></div><div class="form-group"><label>Company Name *</label><input type="text" placeholder="Your Company Ltd." required/></div><div class="form-group"><label>Business Email *</label><input type="email" placeholder="john@company.com" required/></div><div class="form-group"><label>Product / Category</label><select><option>VR / XR Attractions</option><option>Arcade Machines</option><option>Kids & Family Rides</option><option>Redemption Games</option><option>Simulation Rides</option><option>Complete FEC Solution</option></select></div><div class="form-group"><label>Message</label><textarea placeholder="Tell us about your project, quantity, budget, timeline..."></textarea></div><button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Submit Inquiry →</button></form></div></div>
 <button class="scroll-top" id="scrollTop">↑</button>
 <script src="../assets/js/main.js"></script>
+<script>
+(function(){
+  const CAT_LABEL = {
+    'Arcade Machines':'Arcade','VR / XR Attractions':'VR / XR','Kids & Family Rides':'Kids & Family',
+    'Redemption Games':'Redemption','Simulation Rides':'Simulation','Outdoor Attractions':'Outdoor',
+    'Water Park Equipment':'Water Park','Payment Technology':'Payment','Accessories & Parts':'Accessories'
+  };
+  const state = { cat: new URLSearchParams(location.search).get('cat')||'', sort:'featured', page:1, q:'', limit:12 };
+
+  const grid = document.getElementById('productGrid');
+  const pager = document.getElementById('pager');
+  const countEl = document.getElementById('resultCount');
+  const sortSelect = document.getElementById('sortSelect');
+  const searchBox = document.getElementById('searchBox');
+
+  function highlightCat(){
+    document.querySelectorAll('.filter-btn[data-group="cat"]').forEach(b=>{
+      b.classList.toggle('active', (b.dataset.filter||'all')===(state.cat||'all'));
+    });
+  }
+
+  function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  function cardHtml(p){
+    const img = p.image ? `<div class="card-image" style="background-image:url('${esc(p.image)}');background-size:cover;background-position:center;"></div>` :
+      `<div class="card-image" style="background:linear-gradient(135deg,#1e3a5f,#0d1f3c);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🎮</div>`;
+    const cat = CAT_LABEL[p.category] || p.category || 'Product';
+    const price = p.price ? p.price : (p.min_price ? 'From $'+esc(p.min_price)+' USD' : 'Price on Request');
+    const company = p.company_name ? `🏭 ${esc(p.company_name)}` : '';
+    const country = p.company_country ? `🇨🇳 ${esc(p.company_country)}` : '';
+    return `<div class="card product-card" style="position:relative;">
+      ${p.featured?'<span class="product-badge">FEATURED</span>':''}
+      ${img}
+      <div class="card-body">
+        <span class="card-tag">${esc(cat)}</span>
+        <div class="card-title">${esc(p.name)}</div>
+        <div class="card-meta">${company?`<span>${company}</span>`:''}${country?`<span>${country}</span>`:''}</div>
+        ${p.short_description?`<div style="font-size:.82rem;color:var(--text-secondary);margin-top:6px;line-height:1.5;">${esc(p.short_description).slice(0,90)}</div>`:''}
+        <div class="card-price">${price}</div>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn btn-primary btn-sm js-inquiry" style="flex:1;">Get Quote</button>
+          <button class="btn btn-ghost btn-sm">Save</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  async function render(){
+    const qs = new URLSearchParams();
+    if(state.cat) qs.set('cat', state.cat);
+    qs.set('sort', state.sort);
+    qs.set('page', state.page);
+    qs.set('limit', state.limit);
+    if(state.q) qs.set('q', state.q);
+    const r = await fetch('/api/products?'+qs.toString());
+    const data = await r.json().catch(()=>({products:[],total:0}));
+    const products = data.products||[];
+    countEl.textContent = data.total||0;
+    if(!products.length){
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-secondary);padding:60px 20px;">No products found.</div>';
+    } else {
+      grid.innerHTML = products.map(cardHtml).join('');
+    }
+    renderPager(data.total||0);
+  }
+
+  function renderPager(total){
+    const pages = Math.ceil(total/state.limit) || 1;
+    let html = `<button class="page-btn" data-page="${Math.max(1,state.page-1)}">‹</button>`;
+    const around = 2;
+    for(let i=1;i<=pages;i++){
+      if(i===1 || i===pages || (i>=state.page-around && i<=state.page+around)){
+        html += `<button class="page-btn ${i===state.page?'active':''}" data-page="${i}">${i}</button>`;
+      } else if(i===state.page-around-1 || i===state.page+around+1){
+        html += `<button class="page-btn" disabled>…</button>`;
+      }
+    }
+    html += `<button class="page-btn" data-page="${Math.min(pages,state.page+1)}">›</button>`;
+    pager.innerHTML = html;
+  }
+
+  document.querySelectorAll('.filter-btn[data-group="cat"]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      state.cat = b.dataset.filter==='all' ? '' : b.dataset.filter;
+      state.page = 1; highlightCat(); render();
+    });
+  });
+  sortSelect.addEventListener('change',()=>{ state.sort=sortSelect.value; state.page=1; render(); });
+  let t; searchBox.addEventListener('input',()=>{ clearTimeout(t); t=setTimeout(()=>{ state.q=searchBox.value.trim(); state.page=1; render(); }, 350); });
+  pager.addEventListener('click',(e)=>{
+    const btn = e.target.closest('.page-btn[data-page]');
+    if(!btn) return;
+    state.page = parseInt(btn.dataset.page,10); render();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+
+  highlightCat();
+  render();
+})();
+</script>
 </body>
 </html>
