@@ -47,6 +47,7 @@ const NAV = [
   ]},
   { section: 'Analytics', items: [
     { href: 'analytics.html', icon: '📈', label: 'Statistics', page: 'analytics', badge:'NEW' },
+    { href: 'images.html', icon: '🖼', label: 'Images', page: 'images', badge:'NEW' },
   ]},
   { section: 'Members', items: [
     { href: 'members.html',           icon: '👥', label: 'Manage Members',   page: 'members' },

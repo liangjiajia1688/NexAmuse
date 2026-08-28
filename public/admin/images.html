@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Image Management — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;}
+.img-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:.2s;}
+.img-card:hover{border-color:rgba(201,162,39,.3)}
+.img-thumb{height:140px;background-size:cover;background-position:center;background-color:var(--secondary);position:relative;}
+.img-thumb .type{position:absolute;top:6px;left:6px;padding:2px 8px;border-radius:6px;background:rgba(0,0,0,.7);color:#fff;font-size:10px;text-transform:uppercase;}
+.img-info{padding:12px;}
+.img-info .title{font-size:12px;color:#e2e8f0;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.img-info .meta{font-size:11px;color:var(--text-muted);margin-bottom:8px;}
+.img-info .sizes{display:flex;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--text-secondary);margin-bottom:10px;}
+.img-info .sizes span{padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.05);}
+.img-actions{display:flex;gap:6px;}
+.img-actions button{flex:1;padding:5px 8px;border-radius:6px;border:none;font-size:11px;cursor:pointer;}
+.btn-compress{background:linear-gradient(135deg,#c9a227,#e6b800);color:#06101f;font-weight:600;}
+.btn-compress:disabled{opacity:.6;cursor:not-allowed;}
+.btn-delete{background:rgba(239,68,68,.15);color:#ef4444;}
+.toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;}
+.toolbar input{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none;min-width:220px;}
+.pager{display:flex;gap:8px;justify-content:center;margin-top:20px;}
+.pager button{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:12px;cursor:pointer;}
+.pager button.active{background:var(--gold);color:#06101f;border-color:var(--gold);}
+.pager button:disabled{opacity:.5;cursor:not-allowed;}
+.empty-state{text-align:center;color:var(--text-muted);padding:40px 0;font-size:14px;}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" onclick="toggleSidebar()">☰</button><div class="breadcrumb">Analytics / <span>Images</span></div></div>
+      <div class="header-right">
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s;">
+            <div class="user-avatar">A</div><span style="color:var(--text-muted);font-size:13px;">Admin</span><span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info"><div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div><div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div></div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+        <h1 style="margin:0;font-size:22px;color:#e2e8f0;">Image Management</h1>
+        <button class="btn btn-primary" onclick="compressAll()">🗜️ Compress Uncompressed</button>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="q" placeholder="Search product or company…" oninput="debounceLoad()"/>
+        <select id="type" onchange="loadImages(0)" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;">
+          <option value="">All Types</option>
+          <option value="product">Product</option>
+          <option value="detail">Detail</option>
+        </select>
+      </div>
+
+      <div id="imageList"><div class="empty-state">Loading…</div></div>
+      <div id="pager" class="pager"></div>
+    </main>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{ initPage('images'); loadImages(); });
+let images=[], offset=0, limit=20, total=0;
+let debounceTimer;
+function debounceLoad(){ clearTimeout(debounceTimer); debounceTimer=setTimeout(()=>loadImages(0), 250); }
+
+async function loadImages(newOffset=0){
+  offset=newOffset;
+  const list=document.getElementById('imageList');
+  list.innerHTML='<div class="empty-state">Loading…</div>';
+  const params=new URLSearchParams({limit, offset, q:document.getElementById('q').value, type:document.getElementById('type').value});
+  try{
+    const data=await apiGet('/api/admin/images?'+params.toString());
+    images=data.images||[]; total=data.total||0;
+    renderImages();
+    renderPager();
+  }catch(e){ list.innerHTML='<div class="empty-state">'+e.message+'</div>'; }
+}
+
+function formatBytes(b){ if(!b) return '0 B'; const k=1024, s=['B','KB','MB','GB']; const i=Math.floor(Math.log(b)/Math.log(k)); return (b/Math.pow(k,i)).toFixed(i?1:0)+' '+s[i]; }
+
+function renderImages(){
+  const list=document.getElementById('imageList');
+  if(!images.length){ list.innerHTML='<div class="empty-state">No images found.</div>'; return; }
+  list.innerHTML=`<div class="img-grid">${images.map(img=>{
+    const compressed=!!(img.compressed_url && img.compressed_url.startsWith('http'));
+    const src=img.compressed_url||img.original_url;
+    return `<div class="img-card" id="img-card-${img.id}">
+      <div class="img-thumb" style="background-image:url('${src}')">
+        <span class="type">${img.image_type||'product'}</span>
+      </div>
+      <div class="img-info">
+        <div class="title" title="${esc(img.product_name||'Unknown')}">${esc(img.product_name||'Unknown')}</div>
+        <div class="meta">${esc(img.company_name||'—')}</div>
+        <div class="sizes">
+          <span>Original: ${formatBytes(img.original_size)}</span>
+          ${compressed?`<span>Compressed: ${formatBytes(img.compressed_size)}</span>`:'<span style="color:#f59e0b">Not compressed</span>'}
+        </div>
+        <div class="img-actions">
+          <button class="btn-compress" id="btn-compress-${img.id}" onclick="compressOne(${img.id})" ${compressed?'disabled':''}>${compressed?'Compressed':'Compress'}</button>
+          <button class="btn-delete" onclick="deleteImage(${img.id})">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function renderPager(){
+  const pages=Math.ceil(total/limit);
+  const el=document.getElementById('pager');
+  if(pages<=1){ el.innerHTML=''; return; }
+  let html=`<button ${offset===0?'disabled':''} onclick="loadImages(${Math.max(0,offset-limit)})">Prev</button>`;
+  for(let i=0;i<pages;i++){
+    const active=(i*limit)===offset?'active':'';
+    html+=`<button class="${active}" onclick="loadImages(${i*limit})">${i+1}</button>`;
+  }
+  html+=`<button ${offset+limit>=total?'disabled':''} onclick="loadImages(${offset+limit})">Next</button>`;
+  el.innerHTML=html;
+}
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+async function compressImageBlob(url){
+  const r=await fetch(url, {mode:'cors'});
+  if(!r.ok) throw new Error('Cannot fetch original image');
+  const blob=await r.blob();
+  if(blob.size<=1024*1024) return {url, size:blob.size}; // no need
+  const dataUrl=await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(blob); });
+  return await compressDataUrl(dataUrl);
+}
+
+async function compressDataUrl(dataUrl){
+  return new Promise((resolve,reject)=>{
+    const img=new Image(); img.crossOrigin='anonymous';
+    img.onload=()=>{
+      const canvas=document.createElement('canvas'); const ctx=canvas.getContext('2d');
+      let {width,height}=img; const maxDim=1600;
+      if(width>maxDim || height>maxDim){ const scale=Math.min(maxDim/width,maxDim/height); width*=scale; height*=scale; }
+      canvas.width=width; canvas.height=height; ctx.drawImage(img,0,0,width,height);
+      let quality=0.85;
+      const step=()=>{
+        canvas.toBlob(async (b)=>{
+          if(!b) return reject(new Error('Canvas toBlob failed'));
+          if(b.size<=1024*1024 || quality<=0.45){
+            const ab=await b.arrayBuffer(); const uint=new Uint8Array(ab); let bin=''; const chunk=0x8000;
+            for(let i=0;i<uint.length;i+=chunk){ bin+=String.fromCharCode.apply(null,uint.subarray(i,i+chunk)); }
+            const dataUrl='data:image/webp;base64,'+btoa(bin);
+            const url=await uploadToImgBB(dataUrl);
+            resolve({url, size:b.size});
+          } else { quality-=0.1; step(); }
+        },'image/webp',quality);
+      };
+      step();
+    };
+    img.onerror=()=>reject(new Error('Image load failed'));
+    img.src=dataUrl;
+  });
+}
+
+async function uploadToImgBB(base64){
+  const fd=new FormData(); fd.append('image', base64);
+  const r=await fetch('/api/upload',{method:'POST',headers:{'Authorization':'Bearer '+localStorage.getItem('token')},body:fd});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data.error||'Upload failed');
+  return data.url;
+}
+
+async function compressOne(id){
+  const img=images.find(i=>i.id===id); if(!img) return;
+  const btn=document.getElementById('btn-compress-'+id);
+  if(btn) btn.textContent='Compressing…';
+  try{
+    const res=await compressImageBlob(img.original_url);
+    await apiSend('/api/admin/images/'+id, 'PUT', {compressed_url:res.url, compressed_size:res.size, mime_type:'image/webp'});
+    img.compressed_url=res.url; img.compressed_size=res.size; img.mime_type='image/webp';
+    renderImages();
+    showToast('Image compressed', 'success');
+  }catch(e){ showToast(e.message||'Failed', 'error'); if(btn) btn.textContent='Compress'; }
+}
+
+async function compressAll(){
+  const targets=images.filter(i=>!(i.compressed_url && i.compressed_url.startsWith('http')));
+  if(!targets.length){ showToast('All images already compressed', 'info'); return; }
+  if(!confirm(`Compress ${targets.length} uncompressed images in the current page?`)) return;
+  for(const img of targets){
+    await compressOne(img.id).catch(()=>{});
+  }
+  showToast('Batch compression completed', 'success');
+  loadImages(offset);
+}
+
+async function deleteImage(id){
+  if(!confirm('Delete this image from database?')) return;
+  try{ await apiSend('/api/admin/images/'+id, 'DELETE'); showToast('Deleted', 'success'); loadImages(offset); }
+  catch(e){ showToast(e.message||'Failed', 'error'); }
+}
+</script>
+</body>
+</html>

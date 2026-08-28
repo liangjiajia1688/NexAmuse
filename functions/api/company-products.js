@@ -9,7 +9,7 @@ function slugify(text) {
     .slice(0, 80);
 }
 
-function pickProduct(row) {
+function pickProduct(row, images) {
   if (!row) return null;
   return {
     id: row.id,
@@ -21,11 +21,71 @@ function pickProduct(row) {
     price: row.price,
     moq: row.moq,
     image: row.image,
+    images: images || [],
     status: row.status,
     featured: row.featured,
     created_at: row.created_at,
     updated_at: row.updated_at
   };
+}
+
+async function loadImages(env, productId) {
+  return (await env.DB.prepare(
+    'SELECT id, product_id, image_type, original_url, compressed_url, original_size, compressed_size, mime_type, sort_order, created_at FROM product_images WHERE product_id=? ORDER BY image_type, sort_order, id'
+  ).bind(productId).all()).results || [];
+}
+
+async function syncProductImages(env, productId, images) {
+  if (!Array.isArray(images) || !images.length) return;
+  const ts = now();
+  // delete existing images not in the new list
+  const keepIds = images.map(i => i.id).filter(Boolean);
+  if (keepIds.length) {
+    const placeholders = keepIds.map(() => '?').join(',');
+    await env.DB.prepare(`DELETE FROM product_images WHERE product_id=? AND id NOT IN (${placeholders})`).bind(productId, ...keepIds).run();
+  } else {
+    await env.DB.prepare('DELETE FROM product_images WHERE product_id=?').bind(productId).run();
+  }
+  for (let i = 0; i < images.length; i++) {
+    const img = images[i];
+    if (img.id) {
+      await env.DB.prepare(
+        `UPDATE product_images SET original_url=?, compressed_url=?, original_size=?, compressed_size=?, mime_type=?, image_type=?, sort_order=?, updated_at=? WHERE id=? AND product_id=?`
+      ).bind(
+        img.original_url || null,
+        img.compressed_url || null,
+        img.original_size || 0,
+        img.compressed_size || 0,
+        img.mime_type || 'image/webp',
+        img.image_type || 'product',
+        i,
+        ts,
+        img.id,
+        productId
+      ).run();
+    } else {
+      await env.DB.prepare(
+        `INSERT INTO product_images (product_id, original_url, compressed_url, original_size, compressed_size, mime_type, image_type, sort_order, created_at, updated_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?)`
+      ).bind(
+        productId,
+        img.original_url || null,
+        img.compressed_url || null,
+        img.original_size || 0,
+        img.compressed_size || 0,
+        img.mime_type || 'image/webp',
+        img.image_type || 'product',
+        i,
+        ts,
+        ts
+      ).run();
+    }
+  }
+  // keep first product image in legacy column as thumbnail
+  const firstProduct = images.find(i => i.image_type === 'product' || !i.image_type);
+  if (firstProduct) {
+    await env.DB.prepare('UPDATE company_products SET image=? WHERE id=?').bind(firstProduct.compressed_url || firstProduct.original_url || null, productId).run();
+  }
 }
 
 async function getMyCompany(env, userId) {
@@ -58,7 +118,12 @@ export async function onRequest(context) {
     const rows = await env.DB.prepare(
       'SELECT * FROM company_products WHERE company_id=? ORDER BY featured DESC, created_at DESC'
     ).bind(company.id).all();
-    return json({ ok: true, company: { id: company.id, name: company.name, slug: company.slug, status: company.status }, products: (rows.results || []).map(pickProduct) });
+    const products = [];
+    for (const row of rows.results || []) {
+      const images = await loadImages(env, row.id);
+      products.push(pickProduct(row, images));
+    }
+    return json({ ok: true, company: { id: company.id, name: company.name, slug: company.slug, status: company.status }, products });
   }
 
   if (request.method === 'POST') {
@@ -94,9 +159,12 @@ export async function onRequest(context) {
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
     ).bind(company.id, user.id, name, slug, category, description, price, moq, image, 'active', featured, ts, ts).run();
 
+    const productId = res.meta.last_row_id;
+    await syncProductImages(env, productId, body.images || []);
     await refreshProductCount(env, company.id);
-    const row = await env.DB.prepare('SELECT * FROM company_products WHERE id=?').bind(res.meta.last_row_id).first();
-    return json({ ok: true, product: pickProduct(row), message: 'Product added' }, 201);
+    const row = await env.DB.prepare('SELECT * FROM company_products WHERE id=?').bind(productId).first();
+    const images = await loadImages(env, productId);
+    return json({ ok: true, product: pickProduct(row, images), message: 'Product added' }, 201);
   }
 
   if (request.method === 'PUT') {
@@ -129,9 +197,11 @@ export async function onRequest(context) {
        WHERE id=?`
     ).bind(name, category, description, price, moq, image, featured, status, ts, id).run();
 
+    await syncProductImages(env, id, body.images || []);
     await refreshProductCount(env, existing.company_id);
     const row = await env.DB.prepare('SELECT * FROM company_products WHERE id=?').bind(id).first();
-    return json({ ok: true, product: pickProduct(row), message: 'Product updated' });
+    const images = await loadImages(env, id);
+    return json({ ok: true, product: pickProduct(row, images), message: 'Product updated' });
   }
 
   if (request.method === 'DELETE') {
