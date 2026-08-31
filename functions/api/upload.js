@@ -18,8 +18,12 @@ export async function onRequest(context) {
   if (request.method !== 'POST') return fail('Method not allowed', 405);
   const user = await authUser(request, env);
   if (!user) return fail('Unauthorized', 401);
-  const perm = requireLevel(user, 'Premium', 'Upload images');
-  if (!perm.ok) return fail(perm.message, perm.code);
+  // Admins bypass the member-level requirement (e.g. uploading ad creatives).
+  const isAdmin = user.role === 'admin' || user.is_super === 1;
+  if (!isAdmin) {
+    const perm = requireLevel(user, 'Premium', 'Upload images');
+    if (!perm.ok) return fail(perm.message, perm.code);
+  }
 
   let form;
   try { form = await request.formData(); } catch (e) { return fail('Invalid form data'); }

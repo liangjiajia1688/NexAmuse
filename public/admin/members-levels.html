@@ -65,10 +65,10 @@
 
       <!-- Level Stats -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px">
-        <div class="stat-card"><div class="stat-icon" style="background:rgba(100,116,139,.12);color:#94a3b8">👤</div><div class="stat-info"><div class="stat-value">5,420</div><div class="stat-label">Standard Members</div></div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:rgba(201,162,39,.12);color:var(--gold)">⭐</div><div class="stat-info"><div class="stat-value">892</div><div class="stat-label">Premium Members</div></div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:rgba(139,92,246,.12);color:#c084fc">👑</div><div class="stat-info"><div class="stat-value">143</div><div class="stat-label">VIP Members</div></div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:rgba(16,185,129,.12);color:#10b981">📈</div><div class="stat-info"><div class="stat-value">+38</div><div class="stat-label">Upgrades This Week</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(100,116,139,.12);color:#94a3b8">👤</div><div class="stat-info"><div class="stat-value" id="lvStandard">–</div><div class="stat-label">Standard Members</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(201,162,39,.12);color:var(--gold)">⭐</div><div class="stat-info"><div class="stat-value" id="lvPremium">–</div><div class="stat-label">Premium Members</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(139,92,246,.12);color:#c084fc">👑</div><div class="stat-info"><div class="stat-value" id="lvVip">–</div><div class="stat-label">VIP Members</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(16,185,129,.12);color:#10b981">💎</div><div class="stat-info"><div class="stat-value" id="lvPoints">–</div><div class="stat-label">Total Points Issued</div></div></div>
       </div>
 
       <!-- 3 Level Cards -->
@@ -142,7 +142,7 @@
       <div class="card" style="margin-bottom:24px">
         <div class="card-header">
           <h3>💎 Points Earning Rules</h3>
-          <button class="btn btn-outline btn-sm" onclick="saveRules()">💾 Save Changes</button>
+          <button class="btn btn-gold btn-sm" onclick="addRule()">➕ Add Rule</button>
         </div>
         <div class="card-body">
           <div style="overflow-x:auto">
@@ -169,57 +169,127 @@
 </div>
 <script src="admin.js"></script>
 <script>
-const RULES = [
-  {action:'New Registration',pts:'+1',freq:'Once (lifetime)',level:'All',active:true},
-  {action:'Daily Login',pts:'+1',freq:'Once per day',level:'All',active:true},
-  {action:'Post a Forum Thread',pts:'+1',freq:'Standard: 1/day · Premium/VIP: unlimited',level:'All',active:true},
-  {action:'Comment on Article/Post',pts:'+1',freq:'Standard: 1/account · Premium/VIP: unlimited',level:'All',active:true},
-  {action:'Upload a Product',pts:'+2',freq:'Per approved product',level:'Premium+',active:true},
-  {action:'Publish an Article',pts:'+3',freq:'Per published article',level:'Premium+',active:true},
-  {action:'Complete Member Profile',pts:'+2',freq:'Once',level:'All',active:true},
-  {action:'Receive an Inquiry',pts:'+2',freq:'Per inquiry received',level:'Premium+',active:true},
-  {action:'Refer a New Member',pts:'+5',freq:'Per verified referral',level:'All',active:true},
-  {action:'Exhibition Pre-Registration',pts:'+1',freq:'Per exhibition',level:'All',active:false},
-];
-const rulesEl = document.getElementById('rulesTable');
-rulesEl.innerHTML = RULES.map((r,i)=>`<tr>
-  <td style="font-weight:500;color:#e2e8f0">${r.action}</td>
-  <td><span class="pts-tag" style="background:rgba(201,162,39,.15);color:var(--gold)">${r.pts}</span></td>
-  <td style="font-size:12px;color:var(--text-muted)">${r.freq}</td>
-  <td><span style="font-size:12px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,.06);color:var(--text-muted)">${r.level}</span></td>
-  <td><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" ${r.active?'checked':''} onchange="toggleRule(${i},this.checked)"> ${r.active?'<span style="color:#56ab2f">Active</span>':'<span style="color:var(--text-muted)">Disabled</span>'}</label></td>
-  <td><button class="btn btn-outline btn-sm" onclick="editRule(${i})">Edit</button></td>
-</tr>`).join('');
+let RULES=[];
+const rulesEl=document.getElementById('rulesTable');
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function renderRules(){
+  if(!RULES.length){
+    rulesEl.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No points rules yet.</td></tr>';
+    return;
+  }
+  rulesEl.innerHTML=RULES.map((r,i)=>`<tr>
+    <td style="font-weight:500;color:#e2e8f0">${esc(r.action)}</td>
+    <td><span class="pts-tag" style="background:rgba(201,162,39,.15);color:var(--gold)">${r.points>=0?'+':''}${r.points}</span></td>
+    <td style="font-size:12px;color:var(--text-muted)">${esc(r.frequency||'—')}</td>
+    <td><span style="font-size:12px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,.06);color:var(--text-muted)">${esc(r.min_level||'All')}</span></td>
+    <td><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" ${r.active?'checked':''} onchange="toggleRule(${i},this.checked)"> ${r.active?'<span style="color:#56ab2f">Active</span>':'<span style="color:var(--text-muted)">Disabled</span>'}</label></td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="editRule(${i})">Edit</button>
+      <button class="btn btn-outline btn-sm" style="color:#f87171;border-color:rgba(248,113,113,.3)" onclick="deleteRule(${i})">🗑</button>
+    </td>
+  </tr>`).join('');
+}
+
+async function loadRules(){
+  try{
+    const data=await apiGet('/api/admin/point-rules');
+    RULES=(data.rules||[]).map(r=>({id:r.id,action:r.action,points:r.points,frequency:r.frequency,min_level:r.min_level,active:!!r.active}));
+    renderRules();
+  }catch(e){
+    console.error(e);
+    rulesEl.innerHTML='<tr><td colspan="6" style="text-align:center;color:#f87171;padding:24px">Failed to load rules.</td></tr>';
+  }
+}
+
+async function toggleRule(i,checked){
+  const r=RULES[i];
+  try{
+    await apiSend('/api/admin/point-rules?id='+r.id,'PUT',{active:checked});
+    r.active=checked;
+    renderRules();
+    showToast(checked?'Rule enabled':'Rule disabled',checked?'success':'info');
+  }catch(e){showToast(e.message||'Update failed','error');renderRules();}
+}
+
+async function editRule(i){
+  const r=RULES[i];
+  const pts=prompt('Points awarded for "'+r.action+'" (negative to deduct):',String(r.points));
+  if(pts===null)return;
+  const freq=prompt('Frequency limit:',r.frequency||'');
+  if(freq===null)return;
+  try{
+    await apiSend('/api/admin/point-rules?id='+r.id,'PUT',{points:parseInt(pts,10)||0,frequency:freq});
+    r.points=parseInt(pts,10)||0;
+    r.frequency=freq;
+    renderRules();
+    showToast('Rule updated','success');
+  }catch(e){showToast(e.message||'Update failed','error');}
+}
+
+async function deleteRule(i){
+  const r=RULES[i];
+  if(!confirm('Delete rule "'+r.action+'"?'))return;
+  try{
+    await apiSend('/api/admin/point-rules?id='+r.id,'DELETE');
+    showToast('Rule deleted','success');
+    loadRules();
+  }catch(e){showToast(e.message||'Delete failed','error');}
+}
+
+async function addRule(){
+  const action=prompt('Rule name (e.g. "Write a Review"):');
+  if(!action)return;
+  const pts=prompt('Points awarded:', '1');
+  if(pts===null)return;
+  const freq=prompt('Frequency limit:', 'Once');
+  try{
+    await apiSend('/api/admin/point-rules','POST',{action,points:parseInt(pts,10)||0,frequency:freq||'Once',min_level:'All',active:true});
+    showToast('Rule created','success');
+    loadRules();
+  }catch(e){showToast(e.message||'Create failed','error');}
+}
+
+async function loadLevelStats(){
+  try{
+    const data=await apiGet('/api/admin/points?limit=1');
+    const s=data.stats||{};
+    document.getElementById('lvStandard').textContent=(s.standard||0).toLocaleString();
+    document.getElementById('lvPremium').textContent=(s.premium||0).toLocaleString();
+    document.getElementById('lvVip').textContent=(s.vip||0).toLocaleString();
+    document.getElementById('lvPoints').textContent=(s.points||0).toLocaleString();
+  }catch(e){console.error(e);}
+}
+
+loadRules();
+loadLevelStats();
 
 const GROUPS = [
-  {icon:'🎡',name:'Amusement Park',count:320,color:'#c9a227'},
-  {icon:'🏭',name:'Equipment Supplier',count:1240,color:'#4facfe'},
-  {icon:'🛒',name:'Buyer / Operator',count:4320,color:'#56ab2f'},
-  {icon:'📰',name:'Media & Press',count:342,color:'#f093fb'},
-  {icon:'🤝',name:'Distributor',count:680,color:'#11998e'},
-  {icon:'🎪',name:'Theme Park',count:215,color:'#ee0979'},
-  {icon:'🎮',name:'Arcade Operator',count:890,color:'#667eea'},
-  {icon:'🌊',name:'Water Park',count:178,color:'#00c2ff'},
-  {icon:'🏢',name:'Industry Association',count:56,color:'#f59e0b'},
-  {icon:'👑',name:'VIP Partner',count:67,color:'#c084fc'},
+  {icon:'🎡',name:'Amusement Park',color:'#c9a227'},
+  {icon:'🏭',name:'Equipment Supplier',color:'#4facfe'},
+  {icon:'🛒',name:'Buyer / Operator',color:'#56ab2f'},
+  {icon:'📰',name:'Media & Press',color:'#f093fb'},
+  {icon:'🤝',name:'Distributor',color:'#11998e'},
+  {icon:'🎪',name:'Theme Park',color:'#ee0979'},
+  {icon:'🎮',name:'Arcade Operator',color:'#667eea'},
+  {icon:'🌊',name:'Water Park',color:'#00c2ff'},
+  {icon:'🏢',name:'Industry Association',color:'#f59e0b'},
+  {icon:'👑',name:'VIP Partner',color:'#c084fc'},
 ];
 document.getElementById('groupsGrid').innerHTML = GROUPS.map(g=>`
   <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:16px;transition:.2s;cursor:pointer" onmouseover="this.style.borderColor='${g.color}40'" onmouseout="this.style.borderColor='var(--border)'">
     <div style="font-size:28px;margin-bottom:8px">${g.icon}</div>
     <div style="font-weight:600;color:#e2e8f0;font-size:14px;margin-bottom:4px">${g.name}</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">${g.count.toLocaleString()} members</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Industry type label</div>
     <div style="display:flex;gap:6px">
-      <button class="btn btn-outline btn-sm" style="flex:1;font-size:11px">Edit</button>
-      <button class="btn btn-outline btn-sm" style="font-size:11px;color:#ef4444;border-color:rgba(239,68,68,.3)">🗑</button>
+      <button class="btn btn-outline btn-sm" style="flex:1;font-size:11px" onclick="showToast('Group renaming is not wired to the database yet','info')">Edit</button>
     </div>
   </div>`).join('');
 
-function editLevel(l){showToast('Opening level editor for '+l,'info');}
-function viewMembers(l){window.location.href='members.html?level='+l;}
-function toggleRule(i,v){RULES[i].active=v;showToast(v?'Rule enabled':'Rule disabled',v?'success':'info');}
-function editRule(i){showToast('Edit rule: '+RULES[i].action,'info');}
-function saveRules(){showToast('Rules saved!','success');}
-function addGroup(){showToast('Group editor opened','info');}
+function editLevel(l){showToast('Level thresholds are defined by the points system (30 pts → Premium, 100 pts → VIP).','info');}
+function viewMembers(l){window.location.href='members-points.html?level='+l;}
+function addGroup(){showToast('Member groups are not stored in the database yet','info');}
 </script>
 <style>
 .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:.2s;}

@@ -58,99 +58,103 @@
 
       <!-- Stats Row -->
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px">
-        <div class="stat-mini"><div class="num">24</div><div class="lab">Total Ads</div></div>
-        <div class="stat-mini"><div class="num" style="color:#56ab2f">16</div><div class="lab">Active</div></div>
-        <div class="stat-mini"><div class="num" style="color:#f59e0b">5</div><div class="lab">Paused</div></div>
-        <div class="stat-mini"><div class="num" style="color:#f87171">3</div><div class="lab">Expired</div></div>
-        <div class="stat-mini"><div class="num">128k</div><div class="lab">Total Impressions</div></div>
+        <div class="stat-mini"><div class="num" id="stTotal">–</div><div class="lab">Total Ads</div></div>
+        <div class="stat-mini"><div class="num" id="stActive" style="color:#56ab2f">–</div><div class="lab">Active</div></div>
+        <div class="stat-mini"><div class="num" id="stPaused" style="color:#f59e0b">–</div><div class="lab">Paused</div></div>
+        <div class="stat-mini"><div class="num" id="stExpired" style="color:#f87171">–</div><div class="lab">Expired</div></div>
+        <div class="stat-mini"><div class="num" id="stImpr">–</div><div class="lab">Total Impressions</div></div>
       </div>
 
       <!-- Filter Bar -->
       <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
-        <select class="form-select" style="width:auto" onchange="filterAds(this.value)" id="zoneFilter">
+        <select class="form-select" style="width:auto" onchange="loadAds()" id="zoneFilter">
           <option value="">All Zones</option>
-          <option>Homepage Banner</option>
-          <option>Sidebar Right</option>
-          <option>News Top</option>
-          <option>Products Page</option>
-          <option>Footer Strip</option>
+          <option value="homepage">🏠 Homepage</option>
+          <option value="sidebar">📌 Sidebar</option>
+          <option value="article">📰 Article Page</option>
+          <option value="products">🎮 Products Page</option>
+          <option value="forum">💬 Forum</option>
+          <option value="ticker">📢 News Ticker</option>
         </select>
-        <select class="form-select" style="width:auto" onchange="filterStatus(this.value)">
+        <select class="form-select" style="width:auto" onchange="loadAds()" id="statusFilter">
           <option value="">All Status</option>
-          <option>Active</option><option>Paused</option><option>Expired</option><option>Pending</option>
+          <option value="active">Active</option><option value="paused">Paused</option><option value="expired">Expired</option><option value="pending">Pending</option>
         </select>
-        <input type="date" class="form-input" style="width:160px" placeholder="From date">
-        <input type="date" class="form-input" style="width:160px" placeholder="To date">
-        <button class="btn btn-outline btn-sm" onclick="applyFilter()">🔍 Filter</button>
+        <input type="text" class="form-input" style="width:200px" id="qFilter" placeholder="Search title / client..." oninput="debouncedLoad()">
+        <button class="btn btn-outline btn-sm" onclick="loadAds()">🔍 Filter</button>
         <button class="btn btn-outline btn-sm" onclick="exportAds()">📊 Export</button>
       </div>
 
       <!-- Ad Zone Legend -->
       <div class="card" style="margin-bottom:20px">
-        <div class="card-header"><h3>🗺️ Ad Zone Map</h3></div>
+        <div class="card-header"><h3>🗺️ Ad Zone Map</h3><span style="font-size:12px;color:var(--text-muted)" id="zoneCounts"></span></div>
         <div class="card-body">
           <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:13px">
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.2);border-radius:8px"><span>🏠</span><span><strong>Z1</strong> Homepage Hero Banner (1200×200)</span></div>
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(0,201,255,.06);border:1px solid rgba(0,201,255,.15);border-radius:8px"><span>📰</span><span><strong>Z2</strong> News Page Top (728×90)</span></div>
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px"><span>📦</span><span><strong>Z3</strong> Products Sidebar (300×250)</span></div>
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(86,171,47,.08);border:1px solid rgba(86,171,47,.2);border-radius:8px"><span>🔳</span><span><strong>Z4</strong> Footer Strip (1200×60)</span></div>
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px"><span>💬</span><span><strong>Z5</strong> Forum Sidebar (300×600)</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.2);border-radius:8px"><span>🏠</span><span><strong>Z1</strong> Homepage Hero Banner (1920×300)</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(0,201,255,.06);border:1px solid rgba(0,201,255,.15);border-radius:8px"><span>📌</span><span><strong>Z2</strong> Sidebar (300×250 · 300×600)</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px"><span>📰</span><span><strong>Z3</strong> Article Page (728×90)</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(86,171,47,.08);border:1px solid rgba(86,171,47,.2);border-radius:8px"><span>🎮</span><span><strong>Z4</strong> Products Page (960×200)</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px"><span>💬</span><span><strong>Z5</strong> Forum (970×90)</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(238,9,121,.08);border:1px solid rgba(238,9,121,.2);border-radius:8px"><span>📢</span><span><strong>Z6</strong> News Ticker (full width)</span></div>
           </div>
         </div>
       </div>
 
       <!-- Ads List -->
-      <div id="adsList"></div>
+      <div id="adsList"><div style="text-align:center;padding:40px;color:var(--text-muted)">Loading ads…</div></div>
     </div>
   </div>
 </div>
 
 <script src="admin.js"></script>
 <script>
-const ADS_DATA = [
-  {id:1,title:'GTI Asia 2026 — Official Exhibitor Ad',client:'GTI Expo',zone:'Homepage Banner (Z1)',size:'1200×200',status:'active',startDate:'2026-03-01',endDate:'2026-04-15',impressions:32400,clicks:892,budget:3500,spent:2100,img:'🎪'},
-  {id:2,title:'SuperFun VR — New Product Launch',client:'SuperFun Tech',zone:'News Page Top (Z2)',size:'728×90',status:'active',startDate:'2026-03-10',endDate:'2026-03-31',impressions:18200,clicks:441,budget:1200,spent:1200,img:'🥽'},
-  {id:3,title:'Guangzhou Amusement Co. — Brand Banner',client:'Guangzhou Amusement',zone:'Products Sidebar (Z3)',size:'300×250',status:'paused',startDate:'2026-02-15',endDate:'2026-05-30',impressions:9100,clicks:187,budget:2000,spent:600,img:'🏭'},
-  {id:4,title:'IAAPA Europark 2026 Pre-Registration',client:'IAAPA',zone:'Footer Strip (Z4)',size:'1200×60',status:'active',startDate:'2026-03-20',endDate:'2026-06-01',impressions:24500,clicks:720,budget:4000,spent:900,img:'🎡'},
-  {id:5,title:'LeisureTech Forum Sponsorship',client:'LeisureTech',zone:'Forum Sidebar (Z5)',size:'300×600',status:'active',startDate:'2026-03-25',endDate:'2026-04-25',impressions:6700,clicks:203,budget:1500,spent:400,img:'💻'},
-  {id:6,title:'Kiddie Zone Equipment - Spring Sale',client:'Happy Kids Co.',zone:'Homepage Banner (Z1)',size:'1200×200',status:'expired',startDate:'2026-01-01',endDate:'2026-02-28',impressions:41200,clicks:1320,budget:5000,spent:5000,img:'🎠'},
-  {id:7,title:'Coin Pusher Pro — New Series',client:'ArcadeKing',zone:'Products Sidebar (Z3)',size:'300×250',status:'pending',startDate:'2026-04-01',endDate:'2026-04-30',impressions:0,clicks:0,budget:800,spent:0,img:'🪙'},
-];
+const ZONE_LABEL={homepage:'Homepage',sidebar:'Sidebar',article:'Article Page',products:'Products Page',forum:'Forum',ticker:'News Ticker'};
+let CURRENT_ADS=[];
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtDate(v){if(!v)return '—';return String(v).slice(0,10)}
+function num(v){return (v||0).toLocaleString()}
 
 function renderAds(data){
   const el=document.getElementById('adsList');
-  if(!data.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">No ads found</div>';return;}
+  if(!data.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">No ads found. Create one with <strong>+ New Advertisement</strong>.</div>';return;}
   el.innerHTML=data.map(a=>{
     const pct=a.budget?Math.round(a.spent/a.budget*100):0;
-    const ctr=a.impressions?((a.clicks/a.impressions)*100).toFixed(2):0;
-    const daysLeft=Math.max(0,Math.ceil((new Date(a.endDate)-new Date())/(1000*60*60*24)));
+    const ctr=a.impressions?((a.clicks/a.impressions)*100).toFixed(2):'0.00';
+    let daysLeft='—';
+    if(a.end_date && a.status!=='expired'){
+      daysLeft=Math.max(0,Math.ceil((new Date(String(a.end_date).slice(0,10))-new Date())/86400000));
+    }
     const sClass={active:'s-active',paused:'s-paused',expired:'s-expired',pending:'s-pending'}[a.status]||'s-pending';
-    return `<div class="ad-zone-card ${a.status}" id="adcard${a.id}">
+    const thumb=a.image_url
+      ? `<img src="${esc(a.image_url)}" style="width:80px;height:50px;border-radius:6px;object-fit:cover" alt="">`
+      : `<div class="ad-thumb">${esc(a.emoji||'📢')}</div>`;
+    return `<div class="ad-zone-card ${esc(a.status)}" id="adcard${a.id}">
       <div style="display:flex;gap:16px;align-items:flex-start">
-        <div class="ad-thumb">${a.img}</div>
+        ${thumb}
         <div style="flex:1;min-width:0">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
             <div>
-              <div style="font-weight:600;font-size:14px;color:#e2e8f0;margin-bottom:4px">${a.title}</div>
-              <div style="font-size:12px;color:var(--text-muted)">${a.client} &nbsp;·&nbsp; <span class="zone-tag">${a.zone}</span> <span class="zone-tag">${a.size}</span></div>
+              <div style="font-weight:600;font-size:14px;color:#e2e8f0;margin-bottom:4px">${esc(a.title)}</div>
+              <div style="font-size:12px;color:var(--text-muted)">${esc(a.client||'—')} &nbsp;·&nbsp; <span class="zone-tag">${esc(ZONE_LABEL[a.zone]||a.zone)}</span> ${a.size?`<span class="zone-tag">${esc(a.size)}</span>`:''}</div>
             </div>
-            <span class="status-badge ${sClass}">${a.status==='active'?'● ':''}${a.status.toUpperCase()}</span>
+            <span class="status-badge ${sClass}">${a.status==='active'?'● ':''}${esc(String(a.status).toUpperCase())}</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px;font-size:12px">
-            <div><div style="color:var(--text-muted)">Period</div><div style="color:#e2e8f0;margin-top:2px">${a.startDate}<br>→ ${a.endDate}</div></div>
-            <div><div style="color:var(--text-muted)">Days Left</div><div style="color:${daysLeft<=3?'#f87171':'#e2e8f0'};font-size:16px;font-weight:700;margin-top:2px">${a.status==='expired'?'—':daysLeft}</div></div>
-            <div><div style="color:var(--text-muted)">Impressions</div><div style="color:#e2e8f0;font-weight:600;margin-top:2px">${a.impressions.toLocaleString()}</div></div>
-            <div><div style="color:var(--text-muted)">Clicks / CTR</div><div style="color:#e2e8f0;font-weight:600;margin-top:2px">${a.clicks} <span style="color:var(--gold);font-size:11px">(${ctr}%)</span></div></div>
+            <div><div style="color:var(--text-muted)">Period</div><div style="color:#e2e8f0;margin-top:2px">${fmtDate(a.start_date)}<br>→ ${fmtDate(a.end_date)}</div></div>
+            <div><div style="color:var(--text-muted)">Days Left</div><div style="color:${daysLeft!=='—'&&daysLeft<=3?'#f87171':'#e2e8f0'};font-size:16px;font-weight:700;margin-top:2px">${daysLeft}</div></div>
+            <div><div style="color:var(--text-muted)">Impressions</div><div style="color:#e2e8f0;font-weight:600;margin-top:2px">${num(a.impressions)}</div></div>
+            <div><div style="color:var(--text-muted)">Clicks / CTR</div><div style="color:#e2e8f0;font-weight:600;margin-top:2px">${num(a.clicks)} <span style="color:var(--gold);font-size:11px">(${ctr}%)</span></div></div>
             <div><div style="color:var(--text-muted)">Budget Used</div>
-              <div style="color:#e2e8f0;font-weight:600;margin-top:2px">$${a.spent} / $${a.budget}</div>
-              <div class="progress-thin"><div class="progress-fill" style="width:${pct}%;background:${pct>=90?'linear-gradient(90deg,#f87171,#ee0979)':pct>=70?'linear-gradient(90deg,#f59e0b,#fcd34d)':'linear-gradient(90deg,var(--gold),#f5d06e)'}"></div></div>
+              <div style="color:#e2e8f0;font-weight:600;margin-top:2px">$${num(a.spent)} / $${num(a.budget)}</div>
+              <div class="progress-thin"><div class="progress-fill" style="width:${Math.min(pct,100)}%;background:${pct>=90?'linear-gradient(90deg,#f87171,#ee0979)':pct>=70?'linear-gradient(90deg,#f59e0b,#fcd34d)':'linear-gradient(90deg,var(--gold),#f5d06e)'}"></div></div>
             </div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
           <button class="btn btn-outline btn-sm" onclick="editAd(${a.id})">✏️ Edit</button>
-          ${a.status==='active'?`<button class="btn btn-outline btn-sm" onclick="pauseAd(${a.id})">⏸ Pause</button>`:''}
-          ${a.status==='paused'?`<button class="btn btn-outline btn-sm" style="color:#56ab2f;border-color:#56ab2f" onclick="resumeAd(${a.id})">▶ Resume</button>`:''}
+          ${a.status==='active'?`<button class="btn btn-outline btn-sm" onclick="setStatus(${a.id},'paused')">⏸ Pause</button>`:''}
+          ${(a.status==='paused'||a.status==='pending')?`<button class="btn btn-outline btn-sm" style="color:#56ab2f;border-color:#56ab2f" onclick="setStatus(${a.id},'active')">▶ Resume</button>`:''}
           <button class="btn btn-outline btn-sm" style="color:#f87171;border-color:rgba(248,113,113,.3)" onclick="deleteAd(${a.id})">🗑</button>
         </div>
       </div>
@@ -158,16 +162,70 @@ function renderAds(data){
   }).join('');
 }
 
-function filterAds(z){renderAds(z?ADS_DATA.filter(a=>a.zone.includes(z)):ADS_DATA)}
-function filterStatus(s){renderAds(s?ADS_DATA.filter(a=>a.status===s.toLowerCase()):ADS_DATA)}
-function applyFilter(){renderAds(ADS_DATA)}
-function editAd(id){window.location.href='ads-add.html?id='+id}
-function pauseAd(id){const a=ADS_DATA.find(x=>x.id===id);if(a){a.status='paused';renderAds(ADS_DATA);showToast('Ad paused','info')}}
-function resumeAd(id){const a=ADS_DATA.find(x=>x.id===id);if(a){a.status='active';renderAds(ADS_DATA);showToast('Ad resumed','success')}}
-function deleteAd(id){if(confirm('Delete this ad?')){const i=ADS_DATA.findIndex(x=>x.id===id);if(i>=0){ADS_DATA.splice(i,1);renderAds(ADS_DATA);showToast('Ad deleted','success')}}}
-function exportAds(){showToast('Exporting ad data...','info')}
+async function loadAds(){
+  const zone=document.getElementById('zoneFilter').value;
+  const status=document.getElementById('statusFilter').value;
+  const q=(document.getElementById('qFilter').value||'').trim();
+  const p=new URLSearchParams({stats:'1'});
+  if(zone)p.set('zone',zone);
+  if(status)p.set('status',status);
+  if(q)p.set('q',q);
+  try{
+    const data=await apiGet('/api/admin/ads?'+p.toString());
+    CURRENT_ADS=data.ads||[];
+    renderAds(CURRENT_ADS);
+    const s=data.stats||{};
+    document.getElementById('stTotal').textContent=(s.total||0).toLocaleString();
+    document.getElementById('stActive').textContent=(s.active||0).toLocaleString();
+    document.getElementById('stPaused').textContent=(s.paused||0).toLocaleString();
+    document.getElementById('stExpired').textContent=(s.expired||0).toLocaleString();
+    document.getElementById('stImpr').textContent=(s.impressions||0).toLocaleString();
+    const counts=(s.zones||[]).map(z=>`${ZONE_LABEL[z.zone]||z.zone}: ${z.impressions.toLocaleString()}`).join(' · ');
+    document.getElementById('zoneCounts').textContent=counts;
+  }catch(e){
+    console.error(e);
+    document.getElementById('adsList').innerHTML='<div style="text-align:center;padding:40px;color:#f87171">Failed to load ads. Please refresh.</div>';
+  }
+}
 
-renderAds(ADS_DATA);
+let _deb;
+function debouncedLoad(){clearTimeout(_deb);_deb=setTimeout(loadAds,350);}
+
+async function setStatus(id,status){
+  try{
+    await apiSend('/api/admin/ads?id='+id,'PUT',{status});
+    showToast(status==='active'?'Ad resumed':'Ad paused','success');
+    loadAds();
+  }catch(e){showToast(e.message||'Update failed','error');}
+}
+
+async function deleteAd(id){
+  if(!confirm('Delete this ad permanently?'))return;
+  try{
+    await apiSend('/api/admin/ads?id='+id,'DELETE');
+    showToast('Ad deleted','success');
+    loadAds();
+  }catch(e){showToast(e.message||'Delete failed','error');}
+}
+
+function editAd(id){window.location.href='ads-add.html?id='+id}
+
+function exportAds(){
+  if(!CURRENT_ADS.length){showToast('No data to export','info');return;}
+  const head='Ad Title,Client,Zone,Size,Status,Start,End,Impressions,Clicks,CTR,Budget,Spent';
+  const rows=CURRENT_ADS.map(a=>[
+    a.title,a.client||'',ZONE_LABEL[a.zone]||a.zone,a.size||'',a.status,
+    fmtDate(a.start_date),fmtDate(a.end_date),a.impressions,a.clicks,
+    a.impressions?((a.clicks/a.impressions)*100).toFixed(2)+'%':'0',a.budget,a.spent
+  ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv=head+'\n'+rows.join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='ads.csv';a.click();
+  showToast('Exported '+CURRENT_ADS.length+' ads','success');
+}
+
+loadAds();
 </script>
 <style id="user-dropdown-style">
 .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}

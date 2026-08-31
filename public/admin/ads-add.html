@@ -52,9 +52,9 @@
             <div class="card-header"><h3>📋 Basic Information</h3></div>
             <div class="card-body">
               <div class="form-group"><label class="form-label">Ad Title / Name <span style="color:#ef4444">*</span></label><input type="text" class="form-input" id="adTitle" placeholder="e.g. GTI Asia 2026 Spring Promo"></div>
-              <div class="form-group"><label class="form-label">Advertiser / Company <span style="color:#ef4444">*</span></label><input type="text" class="form-input" placeholder="Company name"></div>
-              <div class="form-group"><label class="form-label">Click-through URL</label><input type="url" class="form-input" placeholder="https://example.com/landing-page"></div>
-              <div class="form-group"><label class="form-label">Ad Description (internal note)</label><textarea class="form-textarea" rows="2" placeholder="Brief notes about this campaign"></textarea></div>
+              <div class="form-group"><label class="form-label">Advertiser / Company</label><input type="text" class="form-input" id="adClient" placeholder="Company name"></div>
+              <div class="form-group"><label class="form-label">Click-through URL</label><input type="url" class="form-input" id="adLink" placeholder="https://example.com/landing-page"></div>
+              <div class="form-group"><label class="form-label">Ad Description (internal note)</label><textarea class="form-textarea" rows="2" id="adNotes" placeholder="Brief notes about this campaign"></textarea></div>
             </div>
           </div>
 
@@ -82,11 +82,10 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Position / Sort Order</label>
-                <select class="form-select">
-                  <option>Top of page (highest priority)</option>
-                  <option>Mid page</option>
-                  <option>Bottom of page</option>
-                  <option>Custom position</option>
+                <select class="form-select" id="adPriority">
+                  <option value="3">Top of page (highest priority)</option>
+                  <option value="2" selected>Mid page (normal)</option>
+                  <option value="1">Bottom of page (low)</option>
                 </select>
               </div>
             </div>
@@ -99,11 +98,12 @@
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
                 <div>
                   <label class="form-label">Upload Image</label>
-                  <div style="border:2px dashed rgba(201,162,39,.3);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:.2s" onclick="pickImg()" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(201,162,39,.3)'">
+                  <div style="border:2px dashed rgba(201,162,39,.3);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:.2s" onclick="document.getElementById('adFile').click()">
                     <div style="font-size:32px;margin-bottom:8px">🖼</div>
                     <div style="font-size:13px;color:var(--text-muted)">Click to upload</div>
                     <div style="font-size:11px;color:var(--text-muted);margin-top:4px">JPG, PNG, GIF, WebP · Max 2MB</div>
                   </div>
+                  <input type="file" id="adFile" accept="image/*" style="display:none" onchange="uploadAdImage(this)">
                 </div>
                 <div>
                   <label class="form-label">Preview</label>
@@ -115,11 +115,11 @@
               </div>
               <div class="form-group" style="margin-top:16px">
                 <label class="form-label">Alt Text / Accessibility Label</label>
-                <input type="text" class="form-input" placeholder="Describe the ad image">
+                <input type="text" class="form-input" id="adAlt" placeholder="Describe the ad image">
               </div>
               <div class="form-group">
                 <label class="form-label">Or embed HTML / Script code</label>
-                <textarea class="form-textarea" rows="3" placeholder="Paste third-party ad code here (optional)"></textarea>
+                <textarea class="form-textarea" rows="3" id="adHtml" placeholder="Paste third-party ad code here (optional)"></textarea>
               </div>
             </div>
           </div>
@@ -135,11 +135,11 @@
               <div id="durationInfo" style="font-size:13px;color:var(--gold);margin:-8px 0 14px;display:none">⏱ Duration: <strong id="durText"></strong></div>
               <div class="form-group">
                 <label class="form-label">Display Frequency</label>
-                <select class="form-select">
-                  <option>Show every page load</option>
-                  <option>Once per session</option>
-                  <option>Once per day per user</option>
-                  <option>Once per week per user</option>
+                <select class="form-select" id="adFrequency">
+                  <option value="always">Show every page load</option>
+                  <option value="session">Once per session</option>
+                  <option value="daily">Once per day per user</option>
+                  <option value="weekly">Once per week per user</option>
                 </select>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px">
@@ -156,10 +156,15 @@
             <div class="card-body">
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
                 <div class="form-group"><label class="form-label">Pricing Model</label>
-                  <select class="form-select"><option>CPM (per 1000 impressions)</option><option>CPC (per click)</option><option>Fixed Fee / Period</option><option>Free / House Ad</option></select>
+                  <select class="form-select" id="adPricing">
+                    <option value="CPM">CPM (per 1000 impressions)</option>
+                    <option value="CPC">CPC (per click)</option>
+                    <option value="FIXED">Fixed Fee / Period</option>
+                    <option value="FREE">Free / House Ad</option>
+                  </select>
                 </div>
-                <div class="form-group"><label class="form-label">Unit Price ($)</label><input type="number" class="form-input" placeholder="0.00"></div>
-                <div class="form-group"><label class="form-label">Total Budget ($)</label><input type="number" class="form-input" placeholder="0.00"></div>
+                <div class="form-group"><label class="form-label">Unit Price ($)</label><input type="number" class="form-input" id="adUnitPrice" placeholder="0.00"></div>
+                <div class="form-group"><label class="form-label">Total Budget ($)</label><input type="number" class="form-input" id="adBudget" placeholder="0.00"></div>
               </div>
             </div>
           </div>
@@ -171,16 +176,29 @@
             <div class="card-header"><h3>⚙️ Ad Settings</h3></div>
             <div class="card-body">
               <div class="form-group"><label class="form-label">Status</label>
-                <select class="form-select"><option>Active (published immediately)</option><option selected>Draft (review first)</option><option>Scheduled (start on date)</option></select>
-              </div>
-              <div class="form-group"><label class="form-label">Priority Level</label>
-                <select class="form-select"><option>⭐⭐⭐ Highest</option><option selected>⭐⭐ Normal</option><option>⭐ Low</option></select>
+                <select class="form-select" id="adStatus">
+                  <option value="active">Active (published immediately)</option>
+                  <option value="pending" selected>Draft (review first)</option>
+                  <option value="paused">Paused (not shown)</option>
+                </select>
               </div>
               <div class="form-group"><label class="form-label">Target Audience</label>
-                <select class="form-select"><option>All Visitors</option><option>Registered Members</option><option>Standard Members</option><option>Premium Members</option><option>VIP Members</option></select>
+                <select class="form-select" id="adTarget">
+                  <option value="all">All Visitors</option>
+                  <option value="members">Registered Members</option>
+                  <option value="standard">Standard Members</option>
+                  <option value="premium">Premium Members</option>
+                  <option value="vip">VIP Members</option>
+                </select>
               </div>
               <div class="form-group"><label class="form-label">Language / Region</label>
-                <select class="form-select"><option>All Regions</option><option>Asia-Pacific</option><option>Europe</option><option>Americas</option><option>China only</option></select>
+                <select class="form-select" id="adRegion">
+                  <option value="all">All Regions</option>
+                  <option value="apac">Asia-Pacific</option>
+                  <option value="europe">Europe</option>
+                  <option value="americas">Americas</option>
+                  <option value="china">China only</option>
+                </select>
               </div>
               <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
                 <button class="btn btn-gold" style="width:100%" onclick="publishAd()">🚀 Publish Ad</button>
@@ -215,13 +233,26 @@ const SLOTS = {
   forum:['Forum Top Banner (970×90)','Between Posts (300×250)','Forum Sidebar (300×250)'],
   ticker:['News Ticker (full width text)','Breaking Banner (full width image)'],
 };
+let currentZone='homepage';
+let uploadedImageUrl='';
+let editingId=0;
+
 function selectZone(el,zone){
   document.querySelectorAll('.zone-opt').forEach(o=>o.classList.remove('sel'));
-  el.classList.add('sel');
+  if(el)el.classList.add('sel');
+  currentZone=zone;
   const sel=document.getElementById('slotSelect');
   sel.innerHTML=(SLOTS[zone]||[]).map(s=>`<option>${s}</option>`).join('');
 }
-function pickImg(){showToast('Image picker opened','info');}
+function setZoneSilent(zone){
+  currentZone=zone;
+  const el=document.querySelector(`.zone-opt[data-zone="${zone}"]`);
+  document.querySelectorAll('.zone-opt').forEach(o=>o.classList.remove('sel'));
+  if(el)el.classList.add('sel');
+  const sel=document.getElementById('slotSelect');
+  sel.innerHTML=(SLOTS[zone]||[]).map(s=>`<option>${s}</option>`).join('');
+}
+
 function calcDuration(){
   const s=document.getElementById('startDt').value;
   const e=document.getElementById('endDt').value;
@@ -230,13 +261,117 @@ function calcDuration(){
   const info=document.getElementById('durationInfo');
   if(diff>0){info.style.display='block';document.getElementById('durText').textContent=Math.round(diff)+' days';}
 }
-function publishAd(){const t=document.getElementById('adTitle').value;if(!t){showToast('Please enter an ad title','error');return;}showToast('Advertisement published!','success');setTimeout(()=>window.location.href='ads.html',1200);}
-function saveDraft(){showToast('Saved as draft','success');}
+
+async function uploadAdImage(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){showToast('Image must be under 2MB','error');input.value='';return;}
+  showToast('Uploading image…','info');
+  try{
+    const fd=new FormData();
+    fd.append('image',file);
+    const token=(JSON.parse(localStorage.getItem('nexamuse_user')||'{}').token)||'';
+    const r=await fetch('/api/upload',{method:'POST',headers:token?{'Authorization':'Bearer '+token}:{},body:fd});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(data.error||'Upload failed');
+    uploadedImageUrl=data.url||'';
+    document.getElementById('adPreviewBox').innerHTML=`<img src="${uploadedImageUrl}" style="max-width:100%;max-height:120px;object-fit:contain">`;
+    showToast('Image uploaded','success');
+  }catch(e){showToast(e.message||'Upload failed','error');}
+  input.value='';
+}
+
+function collectPayload(defaultStatus){
+  const slot=document.getElementById('slotSelect').value||'';
+  const m=slot.match(/\(([^)]+)\)/);
+  return {
+    title:document.getElementById('adTitle').value.trim(),
+    client:document.getElementById('adClient').value.trim(),
+    zone:currentZone,
+    slot:slot,
+    size:m?m[1]:null,
+    status:document.getElementById('adStatus').value||defaultStatus,
+    image_url:uploadedImageUrl||null,
+    link_url:document.getElementById('adLink').value.trim()||null,
+    alt_text:document.getElementById('adAlt').value.trim()||null,
+    html_code:document.getElementById('adHtml').value.trim()||null,
+    start_date:document.getElementById('startDt').value||null,
+    end_date:document.getElementById('endDt').value||null,
+    pricing_model:document.getElementById('adPricing').value,
+    unit_price:Number(document.getElementById('adUnitPrice').value)||0,
+    budget:Number(document.getElementById('adBudget').value)||0,
+    priority:Number(document.getElementById('adPriority').value)||2,
+    target_audience:document.getElementById('adTarget').value,
+    region:document.getElementById('adRegion').value,
+    frequency:document.getElementById('adFrequency').value,
+    notes:document.getElementById('adNotes').value.trim()||null
+  };
+}
+
+async function saveAd(status){
+  const payload=collectPayload(status);
+  if(!payload.title){showToast('Please enter an ad title','error');return;}
+  if(status==='active')payload.status='active';
+  try{
+    if(editingId){
+      await apiSend('/api/admin/ads?id='+editingId,'PUT',payload);
+      showToast('Advertisement updated','success');
+    }else{
+      await apiSend('/api/admin/ads','POST',payload);
+      showToast(status==='active'?'Advertisement published!':'Saved as draft','success');
+    }
+    setTimeout(()=>window.location.href='ads.html',1000);
+  }catch(e){showToast(e.message||'Save failed','error');}
+}
+function publishAd(){saveAd('active');}
+function saveDraft(){saveAd('pending');}
+
+async function loadAd(id){
+  try{
+    const data=await apiGet('/api/admin/ads');
+    const ad=(data.ads||[]).find(a=>a.id===id);
+    if(!ad){showToast('Ad not found','error');return;}
+    document.getElementById('adTitle').value=ad.title||'';
+    document.getElementById('adClient').value=ad.client||'';
+    document.getElementById('adLink').value=ad.link_url||'';
+    document.getElementById('adNotes').value=ad.notes||'';
+    setZoneSilent(ad.zone||'homepage');
+    if(ad.slot){
+      const sel=document.getElementById('slotSelect');
+      if([...sel.options].some(o=>o.value===ad.slot))sel.value=ad.slot;
+    }
+    if(ad.image_url){
+      uploadedImageUrl=ad.image_url;
+      document.getElementById('adPreviewBox').innerHTML=`<img src="${ad.image_url}" style="max-width:100%;max-height:120px;object-fit:contain">`;
+    }
+    document.getElementById('adAlt').value=ad.alt_text||'';
+    document.getElementById('adHtml').value=ad.html_code||'';
+    document.getElementById('startDt').value=ad.start_date||'';
+    document.getElementById('endDt').value=ad.end_date||'';
+    if(ad.pricing_model)document.getElementById('adPricing').value=ad.pricing_model;
+    document.getElementById('adUnitPrice').value=ad.unit_price||0;
+    document.getElementById('adBudget').value=ad.budget||0;
+    if(ad.priority)document.getElementById('adPriority').value=String(ad.priority);
+    if(ad.target_audience)document.getElementById('adTarget').value=ad.target_audience;
+    if(ad.region)document.getElementById('adRegion').value=ad.region;
+    if(ad.frequency)document.getElementById('adFrequency').value=ad.frequency;
+    if(ad.status)document.getElementById('adStatus').value=ad.status;
+    calcDuration();
+  }catch(e){showToast(e.message||'Failed to load ad','error');}
+}
 
 // Pre-fill dates
 const now=new Date(),end=new Date(now.getTime()+30*86400000);
 document.getElementById('startDt').value=now.toISOString().slice(0,16);
 document.getElementById('endDt').value=end.toISOString().slice(0,16);
+
+const params=new URLSearchParams(location.search);
+editingId=parseInt(params.get('id')||'0',10);
+if(editingId){
+  document.querySelector('.title-h1').textContent='✏️ Edit Advertisement';
+  document.querySelector('.breadcrumb').innerHTML='Advertising / <span>Edit Advertisement</span>';
+  loadAd(editingId);
+}
 </script>
 <style>
 .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:.2s;}

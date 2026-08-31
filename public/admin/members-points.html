@@ -50,10 +50,10 @@
 
       <!-- Stats -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px">
-        <div class="card"><div class="card-body" style="text-align:center"><div style="font-size:26px;font-weight:700;color:var(--gold)">6,347</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">Total Members</div></div></div>
-        <div class="card"><div class="card-body" style="text-align:center"><div style="font-size:26px;font-weight:700;color:#94a3b8">4,820</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">🥉 Regular</div></div></div>
-        <div class="card"><div class="card-body" style="text-align:center"><div style="font-size:26px;font-weight:700;color:#f5d06e">1,240</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">🥈 Premium</div></div></div>
-        <div class="card"><div class="card-body" style="text-align:center"><div style="font-size:26px;font-weight:700;color:#c4b5fd">287</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">👑 VIP</div></div></div>
+        <div class="card"><div class="card-body" style="text-align:center"><div style="font-size:26px;font-weight:700;color:var(--gold)" id="stTotalMembers">–</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">Total Members</div></div></div>
+        <div class="card"><div class="card-body" style="text-align:center"><div style="font-size:26px;font-weight:700;color:#94a3b8" id="stStandard">–</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">🥉 Standard</div></div></div>
+        <div class="card"><div class="card-body" style="text-align:center"><div style="font-size:26px;font-weight:700;color:#f5d06e" id="stPremium">–</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">🥈 Premium</div></div></div>
+        <div class="card"><div class="card-body" style="text-align:center"><div style="font-size:26px;font-weight:700;color:#c4b5fd" id="stVip">–</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">👑 VIP</div></div></div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 360px;gap:24px">
@@ -62,20 +62,21 @@
           <div class="card-header">
             <h3>👥 Member Points List</h3>
             <div style="display:flex;gap:8px">
-              <select class="form-select" style="width:auto;padding:5px 10px" onchange="filterLevel(this.value)" id="levelFilter">
+              <select class="form-select" style="width:auto;padding:5px 10px" onchange="loadMembers()" id="levelFilter">
                 <option value="">All Levels</option>
-                <option value="regular">Regular</option>
-                <option value="premium">Premium</option>
-                <option value="vip">VIP</option>
+                <option value="Standard">Standard</option>
+                <option value="Premium">Premium</option>
+                <option value="VIP">VIP</option>
               </select>
-              <input type="text" class="form-input" style="width:160px" placeholder="Search member..." oninput="searchMember(this.value)">
+              <input type="text" class="form-input" style="width:160px" id="memberSearch" placeholder="Search member..." oninput="debouncedLoad()">
             </div>
           </div>
-          <div id="membersList"></div>
+          <div id="membersList"><div style="padding:30px;text-align:center;color:var(--text-muted)">Loading members…</div></div>
           <div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted)">
-            <span id="listCount">Showing 10 of 6,347 members</span>
+            <span id="listCount">—</span>
             <div style="display:flex;gap:6px">
               <button class="btn btn-outline btn-sm" onclick="prevPage()">‹ Prev</button>
+              <span id="pageLabel" style="padding:0 8px;line-height:30px"></span>
               <button class="btn btn-outline btn-sm" onclick="nextPage()">Next ›</button>
             </div>
           </div>
@@ -114,15 +115,7 @@
           <div class="card">
             <div class="card-header"><h3>📋 Recent Transactions</h3></div>
             <div class="card-body" id="ptLog">
-              <div class="action-log">
-                <div style="padding:8px 0;border-bottom:1px solid var(--border)"><span class="pts-op-plus">+1</span> <strong>james.lee@email.com</strong> — Daily login<span style="float:right;opacity:.5">09:12</span></div>
-                <div style="padding:8px 0;border-bottom:1px solid var(--border)"><span class="pts-op-plus">+1</span> <strong>sarah.chen@example.com</strong> — Registration bonus<span style="float:right;opacity:.5">09:08</span></div>
-                <div style="padding:8px 0;border-bottom:1px solid var(--border)"><span class="pts-op-plus">+1</span> <strong>mike.wang@corp.cn</strong> — Forum post<span style="float:right;opacity:.5">08:55</span></div>
-                <div style="padding:8px 0;border-bottom:1px solid var(--border)"><span class="pts-op-plus">+2</span> <strong>funworld@park.com</strong> — Product uploaded<span style="float:right;opacity:.5">08:40</span></div>
-                <div style="padding:8px 0;border-bottom:1px solid var(--border)"><span class="pts-op-minus">-5</span> <strong>spammer@test.com</strong> — Admin penalty<span style="float:right;opacity:.5">08:21</span></div>
-                <div style="padding:8px 0;border-bottom:1px solid var(--border)"><span class="pts-op-plus">+1</span> <strong>lucy.zhang@fec.net</strong> — Comment posted<span style="float:right;opacity:.5">08:10</span></div>
-                <div style="padding:8px 0"><span class="pts-op-plus">+5</span> <strong>vip.partner@arc.io</strong> — Company profile created<span style="float:right;opacity:.5">07:58</span></div>
-              </div>
+              <div class="action-log" style="color:var(--text-muted)">Loading transactions…</div>
             </div>
           </div>
         </div>
@@ -136,12 +129,13 @@
   <div style="background:#111827;border:1px solid rgba(255,255,255,.12);border-radius:16px;width:460px;padding:28px">
     <h3 style="color:#e2e8f0;margin-bottom:20px">⚡ Bulk Points Adjustment</h3>
     <div class="form-group"><label class="form-label">Apply to Level</label>
-      <select class="form-select"><option>All members</option><option>Regular only</option><option>Premium only</option><option>VIP only</option></select>
+      <select class="form-select" id="bulkLevel"><option value="">All members</option><option value="Standard">Standard only</option><option value="Premium">Premium only</option><option value="VIP">VIP only</option></select>
     </div>
     <div class="form-group"><label class="form-label">Action</label>
-      <select class="form-select"><option>Add points to all</option><option>Set login streak bonus</option><option>Reset daily limits</option></select>
+      <select class="form-select" id="bulkOp"><option value="add">Add points</option><option value="deduct">Deduct points</option><option value="set">Set to exact value</option></select>
     </div>
-    <div class="form-group"><label class="form-label">Points</label><input type="number" class="form-input" value="1"></div>
+    <div class="form-group"><label class="form-label">Points</label><input type="number" class="form-input" id="bulkPts" value="1" min="0"></div>
+    <div class="form-group"><label class="form-label">Reason (optional)</label><input type="text" class="form-input" id="bulkReason" placeholder="Bulk adjustment..."></div>
     <div style="display:flex;gap:10px;margin-top:4px">
       <button class="btn btn-outline" style="flex:1" onclick="closeBulkModal()">Cancel</button>
       <button class="btn btn-gold" style="flex:1" onclick="applyBulk()">Apply to All</button>
@@ -151,75 +145,155 @@
 
 <script src="admin.js"></script>
 <script>
-const MEMBERS_DATA=[
-  {id:1,name:'James Lee',email:'james.lee@email.com',pts:52,level:'vip',group:'Buyers',joined:'2025-06-12',lastLogin:'Today'},
-  {id:2,name:'Sarah Chen',email:'sarah.chen@example.com',pts:38,level:'premium',group:'Suppliers',joined:'2025-08-22',lastLogin:'Today'},
-  {id:3,name:'Mike Wang',email:'mike.wang@corp.cn',pts:31,level:'premium',group:'Amusement Park Owners',joined:'2025-11-05',lastLogin:'Yesterday'},
-  {id:4,name:'FunWorld Park',email:'funworld@park.com',pts:120,level:'vip',group:'Amusement Park Owners',joined:'2025-03-18',lastLogin:'Today'},
-  {id:5,name:'Lucy Zhang',email:'lucy.zhang@fec.net',pts:14,level:'regular',group:'Buyers',joined:'2026-01-10',lastLogin:'2 days ago'},
-  {id:6,name:'Arcade King Ltd',email:'info@arcadeking.com',pts:88,level:'vip',group:'Suppliers',joined:'2024-12-01',lastLogin:'Today'},
-  {id:7,name:'Tom Harris',email:'t.harris@playtime.co',pts:7,level:'regular',group:'Buyers',joined:'2026-02-28',lastLogin:'1 week ago'},
-  {id:8,name:'Happy Kids Co.',email:'hk@happykids.com',pts:25,level:'regular',group:'Amusement Park Owners',joined:'2026-01-20',lastLogin:'3 days ago'},
-  {id:9,name:'VIP Partner Corp',email:'vip.partner@arc.io',pts:145,level:'vip',group:'VIP Partners',joined:'2025-01-01',lastLogin:'Today'},
-  {id:10,name:'New Member',email:'newuser@test.com',pts:1,level:'regular',group:'Buyers',joined:'2026-03-25',lastLogin:'Today'},
-];
+const LEVEL_STYLE={
+  Standard:{tag:'🥉 Standard',cls:'lvl-regular',color:'#94a3b8',bg:'linear-gradient(135deg,#64748b,#475569)',next:30,nextLabel:'→ Premium (30 pts)'},
+  Premium:{tag:'🥈 Premium',cls:'lvl-premium',color:'#f5d06e',bg:'linear-gradient(135deg,#c9a227,#f5d06e)',next:100,nextLabel:'→ VIP (100 pts)'},
+  VIP:{tag:'👑 VIP',cls:'lvl-vip',color:'#c4b5fd',bg:'linear-gradient(135deg,#8b5cf6,#7c3aed)',next:0,nextLabel:'Max Level'}
+};
+const LIMIT=10;
+let page=1,total=0,totalPages=1;
 
-function getLevelTag(l){
-  const map={regular:`<span class="lvl-tag lvl-regular">🥉 Regular</span>`,premium:`<span class="lvl-tag lvl-premium">🥈 Premium</span>`,vip:`<span class="lvl-tag lvl-vip">👑 VIP</span>`};
-  return map[l]||'';
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function initials(name){
+  const parts=String(name||'?').split(/[\s_-]+/).filter(Boolean);
+  return (parts.length>1?parts[0][0]+parts[1][0]:String(name||'?').slice(0,2)).toUpperCase();
 }
-function getColor(l){return {regular:'#94a3b8',premium:'#f5d06e',vip:'#c4b5fd'}[l]||'#94a3b8'}
-function getNextPts(l,p){return l==='vip'?100:l==='premium'?100-p:30-p}
-function getNextLabel(l){return l==='regular'?'→ Premium (30 pts)':l==='premium'?'→ VIP (100 pts)':'Max Level'}
+function fmtDate(ts){
+  if(!ts)return '—';
+  try{return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch(e){return '—';}
+}
+function fmtTime(ts){
+  if(!ts)return '';
+  try{return new Date(ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}catch(e){return '';}
+}
 
-function renderMembers(data){
+function renderMembers(list){
   const el=document.getElementById('membersList');
-  el.innerHTML=data.map(m=>{
-    const pct=m.level==='vip'?100:m.level==='premium'?Math.min(100,Math.round(m.pts/100*100)):Math.min(100,Math.round(m.pts/30*100));
-    const initials=m.name.split(' ').map(w=>w[0]).join('').slice(0,2);
-    const bgColor={vip:'linear-gradient(135deg,#8b5cf6,#7c3aed)',premium:'linear-gradient(135deg,#c9a227,#f5d06e)',regular:'linear-gradient(135deg,#64748b,#475569)'}[m.level];
+  if(!list.length){
+    el.innerHTML='<div style="padding:30px;text-align:center;color:var(--text-muted)">No members found.</div>';
+    return;
+  }
+  el.innerHTML=list.map(m=>{
+    const lv=LEVEL_STYLE[m.level]||LEVEL_STYLE.Standard;
+    const pct=lv.next?Math.min(100,Math.round((m.points/lv.next)*100)):100;
     return `<div class="member-row">
-      <div class="avatar-sm" style="background:${bgColor}">${initials}</div>
+      <div class="avatar-sm" style="background:${lv.bg}">${esc(initials(m.username))}</div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span style="font-size:13px;font-weight:600;color:#e2e8f0">${m.name}</span>
-          ${getLevelTag(m.level)}
+          <span style="font-size:13px;font-weight:600;color:#e2e8f0">${esc(m.username)}</span>
+          <span class="lvl-tag ${lv.cls}">${lv.tag}</span>
+          ${m.role==='admin'?'<span class="lvl-tag lvl-premium">ADMIN</span>':''}
         </div>
-        <div style="font-size:11px;color:var(--text-muted)">${m.email} · ${m.group}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${esc(m.email)} · joined ${fmtDate(m.created_at)}</div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-          <div style="font-size:12px;color:${getColor(m.level)};font-weight:700">${m.pts} pts</div>
+          <div style="font-size:12px;color:${lv.color};font-weight:700">${m.points} pts</div>
           <div style="flex:1;max-width:120px">
-            <div class="pts-bar"><div class="pts-fill" style="width:${pct}%;background:${bgColor}"></div></div>
+            <div class="pts-bar"><div class="pts-fill" style="width:${pct}%;background:${lv.bg}"></div></div>
           </div>
-          <div style="font-size:10px;color:var(--text-muted)">${getNextLabel(m.level)}</div>
+          <div style="font-size:10px;color:var(--text-muted)">${lv.nextLabel}</div>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;font-size:11px;color:var(--text-muted)">
-        <div>Login: ${m.lastLogin}</div>
-        <button class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:11px" onclick="quickAdjust(${m.id},'${m.email}')">Adjust</button>
+        <div>${m.status==='banned'?'<span style="color:#f87171">banned</span>':esc(m.status)}</div>
+        <button class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:11px" onclick="quickAdjust(${m.id},'${esc(m.email)}')">Adjust</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function filterLevel(l){renderMembers(l?MEMBERS_DATA.filter(m=>m.level===l):MEMBERS_DATA)}
-function searchMember(q){renderMembers(q?MEMBERS_DATA.filter(m=>m.name.toLowerCase().includes(q.toLowerCase())||m.email.toLowerCase().includes(q.toLowerCase())):MEMBERS_DATA)}
-function quickAdjust(id,email){document.getElementById('adjMember').value=email;document.querySelector('.card .card-body .form-input').scrollIntoView({behavior:'smooth'})}
-function applyAdjust(){
-  const m=document.getElementById('adjMember').value;
+function renderStats(s){
+  document.getElementById('stTotalMembers').textContent=(s.total||0).toLocaleString();
+  document.getElementById('stStandard').textContent=(s.standard||0).toLocaleString();
+  document.getElementById('stPremium').textContent=(s.premium||0).toLocaleString();
+  document.getElementById('stVip').textContent=(s.vip||0).toLocaleString();
+}
+
+function renderLogs(logs){
+  const el=document.getElementById('ptLog');
+  if(!logs.length){
+    el.innerHTML='<div class="action-log" style="color:var(--text-muted)">No point transactions yet.</div>';
+    return;
+  }
+  el.innerHTML='<div class="action-log">'+logs.map(l=>{
+    const plus=l.delta>=0;
+    const who=esc(l.email||l.username||('user #'+l.user_id));
+    const why=esc(l.reason||l.action||'adjustment');
+    return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="${plus?'pts-op-plus':'pts-op-minus'}">${plus?'+':''}${l.delta}</span>
+      <strong>${who}</strong> — ${why}
+      <span style="float:right;opacity:.5">${fmtDate(l.created_at)} ${fmtTime(l.created_at)}</span>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+async function loadMembers(){
+  const level=document.getElementById('levelFilter').value;
+  const q=(document.getElementById('memberSearch').value||'').trim();
+  const p=new URLSearchParams({limit:LIMIT,offset:(page-1)*LIMIT,sort:'points'});
+  if(level)p.set('level',level);
+  if(q)p.set('q',q);
+  try{
+    const data=await apiGet('/api/admin/points?'+p.toString());
+    const list=data.members||[];
+    total=data.total||0;
+    totalPages=Math.max(1,Math.ceil(total/LIMIT));
+    renderMembers(list);
+    renderStats(data.stats||{});
+    renderLogs(data.logs||[]);
+    const from=total?((page-1)*LIMIT+1):0;
+    const to=Math.min(page*LIMIT,total);
+    document.getElementById('listCount').textContent=`Showing ${from}–${to} of ${total} members`;
+    document.getElementById('pageLabel').textContent=`Page ${page} / ${totalPages}`;
+  }catch(e){
+    console.error(e);
+    document.getElementById('membersList').innerHTML='<div style="padding:30px;text-align:center;color:#f87171">Failed to load members.</div>';
+  }
+}
+
+let _deb;
+function debouncedLoad(){clearTimeout(_deb);page=1;_deb=setTimeout(loadMembers,350);}
+function prevPage(){if(page>1){page--;loadMembers();}}
+function nextPage(){if(page<totalPages){page++;loadMembers();}}
+
+function quickAdjust(id,email){
+  document.getElementById('adjMember').value=email;
+  document.getElementById('adjPts').focus();
+}
+
+async function applyAdjust(){
+  const email=document.getElementById('adjMember').value.trim();
   const op=document.getElementById('adjOp').value;
   const pts=document.getElementById('adjPts').value;
-  if(!m){showToast('Enter a member email','error');return;}
-  showToast(`Points ${op==='add'?'added':op==='deduct'?'deducted':'set'} for ${m}!`,'success');
-  document.getElementById('adjMember').value='';
+  const reason=document.getElementById('adjReason').value.trim();
+  if(!email){showToast('Enter a member email','error');return;}
+  try{
+    const res=await apiSend('/api/admin/points','POST',{email,op,points:pts,reason});
+    showToast(res.message||'Points updated','success');
+    document.getElementById('adjMember').value='';
+    document.getElementById('adjReason').value='';
+    loadMembers();
+  }catch(e){showToast(e.message||'Adjustment failed','error');}
 }
+
 function openBulkModal(){document.getElementById('bulkModal').style.display='flex'}
 function closeBulkModal(){document.getElementById('bulkModal').style.display='none'}
-function applyBulk(){showToast('Bulk adjustment applied!','success');closeBulkModal()}
-function prevPage(){showToast('Previous page','info')}
-function nextPage(){showToast('Next page','info')}
 
-renderMembers(MEMBERS_DATA);
+async function applyBulk(){
+  const level=document.getElementById('bulkLevel').value;
+  const op=document.getElementById('bulkOp').value;
+  const pts=document.getElementById('bulkPts').value;
+  const reason=document.getElementById('bulkReason').value.trim();
+  if(!confirm(`Apply "${op} ${pts} points" to ${level||'all'} members?`))return;
+  try{
+    const res=await apiSend('/api/admin/points','POST',{bulk:true,level,op,points:pts,reason});
+    showToast(res.message||'Bulk adjustment applied','success');
+    closeBulkModal();
+    page=1;
+    loadMembers();
+  }catch(e){showToast(e.message||'Bulk adjustment failed','error');}
+}
+
+loadMembers();
 </script>
 <style id="user-dropdown-style">
 .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
