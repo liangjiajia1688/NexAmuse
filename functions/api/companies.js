@@ -13,6 +13,22 @@ function uniqueSlug(base, ownerId) {
   return `${base}-${ownerId}`;
 }
 
+const CATEGORY_SLUGS = {
+  arcade: 'Arcade Machines',
+  vr: 'VR / XR Attractions',
+  kids: 'Kids & Family Rides',
+  redemption: 'Redemption Games',
+  simulation: 'Simulation Rides',
+  outdoor: 'Outdoor Attractions',
+  waterpark: 'Water Park Equipment',
+  payment: 'Payment Technology',
+  accessories: 'Accessories & Parts'
+};
+
+function resolveCategories(slugs) {
+  return slugs.map(s => CATEGORY_SLUGS[s] || s).filter(Boolean);
+}
+
 function pickCompany(row) {
   if (!row) return null;
   return {
@@ -64,21 +80,57 @@ export async function onRequest(context) {
     const cat = url.searchParams.get('cat');
     const country = url.searchParams.get('country');
     const q = url.searchParams.get('q');
+    const sort = url.searchParams.get('sort') || 'featured';
+    const withStats = url.searchParams.get('stats') === '1';
 
-    let sql = "SELECT * FROM companies WHERE status='approved'";
+    const rawCats = cat ? cat.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const cats = resolveCategories(rawCats);
+    const countries = country ? country.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+    let where = "status='approved'";
     const binds = [];
-    if (cat) { sql += ' AND primary_category=?'; binds.push(cat); }
-    if (country) { sql += ' AND country=?'; binds.push(country); }
-    if (q) { sql += " AND (name LIKE ? OR description LIKE ?)"; binds.push(`%${q}%`, `%${q}%`); }
-    sql += ' ORDER BY featured DESC, created_at DESC LIMIT ? OFFSET ?';
-    binds.push(limit, offset);
+    if (cats.length) {
+      where += ` AND primary_category IN (${cats.map(() => '?').join(',')})`;
+      binds.push(...cats);
+    }
+    if (countries.length) {
+      where += ` AND country IN (${countries.map(() => '?').join(',')})`;
+      binds.push(...countries);
+    }
+    if (q) { where += " AND (name LIKE ? OR description LIKE ?)"; binds.push(`%${q}%`, `%${q}%`); }
 
-    const result = binds.length
-      ? await env.DB.prepare(sql).bind(...binds).all()
-      : await env.DB.prepare(sql).all();
-    const total = await env.DB.prepare("SELECT COUNT(*) c FROM companies WHERE status='approved'").first();
+    const orderBy = {
+      featured: 'featured DESC, created_at DESC',
+      name: 'name ASC',
+      products: 'products_count DESC, created_at DESC',
+      newest: 'created_at DESC',
+      views: 'views DESC, created_at DESC'
+    }[sort] || 'featured DESC, created_at DESC';
 
-    return json({ ok: true, companies: (result.results || []).map(pickCompany), total: total.c || 0 });
+    const listSql = `SELECT * FROM companies WHERE ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`;
+    const listBinds = [...binds, limit, offset];
+    const result = await env.DB.prepare(listSql).bind(...listBinds).all();
+
+    const countSql = `SELECT COUNT(*) c FROM companies WHERE ${where}`;
+    const totalRow = await env.DB.prepare(countSql).bind(...binds).first();
+    const total = totalRow ? totalRow.c : 0;
+
+    const response = { ok: true, companies: (result.results || []).map(pickCompany), total, limit, offset };
+
+    if (withStats) {
+      const [countryRows, catRows] = await Promise.all([
+        env.DB.prepare("SELECT country, COUNT(*) c FROM companies WHERE status='approved' GROUP BY country ORDER BY c DESC, country ASC").all(),
+        env.DB.prepare("SELECT primary_category, COUNT(*) c FROM companies WHERE status='approved' GROUP BY primary_category ORDER BY c DESC, primary_category ASC").all()
+      ]);
+      response.countries = (countryRows.results || [])
+        .filter(r => r.country)
+        .map(r => ({ name: r.country, count: r.c }));
+      response.categories = (catRows.results || [])
+        .filter(r => r.primary_category)
+        .map(r => ({ name: r.primary_category, count: r.c }));
+    }
+
+    return json(response);
   }
 
   if (request.method === 'POST') {

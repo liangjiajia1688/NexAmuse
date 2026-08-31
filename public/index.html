@@ -451,7 +451,7 @@
       <h2>Premium Suppliers & Manufacturers</h2>
       <p>Connect directly with the industry's most trusted equipment manufacturers</p>
     </div>
-    <div class="grid-4 fade-in">
+    <div class="grid-4 fade-in" id="homeSuppliersGrid">
       <div class="supplier-card">
         <div class="supplier-logo">T</div>
         <div class="supplier-name">TechPlay Solutions</div>
@@ -1080,6 +1080,38 @@
   });
 
   render('');
+})();
+</script>
+<script>
+// Populate the homepage "Premium Suppliers & Manufacturers" section with live company data.
+(function(){
+  const grid = document.getElementById('homeSuppliersGrid');
+  if(!grid) return;
+  const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  async function load(){
+    try{
+      const r = await fetch('/api/companies?limit=4&sort=featured');
+      const data = await r.json().catch(()=>({companies:[]}));
+      const companies = (data.companies || []).filter(c => c.status === 'approved');
+      if(!companies.length) return; // keep static demo fallback
+      grid.innerHTML = companies.map(c => {
+        const loc = [c.country, c.city].filter(Boolean).join(' · ');
+        const logo = c.logo
+          ? `<div class="supplier-logo" style="background:transparent;padding:0;overflow:hidden;"><img src="${esc(c.logo)}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt=""></div>`
+          : `<div class="supplier-logo">${c.name ? esc(c.name[0].toUpperCase()) : 'C'}</div>`;
+        const cat = c.primary_category ? `<span class="tag">${esc(c.primary_category)}</span>` : '';
+        return `<div class="supplier-card">
+          ${logo}
+          <div class="supplier-name">${esc(c.name)}</div>
+          <div class="supplier-country">${loc ? esc(loc) : 'Global'}</div>
+          <div class="supplier-tags">${cat}</div>
+          <div class="supplier-verified">✅ Verified Partner</div>
+          <a href="pages/company.html?slug=${esc(c.slug)}" class="btn btn-outline btn-sm" style="margin-top:14px;display:flex;justify-content:center;">View Profile</a>
+        </div>`;
+      }).join('');
+    }catch(e){ console.warn('Home suppliers load failed', e); }
+  }
+  load();
 })();
 </script>
 <script>

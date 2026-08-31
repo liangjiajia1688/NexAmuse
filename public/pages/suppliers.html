@@ -110,78 +110,61 @@
 
 <section class="section">
   <div class="container">
-    <div class="filter-bar" style="margin-bottom:28px;">
-      <button class="filter-btn active" data-group="sup" data-filter="all">All Suppliers</button>
-      <button class="filter-btn" data-group="sup" data-filter="arcade">🕹 Arcade</button>
-      <button class="filter-btn" data-group="sup" data-filter="vr">🥽 VR / XR</button>
-      <button class="filter-btn" data-group="sup" data-filter="rides">🎠 Rides</button>
-      <button class="filter-btn" data-group="sup" data-filter="payment">💳 Payment Tech</button>
-      <button class="filter-btn" data-group="sup" data-filter="waterpark">🏊 Water Park</button>
+    <div class="filter-bar" id="supFilterBar" style="margin-bottom:28px;flex-wrap:wrap;">
+      <button class="filter-btn active" data-filter="all">All Suppliers</button>
+      <button class="filter-btn" data-filter="arcade">🕹 Arcade</button>
+      <button class="filter-btn" data-filter="vr">🥽 VR / XR</button>
+      <button class="filter-btn" data-filter="kids">🎠 Kids & Family</button>
+      <button class="filter-btn" data-filter="redemption">🎯 Redemption</button>
+      <button class="filter-btn" data-filter="simulation">🎢 Simulation</button>
+      <button class="filter-btn" data-filter="outdoor">🌳 Outdoor</button>
+      <button class="filter-btn" data-filter="waterpark">🏊 Water Park</button>
+      <button class="filter-btn" data-filter="payment">💳 Payment Tech</button>
+      <button class="filter-btn" data-filter="accessories">🔧 Accessories</button>
     </div>
 
     <div class="sup-layout">
       <aside class="sup-sidebar">
         <h4>🌍 Country / Region</h4>
-        <div class="sidebar-check">
-          <label><input type="checkbox" checked/> China (1,240)</label>
-          <label><input type="checkbox"/> USA (380)</label>
-          <label><input type="checkbox"/> Germany (210)</label>
-          <label><input type="checkbox"/> Italy (180)</label>
-          <label><input type="checkbox"/> Japan (160)</label>
-          <label><input type="checkbox"/> South Korea (140)</label>
-          <label><input type="checkbox"/> Belgium (90)</label>
-          <label><input type="checkbox"/> UK (75)</label>
-          <label><input type="checkbox"/> Other (325)</label>
+        <div class="sidebar-check" id="countryFilters">
+          <label style="color:var(--text-secondary);">Loading…</label>
         </div>
         <h4>Category</h4>
-        <div class="sidebar-check">
-          <label><input type="checkbox"/> Arcade Machines</label>
-          <label><input type="checkbox"/> VR / XR Systems</label>
-          <label><input type="checkbox"/> Kids Rides</label>
-          <label><input type="checkbox"/> Redemption Games</label>
-          <label><input type="checkbox"/> Simulation Rides</label>
-          <label><input type="checkbox"/> Water Park Equipment</label>
-          <label><input type="checkbox"/> Payment Technology</label>
-          <label><input type="checkbox"/> Outdoor Attractions</label>
+        <div class="sidebar-check" id="categoryFilters">
+          <label style="color:var(--text-secondary);">Loading…</label>
         </div>
         <h4>Certifications</h4>
         <div class="sidebar-check">
-          <label><input type="checkbox"/> CE Certified</label>
-          <label><input type="checkbox"/> TUV Approved</label>
-          <label><input type="checkbox"/> SGS Tested</label>
-          <label><input type="checkbox"/> ISO 9001</label>
-          <label><input type="checkbox"/> ASTM F24</label>
+          <label><input type="checkbox" value="CE" disabled/> CE Certified</label>
+          <label><input type="checkbox" value="TUV" disabled/> TUV Approved</label>
+          <label><input type="checkbox" value="SGS" disabled/> SGS Tested</label>
+          <label><input type="checkbox" value="ISO 9001" disabled/> ISO 9001</label>
+          <label><input type="checkbox" value="ASTM F24" disabled/> ASTM F24</label>
         </div>
         <h4>Company Size</h4>
         <div class="sidebar-check">
-          <label><input type="checkbox"/> Enterprise (500+)</label>
-          <label><input type="checkbox"/> Large (100–500)</label>
-          <label><input type="checkbox"/> Mid-Size (20–100)</label>
-          <label><input type="checkbox"/> Small (&lt;20)</label>
+          <label><input type="checkbox" value="Enterprise" disabled/> Enterprise (500+)</label>
+          <label><input type="checkbox" value="Large" disabled/> Large (100–500)</label>
+          <label><input type="checkbox" value="Mid-Size" disabled/> Mid-Size (20–100)</label>
+          <label><input type="checkbox" value="Small" disabled/> Small (&lt;20)</label>
         </div>
         <div style="margin-top:20px;">
-          <button class="btn btn-primary" style="width:100%;justify-content:center;">Apply Filters</button>
-          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:8px;">Reset All</button>
+          <button class="btn btn-primary" id="applyFilters" style="width:100%;justify-content:center;">Apply Filters</button>
+          <button class="btn btn-ghost btn-sm" id="resetFilters" style="width:100%;justify-content:center;margin-top:8px;">Reset All</button>
         </div>
       </aside>
 
       <div>
         <div class="sort-bar">
-          <div style="color:var(--text-secondary);font-size:.88rem;">Showing <strong style="color:var(--accent);">2,800+</strong> verified suppliers</div>
-          <select><option>Sort: Featured</option><option>A-Z</option><option>Most Products</option><option>Most Inquired</option><option>Newest</option></select>
+          <div style="color:var(--text-secondary);font-size:.88rem;">Showing <strong style="color:var(--accent);" id="supCount">0</strong> verified suppliers</div>
+          <select id="supSort"><option value="featured">Sort: Featured</option><option value="name">A-Z</option><option value="products">Most Products</option><option value="views">Most Inquired</option><option value="newest">Newest</option></select>
         </div>
 
         <div class="sup-grid filterable-grid" id="supplierGrid">
-          <!-- Real companies loaded by JS from /api/companies -->
+          <div style="grid-column:1/-1;text-align:center;color:var(--text-secondary);padding:40px;">Loading suppliers…</div>
         </div>
 
-        <div class="pagination" style="margin-top:32px;">
-          <button class="page-btn active">1</button>
-          <button class="page-btn">2</button>
-          <button class="page-btn">3</button>
-          <button class="page-btn">…</button>
-          <button class="page-btn">56</button>
-        </div>
+        <div class="pagination" id="supPagination" style="margin-top:32px;display:none;"></div>
       </div>
     </div>
   </div>
@@ -211,44 +194,235 @@
 <button class="scroll-top" id="scrollTop">↑</button>
 <script src="../assets/js/main.js"></script>
 <script>
-async function loadSuppliers(){
-  const grid = document.getElementById('supplierGrid');
-  try{
-    const r = await fetch('/api/companies?limit=50');
-    const data = await r.json();
-    const companies = (data.companies || []).filter(c => c.status === 'approved');
-    if(!companies.length){
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-secondary);padding:40px;">No approved company listings yet. Premium and VIP members can create the first listing.</div>';
-      return;
+(function(){
+  const CAT_NAMES = {
+    arcade:'Arcade Machines',
+    vr:'VR / XR Attractions',
+    kids:'Kids & Family Rides',
+    redemption:'Redemption Games',
+    simulation:'Simulation Rides',
+    outdoor:'Outdoor Attractions',
+    waterpark:'Water Park Equipment',
+    payment:'Payment Technology',
+    accessories:'Accessories & Parts'
+  };
+  const CAT_SLUGS = Object.fromEntries(Object.entries(CAT_NAMES).map(([k,v])=>[v,k]));
+
+  const state = {
+    cat: new Set(),
+    country: new Set(),
+    sort: 'featured',
+    page: 1,
+    limit: 18,
+    total: 0,
+    q: ''
+  };
+
+  function getSlug(name){ return CAT_SLUGS[name] || name.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,20); }
+  function getName(slug){ return CAT_NAMES[slug] || slug; }
+
+  function updateFilterButtons(){
+    document.querySelectorAll('#supFilterBar .filter-btn').forEach(btn=>{
+      const f = btn.dataset.filter;
+      const active = f==='all' ? state.cat.size===0 : state.cat.has(f);
+      btn.classList.toggle('active', active);
+    });
+  }
+
+  function syncSidebar(){
+    document.querySelectorAll('#categoryFilters input').forEach(cb=>{
+      cb.checked = state.cat.has(cb.value);
+    });
+    document.querySelectorAll('#countryFilters input').forEach(cb=>{
+      cb.checked = state.country.has(cb.value);
+    });
+    document.getElementById('supSort').value = state.sort;
+  }
+
+  function renderFacets(countries, categories){
+    const countryEl = document.getElementById('countryFilters');
+    if(countries && countries.length){
+      countryEl.innerHTML = countries.map(c=>`<label><input type="checkbox" value="${escapeHtml(c.name)}"/> ${escapeHtml(c.name)} (${Number(c.count).toLocaleString()})</label>`).join('');
+    } else {
+      countryEl.innerHTML = '<label style="color:var(--text-secondary);">No countries yet</label>';
     }
-    grid.innerHTML = companies.map(c=>{
-      const cats = c.primary_category ? `<span class="tag">${c.primary_category}</span>` : '';
-      const logo = c.logo ? `<img src="${c.logo}" style="width:60px;height:60px;border-radius:12px;object-fit:cover;" alt="">` : `<div class="sup-logo-sm">${c.name ? c.name[0].toUpperCase() : 'C'}</div>`;
-      const loc = [c.country, c.city].filter(Boolean).join(', ');
-      return `
-      <div class="sup-card-full filterable-item" data-category="${(c.primary_category||'').toLowerCase().replace(/[^a-z]/g,'')}">
-        <div class="sup-head">
-          ${logo}
-          <div>
-            <div class="sup-name">${c.name}</div>
-            <div class="sup-loc">${loc || 'Global'}${c.established_year ? ' · Est. ' + c.established_year : ''}</div>
-            <div class="verified-badge">✅ Verified Partner</div>
+    countryEl.querySelectorAll('input').forEach(cb=>{
+      cb.addEventListener('change',()=>{
+        if(cb.checked) state.country.add(cb.value); else state.country.delete(cb.value);
+        state.page = 1;
+        loadSuppliers();
+      });
+    });
+
+    const catEl = document.getElementById('categoryFilters');
+    const orderedCats = Object.keys(CAT_NAMES).map(slug=>{
+      const found = (categories||[]).find(c=>getSlug(c.name)===slug);
+      return {slug, name:CAT_NAMES[slug], count:found?found.count:0};
+    }).filter(c=>c.count>0);
+    if(orderedCats.length){
+      catEl.innerHTML = orderedCats.map(c=>`<label><input type="checkbox" value="${c.slug}"/> ${c.name} (${Number(c.count).toLocaleString()})</label>`).join('');
+    } else {
+      catEl.innerHTML = '<label style="color:var(--text-secondary);">No categories yet</label>';
+    }
+    catEl.querySelectorAll('input').forEach(cb=>{
+      cb.addEventListener('change',()=>{
+        if(cb.checked) state.cat.add(cb.value); else state.cat.delete(cb.value);
+        updateFilterButtons();
+        state.page = 1;
+        loadSuppliers();
+      });
+    });
+    syncSidebar();
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildParams(){
+    const p = new URLSearchParams();
+    p.set('limit', state.limit);
+    p.set('offset', (state.page-1)*state.limit);
+    p.set('sort', state.sort);
+    p.set('stats','1');
+    if(state.q) p.set('q', state.q);
+    if(state.cat.size) p.set('cat', Array.from(state.cat).join(','));
+    if(state.country.size) p.set('country', Array.from(state.country).join(','));
+    return p.toString();
+  }
+
+  function updateUrl(){
+    const p = new URLSearchParams();
+    if(state.sort!=='featured') p.set('sort', state.sort);
+    if(state.q) p.set('q', state.q);
+    if(state.cat.size) p.set('cat', Array.from(state.cat).join(','));
+    if(state.country.size) p.set('country', Array.from(state.country).join(','));
+    if(state.page>1) p.set('page', state.page);
+    const qs = p.toString();
+    const url = qs ? '?' + qs : window.location.pathname;
+    window.history.replaceState({}, '', url);
+  }
+
+  function renderPagination(){
+    const wrap = document.getElementById('supPagination');
+    const totalPages = Math.ceil(state.total / state.limit) || 1;
+    if(totalPages<=1){ wrap.style.display='none'; wrap.innerHTML=''; return; }
+    wrap.style.display='flex';
+    let html = '';
+    html += `<button class="page-btn${state.page===1?' disabled':''}" data-page="${state.page-1}" ${state.page===1?'disabled':''}>←</button>`;
+    if(state.page>3) html += `<button class="page-btn" data-page="1">1</button><span class="page-btn" style="cursor:default;background:transparent;border:none;color:var(--text-secondary);">…</span>`;
+    for(let i=Math.max(1,state.page-2); i<=Math.min(totalPages,state.page+2); i++){
+      html += `<button class="page-btn${i===state.page?' active':''}" data-page="${i}">${i}</button>`;
+    }
+    if(state.page<totalPages-2) html += `<span class="page-btn" style="cursor:default;background:transparent;border:none;color:var(--text-secondary);">…</span><button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+    html += `<button class="page-btn${state.page===totalPages?' disabled':''}" data-page="${state.page+1}" ${state.page===totalPages?'disabled':''}>→</button>`;
+    wrap.innerHTML = html;
+    wrap.querySelectorAll('button[data-page]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const pg = parseInt(btn.dataset.page,10);
+        if(pg && pg!==state.page){ state.page=pg; loadSuppliers(); window.scrollTo({top:0,behavior:'smooth'}); }
+      });
+    });
+  }
+
+  async function loadSuppliers(){
+    const grid = document.getElementById('supplierGrid');
+    const countEl = document.getElementById('supCount');
+    try{
+      const r = await fetch('/api/companies?' + buildParams());
+      const data = await r.json();
+      const companies = (data.companies || []).filter(c => c.status === 'approved');
+      state.total = data.total || 0;
+      countEl.textContent = state.total.toLocaleString();
+      updateUrl();
+      renderPagination();
+      if(data.countries || data.categories) renderFacets(data.countries, data.categories);
+
+      if(!companies.length){
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-secondary);padding:40px;">No suppliers match your filters. <a href="suppliers.html" style="color:var(--gold)">Reset filters</a>.</div>';
+        return;
+      }
+      grid.innerHTML = companies.map(c=>{
+        const cats = c.primary_category ? `<span class="tag">${escapeHtml(c.primary_category)}</span>` : '';
+        const logo = c.logo ? `<img src="${escapeHtml(c.logo)}" style="width:60px;height:60px;border-radius:12px;object-fit:cover;" alt="">` : `<div class="sup-logo-sm">${c.name ? escapeHtml(c.name[0].toUpperCase()) : 'C'}</div>`;
+        const loc = [c.country, c.city].filter(Boolean).join(', ');
+        return `
+        <div class="sup-card-full filterable-item" data-category="${getSlug(c.primary_category||'')}">
+          <div class="sup-head">
+            ${logo}
+            <div>
+              <div class="sup-name">${escapeHtml(c.name)}</div>
+              <div class="sup-loc">${escapeHtml(loc || 'Global')}${c.established_year ? ' · Est. ' + c.established_year : ''}</div>
+              <div class="verified-badge">✅ Verified Partner</div>
+            </div>
           </div>
-        </div>
-        <div class="sup-desc">${(c.description || '').slice(0,160)}${(c.description||'').length>160?'...':''}</div>
-        <div class="sup-cats">${cats}</div>
-        <div class="sup-footer">
-          <div><span style="font-size:.75rem;color:var(--text-secondary);">📦 ${c.products_count || 0} Products</span></div>
-          <div style="display:flex;gap:8px;">
-            <a href="mailto:${c.email}" class="btn btn-ghost btn-sm">Contact</a>
-            <a href="company.html?slug=${c.slug}" class="btn btn-outline btn-sm">View Profile</a>
+          <div class="sup-desc">${escapeHtml((c.description || '').slice(0,160))}${(c.description||'').length>160?'...':''}</div>
+          <div class="sup-cats">${cats}</div>
+          <div class="sup-footer">
+            <div><span style="font-size:.75rem;color:var(--text-secondary);">📦 ${c.products_count || 0} Products</span></div>
+            <div style="display:flex;gap:8px;">
+              <a href="mailto:${escapeHtml(c.email||'#')}" class="btn btn-ghost btn-sm">Contact</a>
+              <a href="company.html?slug=${escapeHtml(c.slug||'')}" class="btn btn-outline btn-sm">View Profile</a>
+            </div>
           </div>
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){ console.error(e); }
-}
-loadSuppliers();
+        </div>`;
+      }).join('');
+    }catch(e){ console.error(e); grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-secondary);padding:40px;">Failed to load suppliers. Please try again.</div>'; }
+  }
+
+  function initFromUrl(){
+    const p = new URLSearchParams(window.location.search);
+    if(p.get('sort')) state.sort = p.get('sort');
+    if(p.get('q')) state.q = p.get('q');
+    if(p.get('cat')) p.get('cat').split(',').forEach(s=>{ const v=s.trim(); if(v) state.cat.add(v); });
+    if(p.get('country')) p.get('country').split(',').forEach(s=>{ const v=s.trim(); if(v) state.country.add(v); });
+    state.page = Math.max(1, parseInt(p.get('page')||'1',10));
+  }
+
+  function bindEvents(){
+    document.querySelectorAll('#supFilterBar .filter-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const f = btn.dataset.filter;
+        if(f==='all') state.cat.clear(); else {
+          state.cat.clear();
+          state.cat.add(f);
+        }
+        updateFilterButtons();
+        syncSidebar();
+        state.page = 1;
+        loadSuppliers();
+      });
+    });
+
+    document.getElementById('supSort').addEventListener('change',(e)=>{
+      state.sort = e.target.value;
+      state.page = 1;
+      loadSuppliers();
+    });
+
+    document.getElementById('applyFilters').addEventListener('click',()=>{
+      state.page = 1;
+      loadSuppliers();
+    });
+
+    document.getElementById('resetFilters').addEventListener('click',()=>{
+      state.cat.clear();
+      state.country.clear();
+      state.sort = 'featured';
+      state.q = '';
+      state.page = 1;
+      updateFilterButtons();
+      syncSidebar();
+      loadSuppliers();
+    });
+  }
+
+  initFromUrl();
+  updateFilterButtons();
+  syncSidebar();
+  bindEvents();
+  loadSuppliers();
+})();
 </script>
 </body>
 </html>
