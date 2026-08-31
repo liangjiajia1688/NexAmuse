@@ -666,3 +666,12 @@ footer {
   color: #0a0e1a;
   cursor: default;
 }
+
+/* ── Frontend ad slots (rendered from /api/ads) ─────────────────── */
+.ad-slot{display:none;overflow:hidden;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);}
+.ad-slot-link{display:block;width:100%;height:100%;border-radius:inherit;}
+.ad-slot-leaderboard{width:100%;max-width:1140px;height:90px;margin:0 auto 28px;}
+.ad-slot-strip{width:100%;max-width:1140px;height:60px;margin:28px auto 0;}
+.ad-slot-sidebar{width:100%;height:250px;margin-top:24px;}
+.ad-slot-inline{width:100%;max-width:720px;height:100px;margin:24px auto;}
+@media(max-width:600px){.ad-slot-leaderboard{height:70px}.ad-slot-strip{height:50px}.ad-slot-sidebar{height:200px}}

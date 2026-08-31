@@ -217,10 +217,67 @@ const cats=['Industry News','Product Release','Exhibition','Technology','Busines
 document.getElementById('catList').innerHTML=cats.map(c=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" class="cat-cb" data-cat="${c}"> ${c}</label>`).join('');
 function fmt(cmd,val){document.execCommand(cmd,false,val||null)}
 function insertLink(){const url=prompt('Enter URL:');if(url)document.execCommand('createLink',false,url)}
-function insertImage(){const url=prompt('Image URL:');if(url)document.execCommand('insertImage',false,url)}
-function saveDraft(){showToast('Draft saved locally. Use Publish to push live.','info')}
+function getToken(){
+  try { const s = JSON.parse(localStorage.getItem('nexamuse_user') || 'null'); return (s && (s.token || (s.user && s.user.token))) || ''; }
+  catch(e){ return ''; }
+}
+// Real image upload: open a file picker, upload to /api/upload (tutu.to), then embed.
+function insertImage(){
+  let input = document.getElementById('imgFileInput');
+  if(!input){
+    input = document.createElement('input');
+    input.type = 'file'; input.id = 'imgFileInput'; input.accept = 'image/*';
+    input.style.display = 'none';
+    document.body.appendChild(input);
+    input.addEventListener('change', async () => {
+      const file = input.files && input.files[0];
+      if(!file) return;
+      const btn = document.querySelector('.editor-toolbar button[onclick="insertImage()"]');
+      const old = btn ? btn.textContent : '';
+      if(btn) btn.textContent = '⏳…';
+      try {
+        const fd = new FormData();
+        fd.append('image', file);
+        const r = await fetch('/api/upload', { method:'POST', headers:{ 'Authorization':'Bearer '+getToken() }, body: fd });
+        const data = await r.json().catch(()=>({}));
+        if(!r.ok) throw new Error(data.error || 'Upload failed');
+        document.execCommand('insertImage', false, data.url);
+        showToast('Image inserted', 'success');
+      } catch(e){ showToast('Image upload failed: ' + e.message, 'error'); }
+      finally { if(btn) btn.textContent = old; input.value = ''; }
+    });
+  }
+  input.click();
+}
+function pickImage(){ insertImage(); }
+let currentDraftId = null;
+async function saveDraft(){
+  const token = getToken();
+  if(!token){ showToast('Session expired. Please sign in again.','error'); return; }
+  const titleEl = document.querySelector('.form-input[placeholder="Article Title..."]');
+  const excerptEl = document.querySelector('.form-input[placeholder="Subtitle or excerpt (optional)..."]');
+  const editor = document.getElementById('editor');
+  const title = titleEl ? titleEl.value.trim() : '';
+  const excerpt = excerptEl ? excerptEl.value.trim() : '';
+  const content = editor ? editor.innerHTML.trim() : '';
+  if(!title){ showToast('Title is required to save a draft','error'); return; }
+  const catCb = document.querySelector('.cat-cb:checked');
+  const category = catCb ? catCb.dataset.cat : 'Industry News';
+  try {
+    let r, data;
+    if(currentDraftId){
+      r = await fetch('/api/articles/'+currentDraftId, { method:'PUT', headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }, body: JSON.stringify({ title, excerpt, content, category, status:'draft' }) });
+      data = await r.json().catch(()=>({}));
+    } else {
+      r = await fetch('/api/articles', { method:'POST', headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }, body: JSON.stringify({ title, excerpt, content, category, status:'draft' }) });
+      data = await r.json().catch(()=>({}));
+      if(r.ok && data.id) currentDraftId = data.id;
+    }
+    if(!r.ok) throw new Error(data.error || 'Save failed');
+    showToast('Draft saved' + (currentDraftId ? ' (#'+currentDraftId+')' : ''), 'success');
+  } catch(e){ showToast('Draft save failed: ' + e.message, 'error'); }
+}
 function publishArticle(){ publishToApi(); }
-function pickImage(){showToast('Image picker opened','info')}
 async function publishToApi(){
   const token = (function(){
     try {

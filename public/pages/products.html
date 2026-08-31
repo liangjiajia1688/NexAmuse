@@ -132,6 +132,9 @@
       <button class="filter-btn" data-group="cat" data-filter="accessories">🔧 Accessories</button>
     </div>
 
+    <!-- Products Top Ad (rendered from /api/ads, zone=products) -->
+    <div class="ad-slot ad-slot-leaderboard" id="adProductsTop"></div>
+
     <div class="page-layout">
       <!-- Sidebar Filters -->
       <aside class="sidebar">
@@ -178,6 +181,8 @@
           <button class="btn btn-primary" style="width:100%;justify-content:center;">Apply Filters</button>
           <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:8px;">Reset All</button>
         </div>
+        <!-- Products Sidebar Ad (rendered from /api/ads, zone=sidebar) -->
+        <div class="ad-slot ad-slot-sidebar" id="adProductsSide"></div>
       </aside>
 
       <!-- Product Grid -->
@@ -499,6 +504,10 @@
   highlightCat();
   render();
 })();
+
+// Render real ad slots on the products page (data from /api/ads).
+renderAdSlot('products', 'adProductsTop');
+renderAdSlot('sidebar', 'adProductsSide');
 </script>
 </body>
 </html>

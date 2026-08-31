@@ -45,6 +45,38 @@ async function syncUser() {
   }
 }
 
+// ── Render a single ad from /api/ads into a container ────────────
+// zone maps to the ad `zone` field (homepage/sidebar/article/products/forum/ticker).
+// If no active ad matches, the container is hidden. Impressions + clicks are tracked.
+async function renderAdSlot(zone, containerId, opts) {
+  opts = opts || {};
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  try {
+    const r = await fetch('/api/ads?zone=' + encodeURIComponent(zone) + '&limit=1');
+    if (!r.ok) { el.style.display = 'none'; return; }
+    const data = await r.json();
+    const ads = data.ads || [];
+    if (!ads.length) { el.style.display = 'none'; return; }
+    const ad = ads[0];
+    const href = ad.link_url || '#';
+    const creative = ad.image_url
+      ? '<img src="' + ad.image_url + '" alt="' + (ad.alt_text || ad.title || 'Advertisement') + '" style="width:100%;height:100%;object-fit:cover;display:block;">'
+      : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#1a1208,#0a0e1a);color:#f5d06e;font-weight:600;font-size:14px;padding:0 16px;text-align:center;">' + (ad.emoji ? ad.emoji + '&nbsp;' : '') + (ad.title || 'Sponsor') + '</div>';
+    el.innerHTML = '<a href="' + href + '" target="_blank" rel="nofollow sponsored" class="ad-slot-link" data-ad-id="' + ad.id + '" style="display:block;width:100%;height:100%;border-radius:inherit;text-decoration:none;position:relative;">'
+      + creative
+      + '<span style="position:absolute;top:5px;right:7px;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.6);background:rgba(0,0,0,.4);padding:1px 6px;border-radius:6px;text-transform:uppercase;pointer-events:none;">Ad</span>'
+      + '</a>';
+    el.style.display = '';
+    // record impression
+    fetch('/api/ads?id=' + ad.id + '&type=impression', { method: 'POST' }).catch(function(){});
+    const link = el.querySelector('.ad-slot-link');
+    if (link) link.addEventListener('click', function() {
+      fetch('/api/ads?id=' + ad.id + '&type=click', { method: 'POST' }).catch(function(){});
+    });
+  } catch (e) { el.style.display = 'none'; }
+}
+
 // ── Render Nav Auth State ─────────────────────────────────────────
 function levelBadge(user) {
   if (!user) return '';

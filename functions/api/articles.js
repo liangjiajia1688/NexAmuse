@@ -37,11 +37,13 @@ export async function onRequest(context) {
     const content = (body.content || '').trim();
     const category = (body.category || 'industry').trim();
     const cover = (body.cover || '').trim();
+    const status = body.status === 'draft' ? 'draft' : 'published';
+    const ts = status === 'draft' ? now() : now();
     const res = await env.DB.prepare(
       'INSERT INTO articles (title,excerpt,content,category,cover,author,user_id,status,published_at) VALUES (?,?,?,?,?,?,?,?,?)'
-    ).bind(title, excerpt, content, category, cover, user.username, user.id, 'published', now()).run();
+    ).bind(title, excerpt, content, category, cover, user.username, user.id, status, ts).run();
     const id = res.meta && res.meta.last_row_id;
-    return json({ id, title, category, cover }, 201);
+    return json({ id, title, category, cover, status }, 201);
   }
 
   return fail('Method not allowed', 405);

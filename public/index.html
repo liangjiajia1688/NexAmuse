@@ -240,6 +240,9 @@
   </div>
 </div>
 
+<!-- Homepage Top Ad (rendered from /api/ads, zone=homepage) -->
+<div class="container"><div class="ad-slot ad-slot-leaderboard" id="adHomeTop"></div></div>
+
 <!-- Featured Products -->
 <section class="section products-section">
   <div class="container">
@@ -909,6 +912,9 @@
   </div>
 </section>
 
+<!-- Homepage Footer Ad (rendered from /api/ads, zone=ticker) -->
+<div class="container"><div class="ad-slot ad-slot-strip" id="adHomeFooter"></div></div>
+
 <!-- Footer -->
 <footer>
   <div class="container">
@@ -1158,6 +1164,12 @@
     }));
   } catch (e) { console.warn('Home news load failed', e); }
 })();
+</script>
+
+<script>
+// Render real ad slots on the homepage (data from /api/ads).
+renderAdSlot('homepage', 'adHomeTop');
+renderAdSlot('ticker', 'adHomeFooter');
 </script>
 </body>
 </html>
