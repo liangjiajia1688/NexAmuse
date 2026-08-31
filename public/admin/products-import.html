@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulk Import Products — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+.imp-wrap{max-width:1180px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 16px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px}
+.tab{padding:9px 16px;border-radius:9px;font-size:13px;cursor:pointer;color:var(--text-muted);border:1px solid transparent;transition:.18s;user-select:none}
+.tab:hover{color:#e2e8f0}
+.tab.active{background:rgba(79,172,254,.14);color:#4facfe;border-color:rgba(79,172,254,.32);font-weight:600}
+.pane{display:none}
+.pane.active{display:block}
+.drop{border:2px dashed rgba(255,255,255,.16);border-radius:14px;padding:30px;text-align:center;color:var(--text-muted);cursor:pointer;transition:.2s;background:rgba(255,255,255,.02)}
+.drop:hover,.drop.over{border-color:#4facfe;background:rgba(79,172,254,.07);color:#e2e8f0}
+.drop .big{font-size:34px;display:block;margin-bottom:10px}
+textarea.imp{width:100%;min-height:170px;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#e2e8f0;padding:12px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.6}
+input.imp-url{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#e2e8f0;padding:11px 13px;font-size:13px}
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.map-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:8px 11px}
+.map-src{flex:1;font-size:12px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.map-row select{background:#0d1117;border:1px solid rgba(255,255,255,.14);color:#e2e8f0;border-radius:7px;padding:5px 8px;font-size:12px;max-width:190px}
+.hint{font-size:12px;color:var(--text-muted);margin-top:9px;line-height:1.6}
+.prev-thumb{width:40px;height:40px;object-fit:cover;border-radius:7px;background:#111827}
+.prev-thumb-ph{width:40px;height:40px;border-radius:7px;background:#111827;display:flex;align-items:center;justify-content:center;font-size:17px}
+.cell-in{background:#0d1117;border:1px solid rgba(255,255,255,.12);color:#e2e8f0;border-radius:7px;padding:5px 8px;font-size:12px;width:100%;min-width:110px}
+.bulkbar{display:none;align-items:center;gap:9px;background:rgba(79,172,254,.1);border:1px solid rgba(79,172,254,.28);border-radius:10px;padding:9px 13px;margin-bottom:12px;font-size:13px;color:#cfe8ff;flex-wrap:wrap}
+.bulkbar.show{display:flex}
+.bar{height:7px;background:rgba(255,255,255,.09);border-radius:5px;overflow:hidden;margin-top:12px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,#4facfe,#22c55e);width:0;transition:width .25s}
+.log{margin-top:12px;font-size:12px;color:var(--text-muted);max-height:150px;overflow:auto;background:#0d1117;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:10px;line-height:1.7;white-space:pre-wrap}
+.log .ok{color:#22c55e}.log .bad{color:#f87171}
+.unsupported{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fde68a;padding:13px 15px;border-radius:10px;font-size:13px;line-height:1.65;margin-top:13px}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">Products › <span>Bulk Import</span></div></div>
+      <div class="header-right">
+        <div class="header-search"><input type="text" placeholder="Search products..."><span>🔍</span></div>
+        <div class="header-user-wrap" style="position:relative;">
+          <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="if(!document.getElementById('userDropdown').classList.contains('open'))this.style.background=''">
+            <div class="user-avatar">A</div>
+            <span style="color:var(--text-muted);font-size:13px;">Admin</span>
+            <span style="color:var(--text-muted);font-size:10px;">▼</span>
+          </button>
+          <div id="userDropdown" class="user-dropdown">
+            <div class="user-dropdown-info">
+              <div style="font-weight:600;color:#e2e8f0;font-size:13px;">Administrator</div>
+              <div style="font-size:11px;color:var(--text-muted);">admin@nexamuse.com</div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+            <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+            <div class="user-dropdown-divider"></div>
+            <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content imp-wrap">
+      <div class="page-title">
+        <h1>Bulk Import Products</h1>
+        <p>Fill a supplier's catalogue fast. Everything you import lands as <strong>Pending</strong> and is reviewed in Manage Products before going public.</p>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">1 · Choose the supplier</div>
+        <select id="companySel" class="filter-select" style="min-width:320px">
+          <option value="">Loading suppliers…</option>
+        </select>
+        <div class="hint">Imported products are attributed to this company. <a href="companies.html" style="color:#4facfe">Need to add a supplier first?</a></div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="csv" onclick="switchTab('csv')">📊 Excel / CSV</div>
+        <div class="tab" data-tab="text" onclick="switchTab('text')">🤖 Paste Text (AI)</div>
+        <div class="tab" data-tab="img" onclick="switchTab('img')">🖼️ Bulk Images</div>
+        <div class="tab" data-tab="link" onclick="switchTab('link')">🔗 Import by Link</div>
+      </div>
+
+      <!-- 1. CSV / Excel -->
+      <div class="pane active" id="pane-csv">
+        <div class="form-section">
+          <div class="section-title">Upload a spreadsheet</div>
+          <div class="drop" id="csvDrop" onclick="document.getElementById('csvFile').click()">
+            <span class="big">📊</span>
+            <div style="font-size:14px;color:#cbd5e1">Click to choose an .xlsx / .xls / .csv file</div>
+            <div class="hint">Suppliers usually already have a catalogue in Excel — this is the fastest route.</div>
+          </div>
+          <input type="file" id="csvFile" accept=".csv,.xlsx,.xls,text/csv" style="display:none">
+          <div style="margin-top:13px;display:flex;gap:9px;flex-wrap:wrap">
+            <button class="btn-secondary" onclick="downloadTemplate()">⬇️ Download Template (中英对照)</button>
+            <button class="btn-secondary" onclick="downloadTemplate(true)">⬇️ Template + 2 sample rows</button>
+          </div>
+          <div id="csvMap" style="display:none">
+            <div class="section-title" style="margin-top:18px">2 · Match the columns</div>
+            <div class="hint">We auto-matched what we could. Fix anything wrong, then build the preview.</div>
+            <div class="map-grid" id="mapGrid"></div>
+            <button class="btn-primary" style="margin-top:14px" onclick="applyMapping()">Build preview →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. AI text -->
+      <div class="pane" id="pane-text">
+        <div class="form-section">
+          <div class="section-title">Paste the supplier's product info</div>
+          <div class="hint" style="margin-bottom:10px">WeChat messages, email copy, spec sheets — anything. AI structures it into proper product fields.</div>
+          <textarea class="imp" id="rawText" placeholder="e.g.&#10;VR射击 双人座 220V 1500W 尺寸L2000*W1500*H2200 带风效 可定制颜色 MOQ1台 FOB深圳 8500美金&#10;儿童旋转木马 8座 直径3.2米 220V 功率800W 适用3-10岁 CE认证"></textarea>
+          <button class="btn-primary" style="margin-top:12px" onclick="parseText()">🤖 Structure with AI</button>
+        </div>
+      </div>
+
+      <!-- 3. Bulk images -->
+      <div class="pane" id="pane-img">
+        <div class="form-section">
+          <div class="section-title">Upload many product photos at once</div>
+          <div class="drop" id="imgDrop" onclick="document.getElementById('imgFiles').click()">
+            <span class="big">🖼️</span>
+            <div style="font-size:14px;color:#cbd5e1">Click to select multiple images</div>
+            <div class="hint">Each filename becomes a draft product name — you only fill in the specs afterwards.</div>
+          </div>
+          <input type="file" id="imgFiles" accept="image/*" multiple style="display:none">
+        </div>
+      </div>
+
+      <!-- 4. Link -->
+      <div class="pane" id="pane-link">
+        <div class="form-section">
+          <div class="section-title">Import from a website link</div>
+          <div class="hint" style="margin-bottom:10px">
+            Works with <strong>Shopify</strong> stores (imports the whole catalogue), <strong>WooCommerce</strong> stores,
+            and most sites that publish structured product data.
+          </div>
+          <input class="imp-url" id="linkUrl" placeholder="https://shop.example.com  (or a single product page)">
+          <button class="btn-primary" style="margin-top:12px" onclick="fetchLink()">🔗 Fetch products</button>
+          <div id="linkMsg"></div>
+        </div>
+      </div>
+
+      <!-- Shared preview -->
+      <div class="form-section" style="margin-top:6px">
+        <div class="section-title">Preview &amp; edit <span id="prevCount" style="color:var(--text-muted);font-weight:400"></span></div>
+        <div class="bulkbar" id="bulkBar">
+          <span id="selCount">0 selected</span>
+          <button class="btn-secondary" style="padding:5px 11px;font-size:12px" onclick="selAll(true)">Select all</button>
+          <button class="btn-secondary" style="padding:5px 11px;font-size:12px" onclick="selAll(false)">Clear</button>
+          <button class="btn-danger" style="padding:5px 11px;font-size:12px" onclick="removeSelected()">Remove selected</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="admin-table" id="prevTable">
+            <thead><tr>
+              <th style="width:38px"><input type="checkbox" id="chkAll" onchange="selAll(this.checked)"></th>
+              <th style="width:46px"></th><th>Product name</th><th>Category</th>
+              <th style="width:130px">Price</th><th style="width:110px">MOQ</th>
+              <th style="width:64px">Imgs</th><th style="width:52px"></th>
+            </tr></thead>
+            <tbody id="prevBody"></tbody>
+          </table>
+        </div>
+        <div id="emptyPrev" class="hint" style="padding:18px 2px">Nothing yet — pick a channel above to start building the list.</div>
+        <button class="btn-primary" id="importBtn" style="margin-top:15px" onclick="runImport()" disabled>⬆️ Import as Pending</button>
+        <div class="bar" id="progWrap" style="display:none"><i id="progBar"></i></div>
+        <div class="log" id="logBox" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+// ── field definitions (bilingual header support) ────────────────────
+const FIELDS=[
+ {k:'name',l:'产品名 / Name'},{k:'category',l:'品类 / Category'},{k:'short_description',l:'简介 / Short Desc'},
+ {k:'description',l:'描述 / Description'},{k:'price',l:'价格 / Price'},{k:'moq',l:'起订量 / MOQ'},
+ {k:'images',l:'图片链接 / Image URLs'},{k:'dimensions',l:'尺寸 / Dimensions'},{k:'weight',l:'重量 / Weight'},
+ {k:'power_supply',l:'电源 / Power Supply'},{k:'power_consumption',l:'功率 / Power Consumption'},
+ {k:'min_players',l:'最少人数 / Min Players'},{k:'max_players',l:'最多人数 / Max Players'},
+ {k:'age_range',l:'适用年龄 / Age Range'},{k:'certification',l:'认证 / Certification'},
+ {k:'tags',l:'标签 / Tags'},{k:'additional_specs',l:'其他参数 / Other Specs'}
+];
+const ALIASES={
+ name:['name','product name','product','title','品名','产品名','产品名称','名称','标题'],
+ category:['category','product type','type','collection','品类','分类','类别','产品类型','种类'],
+ short_description:['short description','summary','excerpt','subtitle','简介','简短描述','摘要','副标题'],
+ description:['description','details','detail','product description','body','content','描述','详情','详细介绍','产品描述','说明'],
+ price:['price','unit price','fob price','price usd','价格','售价','单价','美金','报价'],
+ moq:['moq','minimum order','min order','minimum order quantity','起订量','最小起订量','起订','最少订购'],
+ images:['images','image','image urls','image url','photo','photos','picture','pictures','main image','图片','图片链接','图片地址','图','主图'],
+ dimensions:['dimensions','dimension','size','product size','尺寸','规格尺寸','外形尺寸','大小'],
+ weight:['weight','net weight','gross weight','重量','净重','毛重'],
+ power_supply:['power supply','voltage','input voltage','电源','电压','输入电压'],
+ power_consumption:['power','power consumption','wattage','watt','功率','耗电量','功耗'],
+ min_players:['min players','minimum players','players min','最少人数','最小人数'],
+ max_players:['max players','maximum players','players max','最多人数','最大人数'],
+ age_range:['age','age range','suitable age','适用年龄','年龄'],
+ certification:['certification','certificate','cert','ce','认证','证书'],
+ tags:['tags','tag','keywords','keyword','标签','关键词'],
+ additional_specs:['specs','specifications','additional specs','parameters','参数','规格','其他参数']
+};
+const CATS=['Arcade Machines','VR / XR Attractions','Kids & Family Rides','Redemption Games','Simulation Rides','Outdoor Attractions','Water Park Equipment','Payment Technology','Accessories & Parts'];
+
+let PREVIEW=[], CSV_ROWS=null, CSV_HEADERS=[];
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active',e.dataset.tab===t));
+  document.querySelectorAll('.pane').forEach(e=>e.classList.toggle('active',e.id==='pane-'+t));
+}
+function companyId(){return parseInt(document.getElementById('companySel').value||'0',10);}
+function needCompany(){
+  if(companyId())return true;
+  showToast('Choose the supplier first.','error');
+  document.getElementById('companySel').focus();
+  return false;
+}
+
+// ── suppliers ───────────────────────────────────────────────────────
+async function loadCompanies(){
+  try{
+    const d=await apiGet('/api/admin/companies?limit=200');
+    const sel=document.getElementById('companySel');
+    const list=(d&&d.companies)||[];
+    if(!list.length){sel.innerHTML='<option value="">No suppliers yet — create one first</option>';return;}
+    sel.innerHTML='<option value="">— select supplier —</option>'+
+      list.map(c=>'<option value="'+c.id+'">'+esc(c.name)+(c.country?' · '+esc(c.country):'')+'</option>').join('');
+  }catch(e){
+    document.getElementById('companySel').innerHTML='<option value="">Failed to load suppliers</option>';
+  }
+}
+
+// ── CSV ─────────────────────────────────────────────────────────────
+function parseCSV(text){
+  const rows=[];let row=[],cur='',inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else inQ=false; }
+      else cur+=c;
+    }else{
+      if(c==='"')inQ=true;
+      else if(c===','){row.push(cur);cur='';}
+      else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+      else if(c!=='\r')cur+=c;
+    }
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(r=>r.some(x=>String(x).trim()!==''));
+}
+function autoMap(h){
+  const s=String(h||'').toLowerCase().trim().replace(/\*/g,'');
+  if(!s)return '';
+  for(const f of FIELDS){
+    if(ALIASES[f.k].some(a=>s===a))return f.k;
+  }
+  // strip the bilingual half: "产品名 / Name" -> also match after "/"
+  const parts=s.split('/').map(x=>x.trim()).filter(Boolean);
+  for(const p of parts){
+    for(const f of FIELDS){ if(ALIASES[f.k].some(a=>p===a))return f.k; }
+  }
+  for(const f of FIELDS){
+    if(ALIASES[f.k].some(a=>s.includes(a)))return f.k;
+  }
+  return '';
+}
+document.getElementById('csvFile').addEventListener('change',function(){
+  const f=this.files&&this.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=function(ev){
+    try{
+      const name=f.name.toLowerCase();
+      if(name.endsWith('.csv')){
+        CSV_ROWS=parseCSV(String(ev.target.result));
+      }else{
+        if(typeof XLSX==='undefined'){showToast('Spreadsheet library failed to load — please save as .csv and retry','error');return;}
+        const wb=XLSX.read(ev.target.result,{type:'array'});
+        CSV_ROWS=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,blankrows:false,defval:''});
+      }
+      if(!CSV_ROWS||CSV_ROWS.length<2){showToast('No data rows found in that file.','error');return;}
+      CSV_HEADERS=CSV_ROWS[0].map(h=>String(h==null?'':h).trim());
+      renderMapping();
+      document.getElementById('csvMap').style.display='block';
+      showToast(CSV_ROWS.length-1+' rows detected.','success');
+    }catch(e){showToast('Could not read that file: '+e.message,'error');}
+  };
+  if(f.name.toLowerCase().endsWith('.csv'))rd.readAsText(f,'UTF-8'); else rd.readAsArrayBuffer(f);
+});
+function renderMapping(){
+  document.getElementById('mapGrid').innerHTML=CSV_HEADERS.map((h,i)=>{
+    const guess=autoMap(h);
+    // build options explicitly: relying on string replace picked the wrong option
+    const selectOpts='<option value=""'+(guess?'':' selected')+'>— ignore —</option>'+
+      FIELDS.map(f=>'<option value="'+esc(f.k)+'"'+(guess===f.k?' selected':'')+'>'+esc(f.l)+'</option>').join('');
+    return '<div class="map-row"><span class="map-src" title="'+esc(h)+'">'+esc(h||'(column '+(i+1)+')')+'</span>'+
+      '<select data-col="'+i+'">'+selectOpts+'</select></div>';
+  }).join('');
+}
+function applyMapping(){
+  const map={};
+  document.querySelectorAll('#mapGrid select').forEach(s=>{ if(s.value)map[s.dataset.col]=s.value; });
+  if(!Object.values(map).includes('name')){showToast('Map at least one column to 产品名 / Name.','error');return;}
+  let added=0;
+  for(let r=1;r<CSV_ROWS.length;r++){
+    const row=CSV_ROWS[r]; const p={images:[]};
+    for(const col in map){
+      const v=row[col]==null?'':String(row[col]).trim();
+      if(!v)continue;
+      const k=map[col];
+      if(k==='images')p.images=v.split(/[|,;]\s*/).map(x=>x.trim()).filter(Boolean);
+      else p[k]=v;
+    }
+    if(!p.name)continue;
+    PREVIEW.push(norm(p));added++;
+  }
+  renderPreview();
+  showToast(added+' rows added to preview.','success');
+}
+function downloadTemplate(withSample){
+  const headers=FIELDS.map(f=>f.k==='name'?'产品名 / Name*':f.l);
+  const esc2=v=>{const s=String(v==null?'':v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+  const rows=[headers.map(esc2).join(',')];
+  if(withSample){
+    rows.push(['VR Shooting Simulator','VR / XR Attractions','Immersive 2-seat VR shooter','360° immersive VR shooting simulator with wind effects and motion seats.','US$8500','1','https://example.com/vr1.jpg|https://example.com/vr2.jpg','L2000*W1500*H2200mm','320kg','220V','1500W','1','2','8+','CE','vr,shooting,simulator',''].map(esc2).join(','));
+    rows.push(['Kids Carousel','Kids & Family Rides','8-seat classic carousel','Classic 8-seat carousel, 3.2m diameter, fibreglass horses, LED lighting.','US$12000','1','https://example.com/carousel1.jpg','Ø3200mm','850kg','220V','800W','8','8','3-10','CE','carousel,kids',''].map(esc2).join(','));
+  }
+  // BOM keeps Excel from mangling the Chinese headers
+  const blob=new Blob(['\ufeff'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='nexamuse-product-template.csv';
+  a.click();URL.revokeObjectURL(a.href);
+}
+
+// ── AI text ─────────────────────────────────────────────────────────
+async function parseText(){
+  if(!needCompany())return;
+  const t=document.getElementById('rawText').value.trim();
+  if(!t){showToast('Paste some product text first.','error');return;}
+  const btn=document.querySelector('#pane-text .btn-primary');
+  const old=btn.textContent;btn.disabled=true;btn.textContent='Structuring…';
+  try{
+    const d=await apiSend('/api/admin/product-import','POST',{action:'parse-text',text:t});
+    if(!d.ok){showToast(d.error||'AI could not parse that text.','error');return;}
+    if(!(d.products||[]).length){showToast('AI found no products in that text.','error');return;}
+    (d.products||[]).forEach(p=>PREVIEW.push(norm(p)));
+    renderPreview();
+    showToast(d.products.length+' product(s) structured.','success');
+  }catch(e){showToast(e.message||'AI request failed','error');}
+  finally{btn.disabled=false;btn.textContent=old;}
+}
+
+// ── bulk images ─────────────────────────────────────────────────────
+document.getElementById('imgFiles').addEventListener('change',async function(){
+  const files=Array.from(this.files||[]);
+  if(!files.length)return;
+  if(!needCompany()){this.value='';return;}
+  const box=document.getElementById('logBox');
+  box.style.display='block';box.innerHTML='';
+  let ok=0;
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    box.innerHTML+='Uploading '+(i+1)+'/'+files.length+' · '+esc(f.name)+'…\n';
+    box.scrollTop=box.scrollHeight;
+    try{
+      const fd=new FormData();fd.append('image',f);
+      const r=await fetch('/api/upload',{method:'POST',headers:{'Authorization':'Bearer '+getToken()},body:fd});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||!d.url)throw new Error(d.error||('HTTP '+r.status));
+      const base=f.name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();
+      PREVIEW.push(norm({name:base||('Product '+(i+1)),images:[d.url]}));
+      ok++;renderPreview();
+    }catch(e){
+      box.innerHTML+='<span class="bad">✗ '+esc(f.name)+' — '+esc(e.message)+'</span>\n';
+    }
+  }
+  box.innerHTML+='<span class="ok">✓ Done: '+ok+'/'+files.length+' image(s) turned into draft products.</span>\n';
+  box.scrollTop=box.scrollHeight;
+  this.value='';
+});
+
+// ── link import ─────────────────────────────────────────────────────
+async function fetchLink(){
+  if(!needCompany())return;
+  const url=document.getElementById('linkUrl').value.trim();
+  const msg=document.getElementById('linkMsg');
+  if(!url){showToast('Enter a URL first.','error');return;}
+  msg.innerHTML='<div class="hint">Fetching… (this can take a few seconds)</div>';
+  try{
+    const d=await apiSend('/api/admin/product-import','POST',{action:'fetch-link',url:url});
+    if(d.ok&&d.supported){
+      (d.products||[]).forEach(p=>PREVIEW.push(norm(p)));
+      renderPreview();
+      msg.innerHTML='<div class="unsupported" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#bbf7d0">✓ Found '+
+        d.products.length+' product(s) via <strong>'+esc(d.source)+'</strong>. Review them below.</div>';
+      showToast(d.products.length+' product(s) fetched via '+d.source,'success');
+    }else{
+      msg.innerHTML='<div class="unsupported"><strong>Automatic import not available for this site.</strong><br>'+
+        esc(d.reason||'No machine-readable product data found.')+'<br><br>'+esc(d.hint||'')+'</div>';
+    }
+  }catch(e){
+    msg.innerHTML='<div class="unsupported">Request failed: '+esc(e.message)+'</div>';
+  }
+}
+
+// ── preview ─────────────────────────────────────────────────────────
+function norm(p){
+  return {
+    _sel:true,
+    name:String(p.name||'').trim(),
+    category:CATS.includes(p.category)?p.category:'',
+    short_description:String(p.short_description||'').trim(),
+    description:String(p.description||'').trim(),
+    price:String(p.price||'').trim(),
+    moq:String(p.moq||'').trim(),
+    images:Array.isArray(p.images)?p.images.filter(Boolean).slice(0,4):[],
+    dimensions:String(p.dimensions||'').trim(),
+    weight:String(p.weight||'').trim(),
+    power_supply:String(p.power_supply||'').trim(),
+    power_consumption:String(p.power_consumption||'').trim(),
+    min_players:p.min_players||'',
+    max_players:p.max_players||'',
+    age_range:String(p.age_range||'').trim(),
+    certification:String(p.certification||'').trim(),
+    tags:String(p.tags||'').trim(),
+    additional_specs:String(p.additional_specs||'').trim()
+  };
+}
+function renderPreview(){
+  const body=document.getElementById('prevBody');
+  const n=PREVIEW.length;
+  document.getElementById('prevCount').textContent=n?'· '+n+' row(s)':'';
+  document.getElementById('emptyPrev').style.display=n?'none':'block';
+  document.getElementById('importBtn').disabled=!n;
+  document.getElementById('bulkBar').classList.toggle('show',n>0);
+  body.innerHTML=PREVIEW.map((p,i)=>{
+    const thumb=p.images[0]
+      ?'<img src="'+esc(p.images[0])+'" class="prev-thumb" onerror="this.outerHTML=\'<div class=prev-thumb-ph>🎮</div>\'">'
+      :'<div class="prev-thumb-ph">🎮</div>';
+    const info=[p.description,p.short_description].filter(Boolean).join(' — ').slice(0,220);
+    return '<tr data-i="'+i+'">'
+      +'<td><input type="checkbox" '+(p._sel?'checked':'')+' onchange="PREVIEW['+i+']._sel=this.checked;updSel()"></td>'
+      +'<td>'+thumb+'</td>'
+      +'<td><input class="cell-in" value="'+esc(p.name)+'" oninput="PREVIEW['+i+'].name=this.value"'+(info?' title="'+esc(info)+'"':'')+'></td>'
+      +'<td><select class="cell-in" onchange="PREVIEW['+i+'].category=this.value">'
+        +'<option value="">— pick —</option>'
+        +CATS.map(c=>'<option value="'+esc(c)+'"'+(p.category===c?' selected':'')+'>'+esc(c)+'</option>').join('')
+        +'</select></td>'
+      +'<td><input class="cell-in" value="'+esc(p.price)+'" placeholder="US$8500" oninput="PREVIEW['+i+'].price=this.value"></td>'
+      +'<td><input class="cell-in" value="'+esc(p.moq)+'" placeholder="1" oninput="PREVIEW['+i+'].moq=this.value"></td>'
+      +'<td style="text-align:center;color:var(--text-muted)">'+p.images.length+'</td>'
+      +'<td><button class="btn-danger" style="padding:3px 8px;font-size:11px" onclick="delRow('+i+')">✕</button></td>'
+      +'</tr>';
+  }).join('');
+  updSel();
+}
+function updSel(){
+  const n=PREVIEW.filter(p=>p._sel).length;
+  document.getElementById('selCount').textContent=n+' of '+PREVIEW.length+' selected';
+  document.getElementById('chkAll').checked=PREVIEW.length>0&&n===PREVIEW.length;
+}
+function selAll(v){PREVIEW.forEach(p=>p._sel=v);renderPreview();}
+function delRow(i){PREVIEW.splice(i,1);renderPreview();}
+function removeSelected(){
+  if(!confirm('Remove the selected rows from the preview?'))return;
+  PREVIEW=PREVIEW.filter(p=>!p._sel);renderPreview();
+}
+
+// ── commit (chunked, backend caps at 5/call) ────────────────────────
+async function runImport(){
+  if(!needCompany())return;
+  const sel=PREVIEW.filter(p=>p._sel&&p.name.trim());
+  if(!sel.length){showToast('Nothing selected to import.','error');return;}
+  const btn=document.getElementById('importBtn');
+  const log=document.getElementById('logBox');
+  const wrap=document.getElementById('progWrap');
+  const bar=document.getElementById('progBar');
+  btn.disabled=true;log.style.display='block';log.innerHTML='';wrap.style.display='block';
+  let done=0,okN=0,badN=0;
+  for(let i=0;i<sel.length;i+=5){
+    const chunk=sel.slice(i,i+5);
+    log.innerHTML+='Importing '+(i+1)+'–'+(i+chunk.length)+' of '+sel.length+'…\n';
+    log.scrollTop=log.scrollHeight;
+    try{
+      const r=await fetch('/api/admin/product-import',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},
+        body:JSON.stringify({action:'commit',company_id:companyId(),products:chunk})
+      });
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||!d.ok){
+        log.innerHTML+='<span class="bad">✗ Batch failed: '+esc(d.error||('HTTP '+r.status))+'</span>\n';
+        badN+=chunk.length;
+      }else{
+        (d.results||[]).forEach(res=>{
+          if(res.ok){
+            okN++;
+            const warn=res.imgErrors&&res.imgErrors.length?' <span class="bad">('+res.imgErrors.length+' image(s) could not be re-hosted)</span>':'';
+            log.innerHTML+='<span class="ok">✓ '+esc(res.name)+'</span> · '+res.hosted+'/'+res.images+' image(s)'+warn+'\n';
+          }else{
+            badN++;
+            log.innerHTML+='<span class="bad">✗ '+esc(res.name||'(unnamed)')+' — '+esc(res.error)+'</span>\n';
+          }
+        });
+      }
+    }catch(e){
+      badN+=chunk.length;
+      log.innerHTML+='<span class="bad">✗ Network error: '+esc(e.message)+'</span>\n';
+    }
+    done+=chunk.length;
+    bar.style.width=Math.round(done/sel.length*100)+'%';
+    log.scrollTop=log.scrollHeight;
+  }
+  log.innerHTML+='\n<strong>Done.</strong> <span class="ok">'+okN+' imported</span>'+(badN?', <span class="bad">'+badN+' failed</span>':'')+
+    '.\nThey are now <strong>Pending</strong> — approve them in Manage Products to publish.\n';
+  log.scrollTop=log.scrollHeight;
+  btn.disabled=false;
+  showToast(okN+' imported, '+badN+' failed. Awaiting review.','success');
+  PREVIEW=PREVIEW.filter(p=>!p._sel||!p.name.trim());
+  renderPreview();
+}
+
+// drag & drop niceties
+[['csvDrop','csvFile'],['imgDrop','imgFiles']].forEach(([d,f])=>{
+  const el=document.getElementById(d);
+  ['dragenter','dragover'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.classList.add('over');}));
+  ['dragleave','drop'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.classList.remove('over');}));
+});
+document.addEventListener('DOMContentLoaded',function(){loadCompanies();renderPreview();});
+</script>
+
+<style id="user-dropdown-style">
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
+.user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.user-dropdown-info{padding:14px 16px;}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.07);margin:4px 0;}
+.user-dropdown-item{display:block;padding:11px 16px;color:#cbd5e1;text-decoration:none;font-size:13px;transition:.15s;}
+.user-dropdown-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+</style>
+</body>
+</html>

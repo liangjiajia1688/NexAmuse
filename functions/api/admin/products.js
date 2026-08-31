@@ -1,4 +1,4 @@
-import { json, fail } from '../../_lib/db.js';
+import { json, fail, now } from '../../_lib/db.js';
 import { authUser } from '../../_lib/auth.js';
 
 // The 9 canonical product categories (must stay in sync with products-add.html)
@@ -32,6 +32,13 @@ export async function onRequest(context) {
     ).all();
     const counts = {};
     for (const r of countRows.results || []) counts[r.category || 'Uncategorized'] = r.c;
+
+    // per-status counts so the UI can surface how many imports are awaiting review
+    const statusRows = await env.DB.prepare(
+      'SELECT status, COUNT(*) c FROM company_products GROUP BY status'
+    ).all();
+    const statusCounts = {};
+    for (const r of statusRows.results || []) statusCounts[r.status || 'unknown'] = r.c;
 
     const q = (url.searchParams.get('q') || '').trim();
     const cat = url.searchParams.get('cat') || '';
@@ -81,7 +88,32 @@ export async function onRequest(context) {
       });
     }
 
-    return json({ ok: true, total: totalRow.c || 0, page, limit, products, counts, categories: CATEGORIES });
+    return json({ ok: true, total: totalRow.c || 0, page, limit, products, counts, statusCounts, categories: CATEGORIES });
+  }
+
+  // POST /api/admin/products  { ids:[...], status:'active'|'rejected'|'draft' } -> bulk moderation
+  if (request.method === 'POST') {
+    let b;
+    try { b = await request.json(); } catch (e) { return fail('Invalid JSON', 400); }
+    const ids = (b.ids || []).map(n => parseInt(n, 10)).filter(n => Number.isFinite(n));
+    const status = String(b.status || '').trim();
+    const allowed = ['active', 'draft', 'pending', 'rejected'];
+    if (!ids.length) return fail('No products selected');
+    if (!allowed.includes(status)) return fail('Invalid status');
+
+    let ok = 0;
+    const failed = [];
+    for (const id of ids.slice(0, 100)) {
+      try {
+        const r = await env.DB.prepare('UPDATE company_products SET status=?, updated_at=? WHERE id=?')
+          .bind(status, now(), id).run();
+        if (r.meta && r.meta.changes) ok++;
+        else failed.push(id);
+      } catch (e) {
+        failed.push(id);
+      }
+    }
+    return json({ ok: true, updated: ok, failed, status });
   }
 
   if (request.method === 'DELETE') {

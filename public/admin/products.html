@@ -56,6 +56,15 @@
           <button class="btn-secondary">Export</button>
         </div>
       </div>
+      <div class="bulk-bar" id="bulkBar">
+        <span id="bulkInfo">0 selected</span>
+        <button class="btn-secondary" style="padding:6px 12px;font-size:12px" onclick="selectAllPage(true)">Select page</button>
+        <button class="btn-secondary" style="padding:6px 12px;font-size:12px" onclick="selectAllPage(false)">Clear</button>
+        <span style="flex:1"></span>
+        <button class="btn-primary" style="padding:6px 14px;font-size:12px" onclick="bulkStatus('active')">✓ Approve (publish)</button>
+        <button class="btn-secondary" style="padding:6px 14px;font-size:12px" onclick="bulkStatus('draft')">⇥ Move to draft</button>
+        <button class="btn-danger" style="padding:6px 14px;font-size:12px" onclick="bulkStatus('rejected')">✕ Reject</button>
+      </div>
       <div class="form-section" style="padding:0;overflow:hidden">
         <table class="admin-table" id="productsTable">
           <thead><tr><th><input type="checkbox" class="checkbox-all"></th><th>Product</th><th>Category</th><th>Supplier</th><th>Price Range</th><th>Inquiries</th><th>Views</th><th>Status</th><th>Actions</th></tr></thead>
@@ -72,6 +81,8 @@
 let products=[],pp=1,perP=20,total=0;
 const STATUS_MAP={active:'Published',draft:'Draft',pending:'Pending',pending_review:'Pending'};
 const STATUS_KEY={Published:'active',Draft:'draft',Pending:'pending'};
+// Batch moderation: ids survive pagination so you can tick across pages.
+let selected=new Set();
 
 async function loadProds(){
   const token=getToken();
@@ -89,6 +100,7 @@ async function loadProds(){
     const data=await r.json();
     if(!data.ok){document.getElementById('prodsBody').innerHTML=`<tr><td colspan="9" style="text-align:center;color:#f87171;padding:24px">${esc(data.error||'Failed to load')}</td></tr>`;return;}
     products=data.products||[];total=data.total||0;
+    window._statusCounts=data.statusCounts||{};
     renderProds();
   }catch(e){
     document.getElementById('prodsBody').innerHTML='<tr><td colspan="9" style="text-align:center;color:#f87171;padding:24px">Network error loading products.</td></tr>';
@@ -123,7 +135,7 @@ function renderProds(){
       :'<div style="font-size:28px;width:44px;text-align:center">🎮</div>';
     const created=p.created_at?new Date(p.created_at+'Z').toLocaleDateString():'—';
     return '<tr>'
-      +'<td><input type="checkbox" class="row-check"></td>'
+      +'<td><input type="checkbox" class="row-check" data-id="'+p.id+'"'+(selected.has(p.id)?' checked':'')+' onchange="toggleRow('+p.id+',this.checked)"></td>'
       +'<td><div class="cell-avatar">'+img+'<div><div style="font-weight:500">'+esc(p.name)+'</div><div style="font-size:11px;color:var(--text-muted)">#PRD-'+(1000+p.id)+' · '+created+(p.featured?' · ⭐':'')+'</div></div></div></td>'
       +'<td><span class="badge">'+esc(p.category||'—')+'</span></td>'
       +'<td style="color:var(--text-muted);font-size:13px">'+esc(p.company_name||'—')+'</td>'
@@ -137,12 +149,55 @@ function renderProds(){
       +'</td>'
       +'</tr>';
   }).join('');
+  updBulk();
   const pages=Math.max(1,Math.ceil(total/perP));
-  let pg='<div style="font-size:12px;color:var(--text-muted);margin-right:10px;align-self:center">'+total+' products total</div>';
+  const pend=(window._statusCounts&&window._statusCounts.pending)||0;
+  const pendTag=pend?' · <span style="color:#fbbf24">'+pend+' awaiting review</span>':'';
+  let pg='<div style="font-size:12px;color:var(--text-muted);margin-right:10px;align-self:center">'+total+' products total'+pendTag+'</div>';
   for(let i=1;i<=pages;i++) pg+='<div class="page-btn '+(i===pp?'active':'')+'" onclick="goP('+i+')">'+i+'</div>';
   document.getElementById('prodPagination').innerHTML=pg;
 }
 function goP(p){pp=p;loadProds();}
+function toggleRow(id,on){
+  if(on)selected.add(id);else selected.delete(id);
+  updBulk();
+}
+function updBulk(){
+  const bar=document.getElementById('bulkBar');
+  if(!bar)return;
+  const n=selected.size;
+  bar.classList.toggle('show',n>0);
+  document.getElementById('bulkInfo').textContent=n+' selected'+(n?' — choose an action':'');
+  const all=document.querySelector('.checkbox-all');
+  if(all)all.checked=products.length>0&&selected.size>=products.length;
+}
+function selectAllPage(on){
+  products.forEach(p=>{ if(on)selected.add(p.id); else selected.delete(p.id); });
+  renderProds();
+}
+document.addEventListener('click',function(e){
+  if(e.target&&e.target.classList&&e.target.classList.contains('checkbox-all')){
+    selectAllPage(e.target.checked);
+  }
+});
+async function bulkStatus(status){
+  if(!selected.size){showToast('Select at least one product.','error');return;}
+  const label={active:'approve & publish',draft:'move to draft',rejected:'reject'}[status]||status;
+  if(!confirm('Are you sure you want to '+label+' '+selected.size+' product(s)?'))return;
+  const ids=Array.from(selected);
+  try{
+    const r=await fetch('/api/admin/products',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()},
+      body:JSON.stringify({ids:ids,status:status})
+    });
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok){showToast(d.error||('Update failed (HTTP '+r.status+')'),'error');return;}
+    showToast(d.updated+' product(s) updated'+(d.failed&&d.failed.length?', '+d.failed.length+' failed':''),'success');
+    selected.clear();
+    loadProds();
+  }catch(e){showToast('Network error','error');}
+}
 async function delProd(id){
   if(!confirm('Delete this product and all its images? This cannot be undone.'))return;
   const token=getToken();
@@ -156,6 +211,8 @@ async function delProd(id){
 </script>
 
 <style id="user-dropdown-style">
+.bulk-bar{display:none;align-items:center;gap:9px;flex-wrap:wrap;background:rgba(79,172,254,.1);border:1px solid rgba(79,172,254,.28);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#cfe8ff;}
+.bulk-bar.show{display:flex;}
 .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}
 .user-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
 .user-dropdown-info{padding:14px 16px;}

@@ -17,6 +17,11 @@ function getApiToken() {
   const s = getSession();
   return s && s.token ? s.token : '';
 }
+// Backwards-compatible alias: products.html / products-categories.html call getToken().
+// Without it those pages threw a ReferenceError and rendered an empty table.
+function getToken() {
+  return getApiToken();
+}
 function apiHeaders(extra) {
   const headers = { 'Content-Type': 'application/json' };
   const token = getApiToken();
@@ -66,6 +71,7 @@ const NAV = [
   { section: 'Products', items: [
     { href: 'products.html',            icon: '🎮', label: 'Manage Products',  page: 'products' },
     { href: 'products-add.html',        icon: '➕', label: 'Add Product',      page: 'products-add' },
+    { href: 'products-import.html',     icon: '📥', label: 'Bulk Import',      page: 'products-import', badge:'NEW' },
     { href: 'products-params.html',     icon: '⚙', label: 'Product Params',   page: 'products-params' },
     { href: 'products-categories.html', icon: '📁', label: 'Categories',       page: 'products-categories' },
     { href: 'products-tags.html',       icon: '🏷', label: 'Product Tags',     page: 'products-tags' },
