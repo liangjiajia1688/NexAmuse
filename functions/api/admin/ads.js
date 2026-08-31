@@ -68,7 +68,7 @@ export async function onRequest(context) {
 
     // Lazily expire ads whose end date has passed.
     await env.DB.prepare(
-      "UPDATE ads SET status='expired', updated_at=? WHERE status IN ('active','paused') AND end_date IS NOT NULL AND end_date < ?"
+      "UPDATE ads SET status='expired', updated_at=? WHERE status IN ('active','paused') AND end_date IS NOT NULL AND date(end_date) < ?"
     ).bind(now(), todayStr()).run();
 
     let where = '1=1';

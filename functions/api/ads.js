@@ -37,8 +37,8 @@ export async function onRequest(context) {
 
     let sql = `SELECT * FROM ads
                WHERE status='active'
-                 AND (start_date IS NULL OR start_date <= ?)
-                 AND (end_date IS NULL OR end_date >= ?)`;
+                 AND (start_date IS NULL OR date(start_date) <= ?)
+                 AND (end_date IS NULL OR date(end_date) >= ?)`;
     const binds = [today, today];
     if (zone) { sql += ' AND zone=?'; binds.push(zone); }
     sql += ' ORDER BY priority DESC, created_at DESC LIMIT ?';

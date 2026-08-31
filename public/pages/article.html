@@ -46,8 +46,10 @@
     <div class="article-wrap" id="articleWrap">
       <div style="color:var(--text-secondary);padding:40px 0;">Loading article…</div>
     </div>
+    <!-- Article Mid Ad (rendered from /api/ads, zone=article slot #2) -->
+    <div class="ad-slot ad-slot-article-mid" id="adArticleMid"></div>
     <!-- Article Footer Ad (rendered from /api/ads, zone=ticker) -->
-    <div class="ad-slot ad-slot-strip" id="adArticleFooter"></div>
+    <div class="ad-slot ad-slot-ticker" id="adArticleFooter"></div>
   </div>
 </section>
 
@@ -211,6 +213,7 @@
   }
   // Render real ad slots on the article page (data from /api/ads).
   renderAdSlot('article', 'adArticleTop');
+  renderAdSlot('article', 'adArticleMid', { index: 1 });
   renderAdSlot('ticker', 'adArticleFooter');
 })();
 </script>

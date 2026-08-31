@@ -241,7 +241,8 @@
 </div>
 
 <!-- Homepage Top Ad (rendered from /api/ads, zone=homepage) -->
-<div class="container"><div class="ad-slot ad-slot-leaderboard" id="adHomeTop"></div></div>
+<!-- Homepage Hero Ad — 1400×150, uses its own wrapper so it is not capped by .container (1272px) -->
+<div class="ad-slot-frame"><div class="ad-slot ad-slot-hero" id="adHomeTop"></div></div>
 
 <!-- Featured Products -->
 <section class="section products-section">
@@ -639,6 +640,9 @@
   </div>
 </section>
 
+<!-- Homepage Mid Section Ad (rendered from /api/ads, zone=homepage slot #2) -->
+<div class="container"><div class="ad-slot ad-slot-section" id="adHomeMid"></div></div>
+
 <!-- ═══════════════════════════════════════════════
      FEATURED VIDEOS
      ═══════════════════════════════════════════════ -->
@@ -913,7 +917,7 @@
 </section>
 
 <!-- Homepage Footer Ad (rendered from /api/ads, zone=ticker) -->
-<div class="container"><div class="ad-slot ad-slot-strip" id="adHomeFooter"></div></div>
+<div class="container"><div class="ad-slot ad-slot-ticker" id="adHomeFooter"></div></div>
 
 <!-- Footer -->
 <footer>
@@ -1169,6 +1173,7 @@
 <script>
 // Render real ad slots on the homepage (data from /api/ads).
 renderAdSlot('homepage', 'adHomeTop');
+renderAdSlot('homepage', 'adHomeMid', { index: 1 });
 renderAdSlot('ticker', 'adHomeFooter');
 </script>
 </body>

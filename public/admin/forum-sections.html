@@ -72,10 +72,10 @@
 
       <!-- Summary -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
-        <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:700;color:var(--gold)">6</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Total Sections</div></div>
-        <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:700;color:#34d399">1,248</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Total Posts</div></div>
-        <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:700;color:#818cf8">4,512</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Total Replies</div></div>
-        <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:700;color:#f59e0b">342</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Active Today</div></div>
+        <div class="card" style="text-align:center;padding:14px"><div id="sumSections" style="font-size:24px;font-weight:700;color:var(--gold)">0</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Total Sections</div></div>
+        <div class="card" style="text-align:center;padding:14px"><div id="sumThreads" style="font-size:24px;font-weight:700;color:#34d399">0</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Total Threads</div></div>
+        <div class="card" style="text-align:center;padding:14px"><div id="sumReplies" style="font-size:24px;font-weight:700;color:#818cf8">0</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Total Replies</div></div>
+        <div class="card" style="text-align:center;padding:14px"><div id="sumActive" style="font-size:24px;font-weight:700;color:#f59e0b">0</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">Active Sections</div></div>
       </div>
 
       <!-- Hint -->
@@ -189,32 +189,46 @@
 
 <script src="admin.js"></script>
 <script>
-const sections = [
-  {id:1,icon:'💬',name:'General Discussion',desc:'Open conversations about the amusement industry',posts:412,replies:1840,today:87,status:'active',perm:'all'},
-  {id:2,icon:'⭐',name:'Product Reviews',desc:'In-depth reviews of rides, equipment, and attractions',posts:287,replies:1120,today:45,status:'active',perm:'regular'},
-  {id:3,icon:'📰',name:'Industry News',desc:'Latest news, trends, and announcements',posts:198,replies:623,today:34,status:'active',perm:'all'},
-  {id:4,icon:'🔧',name:'Technical Support',desc:'Get help with installation, maintenance, and troubleshooting',posts:176,replies:892,today:28,status:'active',perm:'regular'},
-  {id:5,icon:'🏪',name:'Supplier Showcase',desc:'Suppliers promote their products and services',posts:143,replies:234,today:18,status:'active',perm:'premium'},
-  {id:6,icon:'🔒',name:'VIP Lounge',desc:'Exclusive discussions for VIP members',posts:32,replies:89,today:5,status:'active',perm:'vip'},
-];
+let sections = [];
 
-let editingId = null;
+async function loadSections(){
+  try {
+    const data = await apiGet('/api/admin/forum-sections');
+    if (data && data.ok) {
+      sections = (data.sections || []).map(s => ({ ...s, perm: s.post_permission || s.perm || 'all' }));
+    }
+  } catch (e) { sections = []; }
+  renderSections();
+  updateSummary();
+}
+
+function updateSummary(){
+  const el = id => document.getElementById(id);
+  if(el('sumSections')) el('sumSections').textContent = sections.length;
+  if(el('sumThreads')) el('sumThreads').textContent = sections.reduce((a,s)=>a+(s.threads||0),0);
+  if(el('sumReplies')) el('sumReplies').textContent = sections.reduce((a,s)=>a+(s.replies||0),0);
+  if(el('sumActive')) el('sumActive').textContent = sections.filter(s=>s.status!=='hidden').length;
+}
 
 function renderSections(){
   const list = document.getElementById('sectionList');
-  list.innerHTML = sections.map((s,i)=>`
-    <div class="section-card" draggable="true" data-id="${s.id}">
+  if (!sections.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:30px">No sections yet. Click “+ New Section” to create one.</div>';
+    return;
+  }
+  list.innerHTML = sections.map((s)=>`
+    <div class="section-card" data-id="${s.id}">
       <span class="drag-handle">⠿</span>
-      <div class="section-icon-box">${s.icon}</div>
+      <div class="section-icon-box">${s.icon || '💬'}</div>
       <div class="section-info">
         <div class="section-name">${s.name} ${s.status==='hidden'?'<span class="badge-hidden">Hidden</span>':'<span class="badge-active">Active</span>'}</div>
-        <div class="section-desc">${s.desc}</div>
+        <div class="section-desc">${s.description || ''}</div>
         <div style="margin-top:6px;font-size:11px;color:var(--text-muted)">Post permission: <span style="color:var(--gold)">${permLabel(s.perm)}</span></div>
       </div>
       <div class="section-stats">
-        <div class="stat-item"><div class="n">${s.posts}</div><div class="l">Posts</div></div>
-        <div class="stat-item"><div class="n">${s.replies}</div><div class="l">Replies</div></div>
-        <div class="stat-item"><div class="n">${s.today}</div><div class="l">Today</div></div>
+        <div class="stat-item"><div class="n">${s.threads || 0}</div><div class="l">Threads</div></div>
+        <div class="stat-item"><div class="n">${s.replies || 0}</div><div class="l">Replies</div></div>
+        <div class="stat-item"><div class="n">${s.sort_order != null ? s.sort_order : '-'}</div><div class="l">Order</div></div>
       </div>
       <div class="section-actions">
         <button class="btn-icon" title="Edit" onclick="openEdit(${s.id})">✏️</button>
@@ -232,68 +246,72 @@ function toggleAddForm(){
   f.style.display=f.style.display==='none'?'block':'none';
 }
 
-function addSection(){
+async function addSection(){
   const name=document.getElementById('newName').value.trim();
-  if(!name){alert('Please enter a section name');return;}
-  sections.push({
-    id:Date.now(),
-    icon:document.getElementById('newIcon').value||'💬',
+  if(!name){showToast('Please enter a section name','error');return;}
+  const body={
     name,
-    desc:document.getElementById('newDesc').value,
-    posts:0,replies:0,today:0,
+    icon:document.getElementById('newIcon').value||'💬',
+    description:document.getElementById('newDesc').value,
     status:document.getElementById('newStatus').value,
-    perm:document.getElementById('newPerm').value
-  });
-  renderSections();
-  toggleAddForm();
-  showToast('Section created');
-  document.getElementById('newName').value='';
-  document.getElementById('newDesc').value='';
-  document.getElementById('newIcon').value='';
+    perm:document.getElementById('newPerm').value,
+    sort_order: sections.length + 1
+  };
+  const res = await apiSend('/api/admin/forum-sections','POST',body);
+  if(res && res.ok){
+    showToast('Section created');
+    document.getElementById('newName').value='';
+    document.getElementById('newDesc').value='';
+    document.getElementById('newIcon').value='';
+    toggleAddForm();
+    loadSections();
+  } else {
+    showToast((res && res.error) || 'Failed to create section','error');
+  }
 }
 
+let editingId = null;
 function openEdit(id){
   const s=sections.find(x=>x.id===id);
   if(!s)return;
   editingId=id;
   document.getElementById('editName').value=s.name;
-  document.getElementById('editIcon').value=s.icon;
-  document.getElementById('editDesc').value=s.desc;
-  document.getElementById('editStatus').value=s.status;
-  document.getElementById('editPerm').value=s.perm;
+  document.getElementById('editIcon').value=s.icon||'💬';
+  document.getElementById('editDesc').value=s.description||'';
+  document.getElementById('editStatus').value=s.status||'active';
+  document.getElementById('editPerm').value=s.perm||'all';
   document.getElementById('editModal').style.display='flex';
 }
 function closeEdit(){document.getElementById('editModal').style.display='none';editingId=null;}
-function saveEdit(){
-  const s=sections.find(x=>x.id===editingId);
-  if(!s)return;
-  s.name=document.getElementById('editName').value;
-  s.icon=document.getElementById('editIcon').value||'💬';
-  s.desc=document.getElementById('editDesc').value;
-  s.status=document.getElementById('editStatus').value;
-  s.perm=document.getElementById('editPerm').value;
-  renderSections();
-  closeEdit();
-  showToast('Section updated');
+async function saveEdit(){
+  const body={
+    name:document.getElementById('editName').value,
+    icon:document.getElementById('editIcon').value||'💬',
+    description:document.getElementById('editDesc').value,
+    status:document.getElementById('editStatus').value,
+    perm:document.getElementById('editPerm').value
+  };
+  const res = await apiSend('/api/admin/forum-sections?id='+editingId,'PUT',body);
+  if(res && res.ok){ showToast('Section updated'); closeEdit(); loadSections(); }
+  else { showToast((res && res.error) || 'Failed to update','error'); }
 }
-function toggleStatus(id){
+async function toggleStatus(id){
   const s=sections.find(x=>x.id===id);
-  if(s){s.status=s.status==='active'?'hidden':'active';renderSections();showToast('Status updated');}
+  if(!s)return;
+  const next = s.status==='active'?'hidden':'active';
+  const res = await apiSend('/api/admin/forum-sections?id='+id,'PUT',{status:next});
+  if(res && res.ok){ showToast('Status updated'); loadSections(); }
+  else { showToast((res && res.error) || 'Failed','error'); }
 }
-function deleteSection(id){
+async function deleteSection(id){
   if(confirm('Delete this section? All posts within will be archived.')){
-    const i=sections.findIndex(x=>x.id===id);
-    if(i>-1){sections.splice(i,1);renderSections();showToast('Section deleted');}
+    const res = await apiSend('/api/admin/forum-sections?id='+id,'DELETE');
+    if(res && res.ok){ showToast('Section deleted'); loadSections(); }
+    else { showToast((res && res.error) || 'Failed to delete','error'); }
   }
 }
 
-function showToast(msg){
-  const t=document.createElement('div');
-  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid var(--border);border-radius:8px;padding:10px 18px;color:#e2e8f0;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4)';
-  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
-}
-
-document.addEventListener('DOMContentLoaded',renderSections);
+document.addEventListener('DOMContentLoaded', loadSections);
 </script>
 </body>
 </html>

@@ -670,8 +670,37 @@ footer {
 /* ── Frontend ad slots (rendered from /api/ads) ─────────────────── */
 .ad-slot{display:none;overflow:hidden;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);}
 .ad-slot-link{display:block;width:100%;height:100%;border-radius:inherit;}
-.ad-slot-leaderboard{width:100%;max-width:1140px;height:90px;margin:0 auto 28px;}
-.ad-slot-strip{width:100%;max-width:1140px;height:60px;margin:28px auto 0;}
-.ad-slot-sidebar{width:100%;height:250px;margin-top:24px;}
-.ad-slot-inline{width:100%;max-width:720px;height:100px;margin:24px auto;}
-@media(max-width:600px){.ad-slot-leaderboard{height:70px}.ad-slot-strip{height:50px}.ad-slot-sidebar{height:200px}}
+/* Wrapper for wide slots that must exceed .container (1272px content width). */
+.ad-slot-frame{padding:0 24px;}
+/* Homepage */
+.ad-slot-hero{width:100%;max-width:1200px;height:100px;margin:0 auto 28px;}
+/* Section / category header banners */
+.ad-slot-section{width:100%;max-width:960px;height:200px;margin:0 auto 28px;}
+/* Leaderboard (article/forum) */
+.ad-slot-leaderboard{width:100%;max-width:728px;height:90px;margin:0 auto 24px;}
+/* Article mid-page banner */
+.ad-slot-article-mid{width:100%;max-width:970px;height:250px;margin:24px auto;}
+/* Article footer banner */
+.ad-slot-article-footer{width:100%;max-width:728px;height:90px;margin:24px auto;}
+/* Product grid sponsor */
+.ad-slot-product-grid{width:300px;height:300px;margin:0 auto 24px;}
+/* Full-width strip / ticker */
+.ad-slot-strip,.ad-slot-ticker{width:100%;max-width:1200px;height:90px;margin:28px auto 0;}
+.ad-slot-ticker{height:60px;}
+/* Sidebar sizes */
+.ad-slot-sidebar{width:100%;max-width:300px;height:250px;margin-top:24px;}
+.ad-slot-medium-rectangle{width:300px;height:250px;margin:0 auto 24px;}
+.ad-slot-half-page{width:300px;height:600px;margin:0 auto 24px;}
+.ad-slot-skyscraper{width:160px;height:600px;margin:0 auto 24px;}
+/* Forum specific */
+.ad-slot-forum-top{width:100%;max-width:970px;height:90px;margin:0 auto 28px;}
+.ad-slot-between-posts{width:300px;height:250px;margin:24px auto;}
+@media(max-width:600px){
+  .ad-slot-hero{height:100px;}
+  .ad-slot-section{height:140px;}
+  .ad-slot-leaderboard,.ad-slot-article-footer,.ad-slot-forum-top{height:70px;}
+  .ad-slot-article-mid{height:160px;}
+  .ad-slot-strip,.ad-slot-ticker{height:60px;}
+  .ad-slot-sidebar,.ad-slot-medium-rectangle{height:200px;}
+  .ad-slot-skyscraper,.ad-slot-half-page{height:400px;}
+}

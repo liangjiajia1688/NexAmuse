@@ -100,6 +100,9 @@
       <button class="filter-btn" data-group="news" data-filter="interviews">Interviews</button>
     </div>
 
+    <!-- News Top Ad (rendered from /api/ads, zone=article) -->
+    <div class="ad-slot ad-slot-leaderboard" id="adNewsTop" style="margin-bottom:28px;"></div>
+
     <div class="news-layout">
       <div class="news-main">
         <!-- Aggregation disclaimer -->
@@ -241,6 +244,9 @@
             </form>
           </div>
         </div>
+
+        <!-- News Sidebar Ad (rendered from /api/ads, zone=sidebar) -->
+        <div class="ad-slot ad-slot-medium-rectangle" id="adNewsSide"></div>
 
         <div style="background:linear-gradient(135deg,#1a1505,#2a1c00);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;">
           <div style="font-size:2rem;margin-bottom:10px;">📊</div>
@@ -395,6 +401,10 @@ document.addEventListener('DOMContentLoaded', function loadLiveNews(){
       renderPager();
     })
     .catch(e => console.warn('Live news load failed', e));
+
+  // Render real ad slots on the news page.
+  renderAdSlot('article', 'adNewsTop');
+  renderAdSlot('sidebar', 'adNewsSide');
 });
 </script>
 </body>

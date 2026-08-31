@@ -34,23 +34,21 @@
         </div></div>
     </header>
     <div class="admin-content">
-      <div class="page-title"><h1>Unverified Members <span class="badge" style="font-size:16px">12</span></h1><p>Review and approve or reject pending member registrations.</p></div>
+      <div class="page-title"><h1>Unverified Members <span class="badge" id="pendCount" style="font-size:16px">0</span></h1><p>Review and approve or reject pending member registrations.</p></div>
       <div class="toolbar">
         <div class="toolbar-left">
           <button class="btn-primary" onclick="approveAll()">✓ Approve All Selected</button>
           <button class="btn-danger" onclick="rejectAll()">✕ Reject All Selected</button>
         </div>
         <div class="toolbar-right">
-          <div class="search-box"><span>🔍</span><input type="text" placeholder="Search..."></div>
+          <div class="search-box"><span>🔍</span><input type="text" id="searchInput" placeholder="Search..." oninput="renderTable()"></div>
         </div>
       </div>
       <div class="form-section" style="padding:0;overflow:hidden">
         <table class="admin-table">
-          <thead><tr><th><input type="checkbox" class="checkbox-all" onchange="toggleAll(this)"></th><th>Name</th><th>Email</th><th>Company</th><th>Country</th><th>Registered</th><th>ID Document</th><th>Actions</th></tr></thead>
-          <tbody>
-            <tr><td><input type="checkbox" class="row-check"></td><td><div class="cell-avatar"><div class="av" style="background:#667eea">MJ</div><div>Michael Johnson</div></div></td><td>m.j@arcadepro.com</td><td>ArcadePro Ltd.</td><td>🇺🇸 USA</td><td>Mar 25, 2026</td><td><a href="#" style="color:var(--gold)">View PDF</a></td><td><button class="btn-primary" style="padding:5px 12px;font-size:12px" onclick="approve(this)">Approve</button> <button class="btn-danger" style="padding:5px 12px;font-size:12px" onclick="reject(this)">Reject</button></td></tr>
-            <tr><td><input type="checkbox" class="row-check"></td><td><div class="cell-avatar"><div class="av" style="background:#d4af37">YT</div><div>Yuki Tanaka</div></div></td><td>y.tanaka@funlab.jp</td><td>FunLab Japan</td><td>🇯🇵 Japan</td><td>Mar 24, 2026</td><td><a href="#" style="color:var(--gold)">View PDF</a></td><td><button class="btn-primary" style="padding:5px 12px;font-size:12px" onclick="approve(this)">Approve</button> <button class="btn-danger" style="padding:5px 12px;font-size:12px" onclick="reject(this)">Reject</button></td></tr>
-            <tr><td><input type="checkbox" class="row-check"></td><td><div class="cell-avatar"><div class="av" style="background:#11998e">KA</div><div>Khalid Al-Rashid</div></div></td><td>khalid@games360.ae</td><td>Games360 UAE</td><td>🇦🇪 UAE</td><td>Mar 23, 2026</td><td><a href="#" style="color:var(--gold)">View PDF</a></td><td><button class="btn-primary" style="padding:5px 12px;font-size:12px" onclick="approve(this)">Approve</button> <button class="btn-danger" style="padding:5px 12px;font-size:12px" onclick="reject(this)">Reject</button></td></tr>
+          <thead><tr><th><input type="checkbox" class="checkbox-all" onchange="toggleAll(this)"></th><th>Name</th><th>Email</th><th>Company</th><th>Registered</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="memberRows">
+            <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -59,11 +57,71 @@
 </div>
 <script src="admin.js"></script>
 <script>
-function approve(btn){btn.closest('tr').style.opacity='.3';btn.closest('tr').querySelector('.btn-danger').disabled=true;btn.textContent='✓ Approved';btn.style.opacity='.6';}
-function reject(btn){btn.closest('tr').style.opacity='.3';btn.closest('tr').querySelector('.btn-primary').disabled=true;btn.textContent='✕ Rejected';btn.style.opacity='.6';}
-function approveAll(){document.querySelectorAll('.row-check:checked').forEach(c=>c.closest('tr').querySelector('.btn-primary').click());}
-function rejectAll(){document.querySelectorAll('.row-check:checked').forEach(c=>c.closest('tr').querySelector('.btn-danger').click());}
+let members = [];
+
+function fmtDate(s){
+  if(!s) return '';
+  const d = new Date(s.replace(' ','T')+(s.includes('Z')?'':'Z'));
+  if(isNaN(d)) return s;
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+async function loadMembers(){
+  try {
+    const data = await apiGet('/api/admin/members?status=pending');
+    if(data && data.ok){ members = data.members || []; }
+    else { members = []; }
+  } catch(e){ members = []; }
+  const pc = document.getElementById('pendCount');
+  if(pc) pc.textContent = members.length;
+  renderTable();
+}
+
+function renderTable(){
+  const q = (document.getElementById('searchInput').value || '').toLowerCase();
+  const host = document.getElementById('memberRows');
+  const list = members.filter(m => !q || (m.username||'').toLowerCase().includes(q) || (m.email||'').toLowerCase().includes(q));
+  if(!list.length){
+    host.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">'+(members.length?'No matches':'No pending members.')+'</td></tr>';
+    return;
+  }
+  host.innerHTML = list.map(m=>`
+    <tr data-id="${m.id}">
+      <td><input type="checkbox" class="row-check"></td>
+      <td><div class="cell-avatar"><div class="av" style="background:#667eea">${(esc(m.username||'?').charAt(0).toUpperCase())}</div><div>${esc(m.username||'(no name)')}</div></div></td>
+      <td>${esc(m.email)}</td>
+      <td>${esc(m.company || '—')}</td>
+      <td>${fmtDate(m.created_at)}</td>
+      <td><span class="badge-active">${esc(m.status)}</span></td>
+      <td>
+        <button class="btn-primary" style="padding:5px 12px;font-size:12px" onclick="setStatus(${m.id},'active',this)">Approve</button>
+        <button class="btn-danger" style="padding:5px 12px;font-size:12px" onclick="setStatus(${m.id},'rejected',this)">Reject</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function setStatus(id, status, btn){
+  const res = await apiSend('/api/admin/members?id='+id, 'PUT', { status });
+  if(res && res.ok){
+    showToast(status==='active' ? 'Member approved' : 'Member rejected');
+    loadMembers();
+  } else {
+    showToast((res && res.error) || 'Failed','error');
+  }
+}
+function approve(btn){ setStatus(rowId(btn),'active'); }
+function reject(btn){ setStatus(rowId(btn),'rejected'); }
+function rowId(btn){ const tr=btn.closest('tr'); return tr && tr.dataset.id; }
+function approveAll(){
+  document.querySelectorAll('.row-check:checked').forEach(c=>{ const id=c.closest('tr').dataset.id; if(id) setStatus(id,'active'); });
+}
+function rejectAll(){
+  document.querySelectorAll('.row-check:checked').forEach(c=>{ const id=c.closest('tr').dataset.id; if(id) setStatus(id,'rejected'); });
+}
 function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked);}
+
+document.addEventListener('DOMContentLoaded', loadMembers);
 </script>
 
 <style id="user-dropdown-style">

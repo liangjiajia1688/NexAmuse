@@ -41,6 +41,7 @@
 .perm-checkbox input{accent-color:var(--gold)}
 .perm-checkbox span{font-size:12px;color:#cbd5e1}
 .section-title-sm{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);font-weight:600;margin:14px 0 8px}
+.empty-note{text-align:center;padding:30px;color:var(--text-muted);font-size:13px}
 </style>
 </head>
 <body>
@@ -83,10 +84,10 @@
 
       <!-- Stats -->
       <div class="stat-row">
-        <div class="stat-card"><div class="num">7</div><div class="lab">Total Admins</div></div>
-        <div class="stat-card"><div class="num" style="color:#34d399">4</div><div class="lab">Online Now</div></div>
-        <div class="stat-card"><div class="num" style="color:#818cf8">1</div><div class="lab">Super Admin</div></div>
-        <div class="stat-card"><div class="num" style="color:#f59e0b">2</div><div class="lab">Pending Invite</div></div>
+        <div class="stat-card"><div class="num" id="statTotal">0</div><div class="lab">Total Admins</div></div>
+        <div class="stat-card"><div class="num" style="color:#34d399" id="statActive">0</div><div class="lab">Active</div></div>
+        <div class="stat-card"><div class="num" style="color:#818cf8" id="statSuper">0</div><div class="lab">Super Admin</div></div>
+        <div class="stat-card"><div class="num" style="color:#f59e0b" id="statSuspended">0</div><div class="lab">Suspended</div></div>
       </div>
 
       <!-- Filter -->
@@ -96,13 +97,11 @@
           <option value="">All Roles</option>
           <option>Super Admin</option>
           <option>Admin</option>
-          <option>Moderator</option>
-          <option>Editor</option>
         </select>
         <select id="statusFilter" onchange="filterAdmins()" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none">
           <option value="">All Status</option>
-          <option>Online</option>
-          <option>Offline</option>
+          <option value="active">Active</option>
+          <option value="suspended">Suspended</option>
         </select>
       </div>
 
@@ -113,9 +112,8 @@
             <tr>
               <th>Administrator</th>
               <th>Role</th>
-              <th>Permissions</th>
               <th>Status</th>
-              <th>Last Login</th>
+              <th>Joined</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -123,35 +121,14 @@
         </table>
       </div>
 
-      <!-- Pending Invites -->
-      <h3 style="font-size:14px;font-weight:600;color:#e2e8f0;margin:24px 0 12px">📨 Pending Invitations</h3>
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)">
-          <div>
-            <div style="font-size:13px;font-weight:600;color:#e2e8f0">james.wilson@nexamuse.com</div>
-            <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Role: Moderator · Invited 2026-03-24 · Expires in 5 days</div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-outline btn-sm" onclick="resendInvite('james')">↺ Resend</button>
-            <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.25)" onclick="cancelInvite('james')">✕ Cancel</button>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0">
-          <div>
-            <div style="font-size:13px;font-weight:600;color:#e2e8f0">marketing.team@nexamuse.com</div>
-            <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Role: Editor · Invited 2026-03-23 · Expires in 4 days</div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-outline btn-sm" onclick="resendInvite('marketing')">↺ Resend</button>
-            <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.25)" onclick="cancelInvite('marketing')">✕ Cancel</button>
-          </div>
-        </div>
-      </div>
+      <!-- Pending / Suspended -->
+      <h3 style="font-size:14px;font-weight:600;color:#e2e8f0;margin:24px 0 12px">⏳ Pending & Suspended</h3>
+      <div class="card" id="pendingInvites"><div class="empty-note">All administrator accounts are active.</div></div>
     </div>
   </div>
 </div>
 
-<!-- Add/Edit Modal -->
+<!-- Add Modal -->
 <div class="modal-overlay" id="adminModal">
   <div class="modal-box">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
@@ -159,54 +136,29 @@
       <button onclick="closeModal()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer">×</button>
     </div>
     <div class="form-row">
-      <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" id="fName" placeholder="e.g. John Smith">
-      </div>
-      <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" id="fEmail" placeholder="admin@company.com">
-      </div>
+      <div class="form-group"><label>Full Name</label><input type="text" id="fName" placeholder="e.g. John Smith"></div>
+      <div class="form-group"><label>Email Address</label><input type="email" id="fEmail" placeholder="admin@company.com"></div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label>Role</label>
-        <select id="fRole" onchange="updatePermPreset()">
+        <select id="fRole">
           <option value="Admin">Admin</option>
-          <option value="Moderator">Moderator</option>
-          <option value="Editor">Editor</option>
           <option value="Super Admin">Super Admin</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Department</label>
-        <input type="text" id="fDept" placeholder="e.g. Content, Support">
+      <div class="form-group"><label>Status</label>
+        <select id="fStatus"><option value="active">Active</option><option value="suspended">Suspended</option></select>
       </div>
-    </div>
-    <div class="section-title-sm">Access Permissions</div>
-    <div class="perm-grid" id="permGrid">
-      <label class="perm-checkbox"><input type="checkbox" id="pDashboard" checked><span>📊 Dashboard</span></label>
-      <label class="perm-checkbox"><input type="checkbox" id="pMembers" checked><span>👥 Members</span></label>
-      <label class="perm-checkbox"><input type="checkbox" id="pProducts"><span>🎡 Products</span></label>
-      <label class="perm-checkbox"><input type="checkbox" id="pNews"><span>📰 News & Articles</span></label>
-      <label class="perm-checkbox"><input type="checkbox" id="pForum" checked><span>💬 Forum</span></label>
-      <label class="perm-checkbox"><input type="checkbox" id="pExhibitions"><span>🎪 Exhibitions</span></label>
-      <label class="perm-checkbox"><input type="checkbox" id="pSuppliers"><span>🏪 Suppliers</span></label>
-      <label class="perm-checkbox"><input type="checkbox" id="pAds"><span>📢 Advertising</span></label>
-      <label class="perm-checkbox"><input type="checkbox" id="pSettings"><span>⚙️ Settings</span></label>
-      <label class="perm-checkbox"><input type="checkbox" id="pAdmins"><span>🔑 Admin Management</span></label>
-    </div>
-    <div style="margin-top:18px;padding:12px 14px;background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.15);border-radius:8px;font-size:12px;color:var(--text-muted)">
-      📧 An invitation email will be sent to the specified address with a secure setup link (expires in 7 days).
     </div>
     <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-gold" onclick="sendInvite()">Send Invitation ›</button>
+      <button class="btn btn-gold" onclick="sendInvite()">Create Administrator ›</button>
     </div>
   </div>
 </div>
 
-<!-- View/Edit Admin Modal -->
+<!-- View/Edit Modal -->
 <div class="modal-overlay" id="viewModal">
   <div class="modal-box">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
@@ -215,31 +167,18 @@
     </div>
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px;background:rgba(255,255,255,.03);border-radius:10px">
       <div class="avatar-md" id="vAvatar" style="background:linear-gradient(135deg,var(--gold),#f5d06e);width:48px;height:48px;font-size:18px"></div>
-      <div>
-        <div id="vName" style="font-size:15px;font-weight:600;color:#e2e8f0"></div>
-        <div id="vEmail" style="font-size:13px;color:var(--text-muted);margin-top:2px"></div>
-      </div>
+      <div><div id="vName" style="font-size:15px;font-weight:600;color:#e2e8f0"></div><div id="vEmail" style="font-size:13px;color:var(--text-muted);margin-top:2px"></div></div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label>Role</label>
-        <select id="vRole">
-          <option>Super Admin</option>
-          <option>Admin</option>
-          <option>Moderator</option>
-          <option>Editor</option>
-        </select>
+        <select id="vRole"><option>Super Admin</option><option>Admin</option></select>
       </div>
       <div class="form-group">
         <label>Status</label>
-        <select id="vStatus">
-          <option>Active</option>
-          <option>Suspended</option>
-        </select>
+        <select id="vStatus"><option value="active">Active</option><option value="suspended">Suspended</option></select>
       </div>
     </div>
-    <div class="section-title-sm">Recent Activity</div>
-    <div id="vActivity" style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px;font-size:12px;color:#94a3b8;line-height:1.8"></div>
     <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
       <button class="btn btn-outline" onclick="closeViewModal()">Cancel</button>
       <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.25)" onclick="suspendAdmin()">🚫 Suspend</button>
@@ -250,73 +189,87 @@
 
 <script src="admin.js"></script>
 <script>
-const admins = [
-  {id:1,name:'Sarah Chen',email:'sarah@nexamuse.com',role:'Super Admin',dept:'Management',status:'online',lastLogin:'Just now',perms:['Dashboard','Members','Products','News','Forum','Exhibitions','Suppliers','Advertising','Settings','Admin Management'],avatar:'S',color:'linear-gradient(135deg,#c9a227,#f5d06e)'},
-  {id:2,name:'Michael Park',email:'michael@nexamuse.com',role:'Admin',dept:'Operations',status:'online',lastLogin:'5 min ago',perms:['Dashboard','Members','Products','News','Forum','Exhibitions','Suppliers'],avatar:'M',color:'linear-gradient(135deg,#6366f1,#818cf8)'},
-  {id:3,name:'Lisa Wang',email:'lisa@nexamuse.com',role:'Admin',dept:'Content',status:'online',lastLogin:'12 min ago',perms:['Dashboard','News','Products','Forum'],avatar:'L',color:'linear-gradient(135deg,#34d399,#6ee7b7)'},
-  {id:4,name:'James Rodriguez',email:'james@nexamuse.com',role:'Moderator',dept:'Community',status:'online',lastLogin:'1 hour ago',perms:['Dashboard','Forum','Members'],avatar:'J',color:'linear-gradient(135deg,#f59e0b,#fcd34d)'},
-  {id:5,name:'Emily Foster',email:'emily@nexamuse.com',role:'Editor',dept:'Marketing',status:'offline',lastLogin:'Yesterday',perms:['Dashboard','News','Products'],avatar:'E',color:'linear-gradient(135deg,#ec4899,#f9a8d4)'},
-  {id:6,name:'David Kim',email:'david@nexamuse.com',role:'Moderator',dept:'Support',status:'offline',lastLogin:'2 days ago',perms:['Dashboard','Forum','Members','Suppliers'],avatar:'D',color:'linear-gradient(135deg,#14b8a6,#5eead4)'},
-  {id:7,name:'Anna Thompson',email:'anna@nexamuse.com',role:'Editor',dept:'Content',status:'offline',lastLogin:'3 days ago',perms:['Dashboard','News'],avatar:'A',color:'linear-gradient(135deg,#8b5cf6,#c4b5fd)'},
-];
-
-let filteredAdmins = [...admins];
+let admins = [];
+let filteredAdmins = [];
 let editingAdminId = null;
 
+function adminColor(a){
+  if(a.is_super) return 'linear-gradient(135deg,#c9a227,#f5d06e)';
+  if(a.role==='Moderator') return 'linear-gradient(135deg,#f59e0b,#fcd34d)';
+  if(a.role==='Editor') return 'linear-gradient(135deg,#ec4899,#f9a8d4)';
+  return 'linear-gradient(135deg,#6366f1,#818cf8)';
+}
+function adminInitial(a){ return (a.username||a.email||'?').charAt(0).toUpperCase(); }
+function fmtDate(ts){ if(!ts) return '—'; const d=new Date(ts*1000); return d.toISOString().slice(0,10); }
+
+async function loadAdmins(){
+  try{
+    const data = await apiGet('/api/admin/admins');
+    if(data.ok){
+      admins = data.admins||[];
+      filteredAdmins=[...admins];
+      const s=data.stats||{};
+      document.getElementById('statTotal').textContent=s.total||0;
+      document.getElementById('statActive').textContent=s.active||0;
+      document.getElementById('statSuper').textContent=s.super||0;
+      document.getElementById('statSuspended').textContent=s.suspended||0;
+      renderAdmins(filteredAdmins);
+      renderPending();
+    } else { showToast('Failed to load admins'); }
+  }catch(e){ showToast('Network error'); }
+}
+
 function getRoleClass(role){
-  return {
-    'Super Admin':'role-super',
-    'Admin':'role-admin',
-    'Moderator':'role-moderator',
-    'Editor':'role-editor'
-  }[role]||'role-editor';
+  return { 'Super Admin':'role-super','Admin':'role-admin','Moderator':'role-moderator','Editor':'role-editor' }[role]||'role-editor';
 }
 
 function renderAdmins(data){
-  const tb = document.getElementById('adminBody');
-  if(!data.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted)">No administrators found</td></tr>';return;}
-  tb.innerHTML = data.map(a=>`
+  const tb=document.getElementById('adminBody');
+  if(!data.length){tb.innerHTML='<tr><td colspan="5" class="empty-note">No administrators found</td></tr>';return;}
+  tb.innerHTML=data.map(a=>`
     <tr>
       <td>
         <div style="display:flex;align-items:center;gap:10px">
-          <div class="avatar-md" style="background:${a.color}">${a.avatar}</div>
+          <div class="avatar-md" style="background:${adminColor(a)}">${adminInitial(a)}</div>
           <div>
-            <div style="font-weight:600;color:#e2e8f0">${a.name}</div>
+            <div style="font-weight:600;color:#e2e8f0">${a.username||a.email}</div>
             <div style="font-size:11px;color:var(--text-muted)">${a.email}</div>
-            ${a.dept?`<div style="font-size:11px;color:rgba(148,163,184,.6)">${a.dept}</div>`:''}
           </div>
         </div>
       </td>
-      <td><span class="role-badge ${getRoleClass(a.role)}">${a.role}</span></td>
-      <td>
-        <div class="perm-list">
-          ${a.perms.slice(0,3).map(p=>`<span class="perm-chip">${p}</span>`).join('')}
-          ${a.perms.length>3?`<span class="perm-chip">+${a.perms.length-3}</span>`:''}
-        </div>
-      </td>
-      <td>
-        <span class="status-dot dot-${a.status}"></span>
-        <span style="font-size:12px;color:${a.status==='online'?'#34d399':'#94a3b8'}">${a.status==='online'?'Online':'Offline'}</span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted)">${a.lastLogin}</td>
+      <td><span class="role-badge ${getRoleClass(a.is_super?'Super Admin':(a.role||'Admin'))}">${a.is_super?'Super Admin':(a.role||'Admin')}</span></td>
+      <td><span class="status-dot dot-${a.status==='active'?'online':'banned'}"></span><span style="font-size:12px;color:${a.status==='active'?'#34d399':'#94a3b8'}">${a.status==='active'?'Active':'Suspended'}</span></td>
+      <td style="font-size:12px;color:var(--text-muted)">${fmtDate(a.created_at)}</td>
       <td>
         <div style="display:flex;gap:6px">
           <button class="btn-icon" title="Edit" onclick="openViewModal(${a.id})">✏️</button>
-          <button class="btn-icon" title="View Log" onclick="viewLog(${a.id})">📋</button>
-          ${a.role!=='Super Admin'?`<button class="btn-icon danger" title="Suspend" onclick="confirmSuspend(${a.id})">🚫</button>`:''}
+          ${!a.is_super?`<button class="btn-icon danger" title="Suspend" onclick="confirmSuspend(${a.id})">🚫</button>`:''}
         </div>
       </td>
-    </tr>
-  `).join('');
+    </tr>`).join('');
+}
+
+function renderPending(){
+  const box=document.getElementById('pendingInvites');
+  const list=admins.filter(a=>a.status!=='active');
+  if(!list.length){box.innerHTML='<div class="empty-note">All administrator accounts are active.</div>';return;}
+  box.innerHTML=list.map(a=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div><div style="font-size:13px;font-weight:600;color:#e2e8f0">${a.username||a.email}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Role: ${a.is_super?'Super Admin':(a.role||'Admin')} · ${a.status==='suspended'?'Suspended':'Pending'}</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="openViewModal(${a.id})">Manage</button>
+      </div>
+    </div>`).join('');
 }
 
 function filterAdmins(){
   const q=document.getElementById('adminSearch').value.toLowerCase();
   const role=document.getElementById('roleFilter').value;
-  const status=document.getElementById('statusFilter').value.toLowerCase();
+  const status=document.getElementById('statusFilter').value;
   filteredAdmins=admins.filter(a=>{
-    const matchQ=!q||a.name.toLowerCase().includes(q)||a.email.toLowerCase().includes(q);
-    const matchR=!role||a.role===role;
+    const matchQ=!q||(a.username||'').toLowerCase().includes(q)||(a.email||'').toLowerCase().includes(q);
+    const matchR=!role||(a.is_super?'Super Admin':(a.role||'Admin'))===role;
     const matchS=!status||a.status===status;
     return matchQ&&matchR&&matchS;
   });
@@ -328,72 +281,50 @@ function openAddModal(){
   document.getElementById('fName').value='';
   document.getElementById('fEmail').value='';
   document.getElementById('fRole').value='Admin';
-  document.getElementById('fDept').value='';
+  document.getElementById('fStatus').value='active';
   document.getElementById('adminModal').classList.add('show');
 }
-
 function closeModal(){document.getElementById('adminModal').classList.remove('show');}
 
-function updatePermPreset(){
-  const role=document.getElementById('fRole').value;
-  const allPerms=['pDashboard','pMembers','pProducts','pNews','pForum','pExhibitions','pSuppliers','pAds','pSettings','pAdmins'];
-  const presets={
-    'Super Admin':allPerms,
-    'Admin':['pDashboard','pMembers','pProducts','pNews','pForum','pExhibitions','pSuppliers'],
-    'Moderator':['pDashboard','pMembers','pForum'],
-    'Editor':['pDashboard','pNews','pProducts']
-  };
-  allPerms.forEach(p=>{const el=document.getElementById(p);if(el)el.checked=(presets[role]||[]).includes(p)});
-}
-
-function sendInvite(){
+async function sendInvite(){
   const email=document.getElementById('fEmail').value.trim();
-  if(!email){alert('Please enter an email address');return;}
-  closeModal();
-  showToast('Invitation sent to '+email);
+  const name=document.getElementById('fName').value.trim();
+  if(!email){showToast('Please enter an email address','error');return;}
+  const body={email,username:name,role:document.getElementById('fRole').value,status:document.getElementById('fStatus').value};
+  const res=await apiSend('/api/admin/admins','POST',body);
+  if(res.ok){ closeModal(); showToast('Administrator created'); loadAdmins(); }
+  else { showToast(res.error||'Create failed','error'); }
 }
 
 function openViewModal(id){
-  const a=admins.find(x=>x.id===id);
-  if(!a)return;
+  const a=admins.find(x=>x.id===id); if(!a)return;
   editingAdminId=id;
-  document.getElementById('vAvatar').textContent=a.avatar;
-  document.getElementById('vAvatar').style.background=a.color;
-  document.getElementById('vName').textContent=a.name;
+  document.getElementById('vAvatar').textContent=adminInitial(a);
+  document.getElementById('vAvatar').style.background=adminColor(a);
+  document.getElementById('vName').textContent=a.username||a.email;
   document.getElementById('vEmail').textContent=a.email;
-  document.getElementById('vRole').value=a.role;
-  document.getElementById('vStatus').value='Active';
-  document.getElementById('vActivity').innerHTML=[
-    '• Logged in from 192.168.1.1 · '+a.lastLogin,
-    '• Updated 3 member records · Yesterday',
-    '• Reviewed 2 forum reports · 2 days ago',
-    '• Published 1 news article · 3 days ago',
-  ].join('<br>');
+  document.getElementById('vRole').value=a.is_super?'Super Admin':'Admin';
+  document.getElementById('vStatus').value=a.status==='suspended'?'suspended':'active';
   document.getElementById('viewModal').classList.add('show');
 }
 function closeViewModal(){document.getElementById('viewModal').classList.remove('show');editingAdminId=null;}
-function saveAdminEdit(){
-  const a=admins.find(x=>x.id===editingAdminId);
-  if(a){a.role=document.getElementById('vRole').value;}
-  renderAdmins(filteredAdmins);
+
+async function saveAdminEdit(){
+  const body={role:document.getElementById('vRole').value,status:document.getElementById('vStatus').value};
+  const res=await apiSend('/api/admin/admins?id='+editingAdminId,'PUT',body);
+  if(res.ok){ closeViewModal(); showToast('Administrator updated'); loadAdmins(); }
+  else { showToast(res.error||'Update failed','error'); }
+}
+async function suspendAdmin(){ if(editingAdminId){ await setStatus(editingAdminId,'suspended'); } }
+async function confirmSuspend(id){ if(confirm('Suspend this administrator?')){ await setStatus(id,'suspended'); } }
+async function setStatus(id,status){
+  const res=await apiSend('/api/admin/admins?id='+id,'PUT',{status});
   closeViewModal();
-  showToast('Administrator updated');
+  if(res.ok){ showToast('Status updated'); loadAdmins(); } else { showToast(res.error||'Update failed','error'); }
 }
-function suspendAdmin(){
-  if(confirm('Suspend this administrator?')){closeViewModal();showToast('Account suspended');}}
-function confirmSuspend(id){
-  if(confirm('Suspend this administrator?')){showToast('Account suspended');}}
-function viewLog(id){window.location.href='admin-log.html'}
-function resendInvite(k){showToast('Invitation resent')}
-function cancelInvite(k){showToast('Invitation cancelled')}
+function viewLog(){window.location.href='admin-log.html';}
 
-function showToast(msg){
-  const t=document.createElement('div');
-  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid var(--border);border-radius:8px;padding:10px 18px;color:#e2e8f0;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4)';
-  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
-}
-
-document.addEventListener('DOMContentLoaded',()=>renderAdmins(filteredAdmins));
+document.addEventListener('DOMContentLoaded',loadAdmins);
 </script>
 </body>
 </html>

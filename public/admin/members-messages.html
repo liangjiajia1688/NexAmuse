@@ -35,52 +35,31 @@
     </header>
     <div class="admin-content">
       <div class="page-title"><h1>Messages & Enquiries</h1><p>Manage all user messages and contact form submissions.</p></div>
-      <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;height:calc(100vh - 180px)">
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="btn btn-sm active" id="tabInbox" onclick="switchBox('inbox',this)">📥 Inbox <span class="badge" id="inboxCount">0</span></button>
+        <button class="btn btn-sm" id="tabUnread" onclick="switchBox('unread',this)">🔴 Unread <span class="badge" id="unreadCount">0</span></button>
+        <button class="btn btn-sm" id="tabSent" onclick="switchBox('sent',this)">📤 Sent</button>
+      </div>
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;height:calc(100vh - 220px)">
         <!-- Message List -->
         <div class="form-section" style="overflow-y:auto;padding:0">
-          <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600">Inbox <span class="badge">5</span></div>
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600">Messages</div>
           <div id="msgList">
-            <div class="msg-row active" onclick="selectMsg(this,0)" style="padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;background:rgba(212,175,55,.06)">
-              <div style="font-size:13px;font-weight:500">James Lawson</div>
-              <div style="font-size:12px;color:var(--gold);margin:2px 0">Product inquiry: VR Racing...</div>
-              <div style="font-size:11px;color:var(--text-muted)">Mar 25 · 14:22</div>
-            </div>
-            <div class="msg-row" onclick="selectMsg(this,1)" style="padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer">
-              <div style="font-size:13px;font-weight:500">Sofia Kramer</div>
-              <div style="font-size:12px;color:var(--text-muted);margin:2px 0">Hello, I would like to know...</div>
-              <div style="font-size:11px;color:var(--text-muted)">Mar 24 · 09:15</div>
-            </div>
-            <div class="msg-row" onclick="selectMsg(this,2)" style="padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer">
-              <div style="font-size:13px;font-weight:500">Ahmed Mansour</div>
-              <div style="font-size:12px;color:var(--text-muted);margin:2px 0">Regarding exhibition booth...</div>
-              <div style="font-size:11px;color:var(--text-muted)">Mar 23 · 16:40</div>
-            </div>
+            <div style="padding:20px 16px;color:var(--text-muted);font-size:13px;text-align:center">Loading…</div>
           </div>
         </div>
         <!-- Message Detail -->
         <div class="form-section" style="display:flex;flex-direction:column">
           <div id="msgDetail">
-            <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
-              <div style="font-size:16px;font-weight:600;margin-bottom:4px">Product Inquiry: VR Racing Simulator X</div>
-              <div style="font-size:13px;color:var(--text-muted)">From: James Lawson (j.lawson@globalfun.com) · Mar 25, 2026 14:22</div>
-            </div>
-            <div style="font-size:14px;line-height:1.8;color:var(--text-muted)">
-              Hi NexAmuse Team,<br><br>
-              I am interested in the VR Racing Simulator X featured on your platform. Could you please provide:<br>
-              1. Current pricing for 2 units<br>
-              2. Shipping timeline to USA<br>
-              3. After-sales service coverage<br><br>
-              We are planning to purchase before the end of Q2 2026.<br><br>
-              Best regards,<br>James Lawson<br>Global Fun Ltd.
-            </div>
+            <div style="padding:40px 16px;color:var(--text-muted);font-size:13px;text-align:center">Select a message to view.</div>
           </div>
-          <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--border)">
+          <div id="replyBox" style="margin-top:auto;padding-top:16px;border-top:1px solid var(--border);display:none">
             <label style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Reply</label>
-            <textarea style="width:100%;margin-top:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:13px;min-height:100px;outline:none;font-family:inherit" placeholder="Type your reply..."></textarea>
+            <textarea id="replyText" style="width:100%;margin-top:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:13px;min-height:100px;outline:none;font-family:inherit" placeholder="Type your reply..."></textarea>
             <div style="display:flex;gap:10px;margin-top:10px">
               <button class="btn-primary" onclick="sendReply()">Send Reply</button>
-              <button class="btn-secondary">Mark as Resolved</button>
-              <button class="btn-danger" style="margin-left:auto">Delete</button>
+              <button class="btn-secondary" onclick="markResolved()">Mark as Resolved</button>
+              <button class="btn-danger" style="margin-left:auto" onclick="deleteMsg()">Delete</button>
             </div>
           </div>
         </div>
@@ -90,11 +69,119 @@
 </div>
 <script src="admin.js"></script>
 <script>
-function selectMsg(el,i){
-  document.querySelectorAll('.msg-row').forEach(r=>r.style.background='');
-  el.style.background='rgba(212,175,55,.06)';
+let messages = [];
+let currentId = null;
+let currentBox = 'inbox';
+
+function fmtDate(s){
+  if(!s) return '';
+  const d = new Date(s.replace(' ', 'T') + (s.includes('Z')?'':'Z'));
+  if(isNaN(d)) return s;
+  return d.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 }
-function sendReply(){alert('Reply sent!\n(In production: sends email to member)');}
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+async function switchBox(box, btn){
+  currentBox = box;
+  document.querySelectorAll('#tabInbox,#tabUnread,#tabSent').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  await loadMessages(box);
+}
+
+async function loadMessages(box){
+  try {
+    const data = await apiGet('/api/admin/messages?box=' + box);
+    if(data && data.ok){ messages = data.messages || []; }
+    else { messages = []; }
+  } catch(e){ messages = []; }
+  if(box === 'inbox'){ const c=document.getElementById('inboxCount'); if(c) c.textContent = messages.length; }
+  if(box === 'unread'){ const c=document.getElementById('unreadCount'); if(c) c.textContent = messages.length; }
+  renderList();
+}
+
+function renderList(){
+  const host = document.getElementById('msgList');
+  if(!host) return;
+  if(!messages.length){ host.innerHTML = '<div style="padding:20px 16px;color:var(--text-muted);font-size:13px;text-align:center">No messages.</div>'; return; }
+  host.innerHTML = messages.map(m=>{
+    const other = currentBox === 'sent' ? (m.to_name || 'Member') : (m.from_name || 'Member');
+    const prefix = currentBox === 'sent' ? 'To: ' : '';
+    const unread = (currentBox !== 'sent' && !m.is_read) ? 'style="font-weight:700"' : '';
+    const bg = (m.id === currentId) ? 'background:rgba(212,175,55,.06)' : '';
+    const dot = (currentBox !== 'sent' && !m.is_read) ? '<span style="color:#f59e0b;font-size:10px">●</span> ' : '';
+    return `<div class="msg-row" onclick="selectMsg(${m.id})" style="padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;${bg}">
+      <div style="font-size:13px;font-weight:500">${dot}${prefix}${escapeHtml(other)}</div>
+      <div style="font-size:12px;color:${m.is_read||currentBox==='sent'?'var(--text-muted)':'var(--gold)'};margin:2px 0">${escapeHtml(m.subject || '(no subject)')}</div>
+      <div style="font-size:11px;color:var(--text-muted)">${fmtDate(m.created_at)}</div>
+    </div>`;
+  }).join('');
+}
+
+async function selectMsg(id){
+  const m = messages.find(x=>x.id===id);
+  if(!m) return;
+  currentId = id;
+  renderList();
+  if(currentBox !== 'sent' && !m.is_read){
+    await apiSend('/api/admin/messages?id='+id, 'PUT', {});
+    m.is_read = 1;
+    if(currentBox === 'unread') loadMessages('unread');
+  }
+  renderDetail(m);
+}
+
+function renderDetail(m){
+  const host = document.getElementById('msgDetail');
+  const fromTo = currentBox === 'sent'
+    ? 'To: ' + escapeHtml(m.to_name || 'Member')
+    : 'From: ' + escapeHtml(m.from_name || 'Member');
+  host.innerHTML = `
+    <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <div style="font-size:16px;font-weight:600;margin-bottom:4px">${escapeHtml(m.subject || '(no subject)')}</div>
+      <div style="font-size:13px;color:var(--text-muted)">${fromTo} · ${fmtDate(m.created_at)}</div>
+    </div>
+    <div style="font-size:14px;line-height:1.8;color:var(--text-muted);white-space:pre-wrap">${escapeHtml(m.body)}</div>`;
+  document.getElementById('replyBox').style.display = 'flex';
+  const rt = document.getElementById('replyText'); if(rt) rt.value = '';
+}
+
+async function sendReply(){
+  if(currentId == null) return;
+  const m = messages.find(x=>x.id===currentId);
+  const body = document.getElementById('replyText').value.trim();
+  if(!body){ showToast('Please type a reply','error'); return; }
+  const toId = currentBox === 'sent' ? m.to_id : m.from_id;
+  const res = await apiSend('/api/admin/messages','POST',{
+    to_id: toId,
+    subject: 'Re: ' + (m.subject || ''),
+    body: body,
+    parent_id: currentId
+  });
+  if(res && res.ok){ showToast('Reply sent'); document.getElementById('replyText').value=''; loadMessages(currentBox); }
+  else { showToast((res && res.error) || 'Failed to send','error'); }
+}
+
+async function markResolved(){
+  if(currentId == null) return;
+  const res = await apiSend('/api/admin/messages?id='+currentId,'PUT',{});
+  if(res && res.ok){ showToast('Marked as resolved'); loadMessages(currentBox); }
+  else { showToast((res && res.error) || 'Failed','error'); }
+}
+
+async function deleteMsg(){
+  if(currentId == null) return;
+  if(!confirm('Delete this message?')) return;
+  const res = await apiSend('/api/admin/messages?id='+currentId,'DELETE');
+  if(res && res.ok){
+    showToast('Message deleted');
+    currentId = null;
+    document.getElementById('msgDetail').innerHTML = '<div style="padding:40px 16px;color:var(--text-muted);font-size:13px;text-align:center">Select a message to view.</div>';
+    document.getElementById('replyBox').style.display = 'none';
+    loadMessages(currentBox);
+  } else { showToast((res && res.error) || 'Failed to delete','error'); }
+}
+
+document.addEventListener('DOMContentLoaded', ()=> loadMessages('inbox'));
 </script>
 
 <style id="user-dropdown-style">

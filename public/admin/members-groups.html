@@ -39,45 +39,26 @@
         <!-- Add Group Form -->
         <div class="form-section">
           <h3>Create New Group</h3>
-          <div class="form-group"><label>Group Name</label><input type="text" placeholder="e.g. Premium Buyers"></div>
-          <div class="form-group" style="margin-top:12px"><label>Description</label><textarea placeholder="What is this group for?" style="min-height:80px"></textarea></div>
+          <div class="form-group"><label>Group Name</label><input type="text" id="groupName" placeholder="e.g. Premium Buyers"></div>
+          <div class="form-group" style="margin-top:12px"><label>Description</label><textarea id="groupDesc" placeholder="What is this group for?" style="min-height:80px"></textarea></div>
           <div class="form-group" style="margin-top:12px"><label>Group Color</label>
-            <div style="display:flex;gap:8px;margin-top:4px">
-              <div style="width:28px;height:28px;background:#d4af37;border-radius:6px;cursor:pointer;border:2px solid white"></div>
-              <div style="width:28px;height:28px;background:#667eea;border-radius:6px;cursor:pointer"></div>
-              <div style="width:28px;height:28px;background:#11998e;border-radius:6px;cursor:pointer"></div>
-              <div style="width:28px;height:28px;background:#ee0979;border-radius:6px;cursor:pointer"></div>
-              <div style="width:28px;height:28px;background:#4facfe;border-radius:6px;cursor:pointer"></div>
-              <div style="width:28px;height:28px;background:#f093fb;border-radius:6px;cursor:pointer"></div>
+            <div style="display:flex;gap:8px;margin-top:4px" id="colorPicker">
+              <div class="color-swatch" data-color="#d4af37" style="width:28px;height:28px;background:#d4af37;border-radius:6px;cursor:pointer;border:2px solid white"></div>
+              <div class="color-swatch" data-color="#667eea" style="width:28px;height:28px;background:#667eea;border-radius:6px;cursor:pointer"></div>
+              <div class="color-swatch" data-color="#11998e" style="width:28px;height:28px;background:#11998e;border-radius:6px;cursor:pointer"></div>
+              <div class="color-swatch" data-color="#ee0979" style="width:28px;height:28px;background:#ee0979;border-radius:6px;cursor:pointer"></div>
+              <div class="color-swatch" data-color="#4facfe" style="width:28px;height:28px;background:#4facfe;border-radius:6px;cursor:pointer"></div>
+              <div class="color-swatch" data-color="#f093fb" style="width:28px;height:28px;background:#f093fb;border-radius:6px;cursor:pointer"></div>
             </div>
           </div>
+          <div class="form-group" style="margin-top:12px"><label>Minimum Points (auto-membership)</label><input type="number" id="groupMin" value="0" min="0" style="width:120px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#e2e8f0;font-size:13px;outline:none"></div>
           <div class="form-actions" style="margin-top:16px"><button class="btn-primary" onclick="addGroup()">+ Create Group</button></div>
         </div>
         <!-- Groups List -->
         <div class="form-section">
           <h3>Existing Groups</h3>
           <div id="groupsList">
-            <div class="group-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.2);border-radius:8px;margin-bottom:10px">
-              <div style="display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;background:#d4af37;border-radius:50%"></div><div><div style="font-weight:500">Buyers / Operators</div><div style="font-size:12px;color:var(--text-muted)">4,320 members · Procurement professionals</div></div></div>
-              <div style="display:flex;gap:6px"><button class="btn-secondary" style="padding:4px 10px;font-size:12px">Edit</button><button class="btn-danger" style="padding:4px 10px;font-size:12px">Delete</button></div>
-            </div>
-            <div class="group-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(102,126,234,.05);border:1px solid rgba(102,126,234,.2);border-radius:8px;margin-bottom:10px">
-              <div style="display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;background:#667eea;border-radius:50%"></div><div><div style="font-weight:500">Suppliers / Manufacturers</div><div style="font-size:12px;color:var(--text-muted)">2,180 members · Equipment makers & wholesalers</div></div></div>
-              <div style="display:flex;gap:6px"><button class="btn-secondary" style="padding:4px 10px;font-size:12px">Edit</button><button class="btn-danger" style="padding:4px 10px;font-size:12px">Delete</button></div>
-            </div>
-            <!-- 🎡 新增：游乐场群体 -->
-            <div class="group-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(251,146,60,.06);border:1px solid rgba(251,146,60,.3);border-radius:8px;margin-bottom:10px">
-              <div style="display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;background:#fb923c;border-radius:50%"></div><div><div style="font-weight:500">🎡 Amusement Park Owners</div><div style="font-size:12px;color:var(--text-muted)">836 members · Theme park & FEC venue operators</div></div></div>
-              <div style="display:flex;gap:6px"><button class="btn-secondary" style="padding:4px 10px;font-size:12px">Edit</button><button class="btn-danger" style="padding:4px 10px;font-size:12px">Delete</button></div>
-            </div>
-            <div class="group-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(17,153,142,.05);border:1px solid rgba(17,153,142,.2);border-radius:8px;margin-bottom:10px">
-              <div style="display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;background:#11998e;border-radius:50%"></div><div><div style="font-weight:500">Media & Press</div><div style="font-size:12px;color:var(--text-muted)">342 members · Journalists & industry media</div></div></div>
-              <div style="display:flex;gap:6px"><button class="btn-secondary" style="padding:4px 10px;font-size:12px">Edit</button><button class="btn-danger" style="padding:4px 10px;font-size:12px">Delete</button></div>
-            </div>
-            <div class="group-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(238,9,121,.05);border:1px solid rgba(238,9,121,.2);border-radius:8px;margin-bottom:10px">
-              <div style="display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;background:#ee0979;border-radius:50%"></div><div><div style="font-weight:500">VIP Partners</div><div style="font-size:12px;color:var(--text-muted)">67 members · Strategic partners & sponsors</div></div></div>
-              <div style="display:flex;gap:6px"><button class="btn-secondary" style="padding:4px 10px;font-size:12px">Edit</button><button class="btn-danger" style="padding:4px 10px;font-size:12px">Delete</button></div>
-            </div>
+            <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:24px">Loading…</div>
           </div>
         </div>
       </div>
@@ -86,11 +67,88 @@
 </div>
 <script src="admin.js"></script>
 <script>
-function addGroup(){
-  const name=document.querySelector('input[type=text]').value.trim();
-  if(!name){alert('Please enter a group name');return;}
-  alert('Group "'+name+'" created!\n(In production: saves to database)');
+let groups = [];
+let selectedColor = '#d4af37';
+let editingId = null;
+
+document.querySelectorAll('#colorPicker .color-swatch').forEach(sw=>{
+  sw.addEventListener('click', ()=>{
+    document.querySelectorAll('#colorPicker .color-swatch').forEach(s=>s.style.border='');
+    sw.style.border = '2px solid white';
+    selectedColor = sw.dataset.color;
+  });
+});
+// mark first swatch selected by default
+(function(){ const f=document.querySelector('#colorPicker .color-swatch'); if(f) f.style.border='2px solid white'; })();
+
+function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+async function loadGroups(){
+  try {
+    const data = await apiGet('/api/admin/member-groups');
+    if(data && data.ok){ groups = data.groups || []; }
+    else { groups = []; }
+  } catch(e){ groups = []; }
+  renderGroups();
 }
+
+function renderGroups(){
+  const host = document.getElementById('groupsList');
+  if(!groups.length){
+    host.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:24px">No groups yet. Create one on the left.</div>';
+    return;
+  }
+  host.innerHTML = groups.map(g=>`
+    <div class="group-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:${esc(g.color)}11;border:1px solid ${esc(g.color)}33;border-radius:8px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:12px;height:12px;background:${esc(g.color)};border-radius:50%"></div>
+        <div><div style="font-weight:500">${esc(g.name)}</div><div style="font-size:12px;color:var(--text-muted)">${(g.members||0)} members · ${esc(g.description||'')} · min ${g.min_points||0} pts</div></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-secondary" style="padding:4px 10px;font-size:12px" onclick="openEdit(${g.id})">Edit</button>
+        <button class="btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteGroup(${g.id})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+async function addGroup(){
+  const name = document.getElementById('groupName').value.trim();
+  if(!name){ showToast('Please enter a group name','error'); return; }
+  const res = await apiSend('/api/admin/member-groups','POST',{
+    name,
+    description: document.getElementById('groupDesc').value,
+    color: selectedColor,
+    min_points: parseInt(document.getElementById('groupMin').value)||0
+  });
+  if(res && res.ok){
+    showToast('Group created');
+    document.getElementById('groupName').value='';
+    document.getElementById('groupDesc').value='';
+    loadGroups();
+  } else { showToast((res && res.error) || 'Failed to create','error'); }
+}
+
+function openEdit(id){
+  const g = groups.find(x=>x.id===id);
+  if(!g) return;
+  editingId = id;
+  document.getElementById('groupName').value = g.name;
+  document.getElementById('groupDesc').value = g.description || '';
+  document.getElementById('groupMin').value = g.min_points || 0;
+  selectedColor = g.color || '#d4af37';
+  document.querySelectorAll('#colorPicker .color-swatch').forEach(s=>{
+    s.style.border = (s.dataset.color === selectedColor) ? '2px solid white' : '';
+  });
+  showToast('Editing "'+g.name+'" — click Create Group to save');
+}
+async function deleteGroup(id){
+  if(!confirm('Delete this group?')) return;
+  const res = await apiSend('/api/admin/member-groups?id='+id,'DELETE');
+  if(res && res.ok){ showToast('Group deleted'); loadGroups(); }
+  else { showToast((res && res.error) || 'Failed to delete','error'); }
+}
+
+document.addEventListener('DOMContentLoaded', loadGroups);
 </script>
 
 <style id="user-dropdown-style">

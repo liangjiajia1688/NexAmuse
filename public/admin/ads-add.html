@@ -64,11 +64,11 @@
             <div class="card-body">
               <label class="form-label">Select Display Zone</label>
               <div class="zone-map" id="zoneMap">
-                <div class="zone-opt sel" onclick="selectZone(this,'homepage')" data-zone="homepage"><div class="icon">🏠</div><div class="name">Homepage</div><div class="desc">Hero / banner / section</div></div>
-                <div class="zone-opt" onclick="selectZone(this,'sidebar')" data-zone="sidebar"><div class="icon">📌</div><div class="name">Sidebar</div><div class="desc">300×250 / 300×600</div></div>
-                <div class="zone-opt" onclick="selectZone(this,'article')" data-zone="article"><div class="icon">📰</div><div class="name">Article Page</div><div class="desc">Mid/footer banners</div></div>
-                <div class="zone-opt" onclick="selectZone(this,'products')" data-zone="products"><div class="icon">🎮</div><div class="name">Products Page</div><div class="desc">Category header</div></div>
-                <div class="zone-opt" onclick="selectZone(this,'forum')" data-zone="forum"><div class="icon">💬</div><div class="name">Forum</div><div class="desc">Top / between posts</div></div>
+                <div class="zone-opt sel" onclick="selectZone(this,'homepage')" data-zone="homepage"><div class="icon">🏠</div><div class="name">Homepage</div><div class="desc">Hero 1200×100 / section</div></div>
+                <div class="zone-opt" onclick="selectZone(this,'sidebar')" data-zone="sidebar"><div class="icon">📌</div><div class="name">Sidebar</div><div class="desc">300×250 / 300×600 / 160×600</div></div>
+                <div class="zone-opt" onclick="selectZone(this,'article')" data-zone="article"><div class="icon">📰</div><div class="name">Article Page</div><div class="desc">728×90 / 970×250 / 728×90</div></div>
+                <div class="zone-opt" onclick="selectZone(this,'products')" data-zone="products"><div class="icon">🎮</div><div class="name">Products Page</div><div class="desc">Category header / product grid</div></div>
+                <div class="zone-opt" onclick="selectZone(this,'forum')" data-zone="forum"><div class="icon">💬</div><div class="name">Forum</div><div class="desc">970×90 / 300×250 / 300×250</div></div>
                 <div class="zone-opt" onclick="selectZone(this,'ticker')" data-zone="ticker"><div class="icon">📢</div><div class="name">News Ticker</div><div class="desc">Full-width ticker bar</div></div>
               </div>
               <div class="form-group" style="margin-top:16px">
@@ -211,10 +211,11 @@
           <div class="card">
             <div class="card-header"><h3>💡 Zone Sizes Guide</h3></div>
             <div class="card-body" style="font-size:12px;color:var(--text-muted);line-height:1.9">
-              <p>🏠 <strong style="color:#e2e8f0">Homepage Hero</strong><br>1920×300 or 970×250</p>
-              <p>📌 <strong style="color:#e2e8f0">Sidebar</strong><br>300×250 (medium) · 300×600 (large)</p>
-              <p>📰 <strong style="color:#e2e8f0">Article</strong><br>728×90 (leaderboard) · 970×90</p>
-              <p>💬 <strong style="color:#e2e8f0">Forum</strong><br>970×90 (top) · 300×250 (between posts)</p>
+              <p>🏠 <strong style="color:#e2e8f0">Homepage Hero</strong><br>1200×100 (hero) · 960×200 (section) · 1200×90 (strip)</p>
+              <p>📌 <strong style="color:#e2e8f0">Sidebar</strong><br>300×250 (medium) · 300×600 (half page) · 160×600 (skyscraper)</p>
+              <p>📰 <strong style="color:#e2e8f0">Article</strong><br>728×90 (leaderboard) · 970×250 (mid) · 728×90 (footer)</p>
+              <p>🎮 <strong style="color:#e2e8f0">Products</strong><br>960×200 (category header) · 300×300 (grid sponsor)</p>
+              <p>💬 <strong style="color:#e2e8f0">Forum</strong><br>970×90 (top) · 300×250 (between posts / sidebar)</p>
               <p>📢 <strong style="color:#e2e8f0">Ticker</strong><br>Full width, text + logo only</p>
             </div>
           </div>
@@ -226,7 +227,7 @@
 <script src="admin.js"></script>
 <script>
 const SLOTS = {
-  homepage:['Hero Banner (1920×300)','Section Banner (960×200)','Product Grid Sponsor (300×300)','Full-width Strip (1200×90)'],
+  homepage:['Hero Banner (1200×100)','Section Banner (960×200)','Product Grid Sponsor (300×300)','Full-width Strip (1200×90)'],
   sidebar:['Medium Rectangle (300×250)','Half Page (300×600)','Wide Skyscraper (160×600)'],
   article:['Leaderboard (728×90)','Article Mid-Banner (970×250)','Article Footer (728×90)'],
   products:['Category Header (960×200)','Product Grid (300×300)'],

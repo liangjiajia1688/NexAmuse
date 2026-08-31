@@ -337,10 +337,18 @@
         <div id="recentActivity"></div>
       </div>
 
+      <!-- Forum Sidebar Ad (rendered from /api/ads, zone=sidebar) -->
+      <div class="ad-slot ad-slot-medium-rectangle" id="adForumSide"></div>
+
     </div><!-- /sidebar -->
 
   </div><!-- /forum-layout -->
 </div><!-- /container -->
+
+<!-- Forum Top Ad (rendered from /api/ads, zone=forum) -->
+<div class="container" style="margin-bottom:20px;">
+  <div class="ad-slot ad-slot-forum-top" id="adForumTop"></div>
+</div>
 
 <!-- Footer -->
 <footer class="footer">
@@ -865,6 +873,9 @@ function escapeHtml(str) {
 // ── Init ───────────────────────────────────────────────────────
 loadForum();
 
+// Render real ad slots on the forum page.
+renderAdSlot('forum', 'adForumTop');
+renderAdSlot('sidebar', 'adForumSide');
 </script>
 </body>
 </html>

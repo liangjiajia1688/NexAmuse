@@ -133,7 +133,7 @@
     </div>
 
     <!-- Products Top Ad (rendered from /api/ads, zone=products) -->
-    <div class="ad-slot ad-slot-leaderboard" id="adProductsTop"></div>
+    <div class="ad-slot ad-slot-section" id="adProductsTop"></div>
 
     <div class="page-layout">
       <!-- Sidebar Filters -->
@@ -182,7 +182,7 @@
           <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:8px;">Reset All</button>
         </div>
         <!-- Products Sidebar Ad (rendered from /api/ads, zone=sidebar) -->
-        <div class="ad-slot ad-slot-sidebar" id="adProductsSide"></div>
+        <div class="ad-slot ad-slot-medium-rectangle" id="adProductsSide"></div>
       </aside>
 
       <!-- Product Grid -->
@@ -382,6 +382,9 @@
           </div>
         </div>
 
+        <!-- In-Grid Ad (rendered from /api/ads, zone=products slot #2) -->
+        <div class="ad-slot ad-slot-product-grid" id="adProductsGrid"></div>
+
         <!-- Pagination -->
         <div class="pagination" id="pager"></div>
       </div>
@@ -507,6 +510,7 @@
 
 // Render real ad slots on the products page (data from /api/ads).
 renderAdSlot('products', 'adProductsTop');
+renderAdSlot('products', 'adProductsGrid', { index: 1 });
 renderAdSlot('sidebar', 'adProductsSide');
 </script>
 </body>

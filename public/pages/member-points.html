@@ -362,32 +362,9 @@
       <!-- Tab: Leaderboard -->
       <div id="tab-leaderboard" class="tab-content">
         <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:8px 8px">
-          <!-- Top 3 highlight -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px 8px 20px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:8px">
-            <!-- 2nd place -->
-            <div style="text-align:center;margin-top:16px">
-              <div style="font-size:28px;margin-bottom:6px">🥈</div>
-              <div style="width:50px;height:50px;background:linear-gradient(135deg,#94a3b8,#64748b);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;margin:0 auto 8px">T</div>
-              <div style="font-size:13px;font-weight:600;color:#e2e8f0">TinaW</div>
-              <div style="font-size:11px;color:#6b7280;margin-top:2px">Amusement Park Owner</div>
-              <div style="font-size:18px;font-weight:800;color:#94a3b8;margin-top:6px">218 pts</div>
-            </div>
-            <!-- 1st place (center, elevated) -->
-            <div style="text-align:center;background:rgba(201,162,39,.06);border-radius:12px;padding:14px 8px;border:1px solid rgba(201,162,39,.2)">
-              <div style="font-size:34px;margin-bottom:6px">🥇</div>
-              <div style="width:58px;height:58px;background:linear-gradient(135deg,#c9a227,#f5d06e);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#0a0e1a;margin:0 auto 8px">J</div>
-              <div style="font-size:14px;font-weight:700;color:#f5d06e">James_K</div>
-              <div style="font-size:11px;color:#9aa0b4;margin-top:2px">VIP · Supplier</div>
-              <div style="font-size:22px;font-weight:800;color:#c9a227;margin-top:6px">542 pts</div>
-            </div>
-            <!-- 3rd place -->
-            <div style="text-align:center;margin-top:16px">
-              <div style="font-size:28px;margin-bottom:6px">🥉</div>
-              <div style="width:50px;height:50px;background:linear-gradient(135deg,#c2410c,#ea580c);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;margin:0 auto 8px">A</div>
-              <div style="font-size:13px;font-weight:600;color:#e2e8f0">AlisonM</div>
-              <div style="font-size:11px;color:#6b7280;margin-top:2px">Premium · Buyer</div>
-              <div style="font-size:18px;font-weight:800;color:#c2410c;margin-top:6px">195 pts</div>
-            </div>
+          <!-- Top 3 highlight (rendered from live leaderboard) -->
+          <div id="lbTop3" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px 8px 20px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:8px">
+            <div style="text-align:center;padding:20px 8px;color:#6b7280;font-size:13px">Loading…</div>
           </div>
           <!-- 4–10 list -->
           <div style="padding:4px 8px">
@@ -618,8 +595,9 @@ function renderMyLevel() {
   if (rb) { rb.style.background = 'linear-gradient(135deg,' + style.grad + ')'; rb.style.borderColor = style.border; }
 
   // Leaderboard "You" row gets the real level/points
-  const meIdx = LB.findIndex(u => u.isMe);
-  if (meIdx >= 0) { LB[meIdx].pts = pts; LB[meIdx].level = level; }
+  const meIdx = LEADER.findIndex(u => u.isMe);
+  if (meIdx >= 0) { LEADER[meIdx].points = pts; LEADER[meIdx].level = level; }
+  renderTop3();
   renderLB();
 }
 function renderLB() {
@@ -657,19 +635,85 @@ function renderLB() {
   }
 })();
 
-// ── Leaderboard list ────────────────────────────────────────
-const LB = [
-  {rank:4,name:'BobChen',pts:181,level:'Premium',group:'Supplier'},
-  {rank:5,name:'MarcusFEC',pts:164,level:'VIP',group:'Park Owner'},
-  {rank:6,name:'YunaK',pts:152,level:'Premium',group:'Buyer'},
-  {rank:7,name:'You (Me)',pts:24,level:'Standard',group:'Member',isMe:true},
-  {rank:8,name:'Chris_D',pts:19,level:'Regular',group:'Supplier'},
-  {rank:9,name:'SaraP',pts:15,level:'Regular',group:'Buyer'},
-  {rank:10,name:'NeilVR',pts:11,level:'Regular',group:'Media'},
-];
-// Render leaderboard with the real "You" row, then show live level/points everywhere.
-renderLB();
-renderMyLevel();
+// ── Leaderboard list (live from /api/leaderboard) ──────────
+let LEADER = [];   // {rank,id,username,avatar,level,points,status,isMe}
+
+function avatarLetter(u){ return (u.username || u.name || '?').trim().charAt(0).toUpperCase(); }
+function groupLabel(u){ return (u.level || 'Member') + ' · ' + (u.role === 'admin' ? 'Staff' : 'Member'); }
+
+async function loadLeaderboard(){
+  try {
+    const res = await fetch('/api/leaderboard?limit=100');
+    const data = await res.json();
+    if (data.ok && Array.isArray(data.leaderboard)) LEADER = data.leaderboard.map(u => ({ ...u, isMe:false }));
+  } catch (e) { /* keep empty → render empty state */ }
+  // Inject the real "You" row from the local session.
+  const me = JSON.parse(localStorage.getItem('nexamuse_user') || 'null');
+  const myId = me && me.id;
+  if (myId) {
+    const existing = LEADER.find(u => u.id === myId);
+    if (existing) { existing.isMe = true; }
+    else {
+      LEADER.push({
+        rank: LEADER.length + 1, id: myId,
+        username: me.username || 'You', avatar: me.avatar,
+        level: me.level || 'Standard', points: (typeof me.points === 'number' ? me.points : 0),
+        status: 'active', isMe: true
+      });
+    }
+  }
+  renderTop3();
+  renderLB();
+}
+
+function renderTop3(){
+  const top = LEADER.slice(0, 3);
+  const host = document.getElementById('lbTop3');
+  if (!host) return;
+  if (!top.length) { host.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#6b7280;font-size:13px;padding:20px 8px">No rankings yet</div>'; return; }
+  // order: [2nd, 1st, 3rd] for the classic podium layout
+  const order = [top[1], top[0], top[2]].filter(Boolean);
+  const medal = ['🥈','🥇','🥉'];
+  const sub = (u)=> (u.level||'Member') + (u.role==='admin'?' · Staff':'');
+  host.innerHTML = order.map((u, i)=>{
+    const isFirst = (i === 1);
+    const letter = avatarLetter(u);
+    const avBg = u.isMe ? 'linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a' : (isFirst ? 'linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a' : 'rgba(99,102,241,.3);color:#a5b4fc');
+    const nameColor = u.isMe ? '#f5d06e' : (isFirst ? '#f5d06e' : '#e2e8f0');
+    const ptsColor = isFirst ? '#c9a227' : (i===0 ? '#94a3b8' : '#c2410c');
+    const boxStyle = isFirst
+      ? 'text-align:center;background:rgba(201,162,39,.06);border-radius:12px;padding:14px 8px;border:1px solid rgba(201,162,39,.2)'
+      : 'text-align:center;margin-top:16px';
+    return `<div style="${boxStyle}">
+      <div style="font-size:${isFirst?34:28}px;margin-bottom:6px">${medal[i]}</div>
+      <div style="width:${isFirst?58:50}px;height:${isFirst?58:50}px;background:${avBg};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${isFirst?22:18}px;font-weight:700;margin:0 auto 8px">${letter}</div>
+      <div style="font-size:${isFirst?14:13}px;font-weight:${u.isMe?700:600};color:${nameColor}">${u.username||u.name}${u.isMe?' (You)':''}</div>
+      <div style="font-size:11px;color:#9aa0b4;margin-top:2px">${sub(u)}</div>
+      <div style="font-size:${isFirst?22:18}px;font-weight:800;color:${ptsColor};margin-top:6px">${u.points} pts</div>
+    </div>`;
+  }).join('');
+}
+
+function renderLB() {
+  const host = document.getElementById('lbList');
+  if (!host) return;
+  const rows = LEADER.slice(3); // ranks 4+
+  if (!rows.length) { host.innerHTML = '<div style="text-align:center;color:#6b7280;font-size:13px;padding:16px">No more rankings</div>'; return; }
+  host.innerHTML = rows.map(u=>`
+  <div class="lb-row" style="${u.isMe?'background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.2);border-radius:8px;':''}">
+    <div class="lb-rank ${u.rank<=3?'top3':''}">${u.rank}</div>
+    <div class="lb-avatar" style="${u.isMe?'background:linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a':'background:rgba(99,102,241,.3);color:#a5b4fc'}">${avatarLetter(u)}</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:${u.isMe?'700':'500'};color:${u.isMe?'#f5d06e':'#e2e8f0'}">${u.username||u.name}${u.isMe?' (You)':''}</div>
+      <div style="font-size:11px;color:#6b7280">${groupLabel(u)}</div>
+    </div>
+    <div class="lb-pts">${u.points}</div>
+  </div>
+`).join('<div class="lb-divider"></div>');
+}
+
+// Render leaderboard (now async from API), then show live level/points everywhere.
+loadLeaderboard().then(renderMyLevel);
 
 // ── Tab switching ────────────────────────────────────────────
 function showTab(id, btn){

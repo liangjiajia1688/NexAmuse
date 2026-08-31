@@ -45,36 +45,104 @@ async function syncUser() {
   }
 }
 
+// ── Ad slot helpers ──────────────────────────────────────────────
+// Canonical size of each slot class — must mirror `.ad-slot-*` rules in style.css
+// so the "AD · 1200×100" badge always matches the real placement.
+const AD_SLOT_SIZES = {
+  'ad-slot-hero': '1200×100',
+  'ad-slot-section': '960×200',
+  'ad-slot-leaderboard': '728×90',
+  'ad-slot-article-mid': '970×250',
+  'ad-slot-article-footer': '728×90',
+  'ad-slot-product-grid': '300×300',
+  'ad-slot-strip': '1200×90',
+  'ad-slot-ticker': '1200×60',
+  'ad-slot-sidebar': '300×250',
+  'ad-slot-medium-rectangle': '300×250',
+  'ad-slot-half-page': '300×600',
+  'ad-slot-skyscraper': '160×600',
+  'ad-slot-forum-top': '970×90',
+  'ad-slot-between-posts': '300×250'
+};
+
+// Per-zone default icon + house-ad copy, used when an ad has no image
+// or when the zone has no booked inventory yet.
+const AD_ZONE_DEFAULTS = {
+  homepage: { emoji: '🏠', title: 'Advertise on the NexAmuse Homepage' },
+  sidebar:  { emoji: '📌', title: 'Sidebar Ad Space Available' },
+  article:  { emoji: '📰', title: 'Sponsor the NexAmuse Editorial' },
+  products: { emoji: '🎮', title: 'Feature Your Product Here' },
+  forum:    { emoji: '💬', title: 'Reach Industry Buyers in the Forum' },
+  ticker:   { emoji: '📢', title: 'Advertise with NexAmuse' }
+};
+
+function adSlotSize(el) {
+  const cls = Array.prototype.find.call(el.classList, function(c) { return AD_SLOT_SIZES[c]; });
+  return cls ? AD_SLOT_SIZES[cls] : '';
+}
+
+function adBadge(size) {
+  return '<span style="position:absolute;top:5px;right:7px;display:inline-flex;align-items:baseline;gap:4px;'
+    + 'font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.75);background:rgba(0,0,0,.5);'
+    + 'padding:2px 7px;border-radius:6px;text-transform:uppercase;pointer-events:none;line-height:1.2;">AD'
+    + (size ? '<em style="font-size:6.5px;font-style:normal;letter-spacing:.3px;opacity:.7;">' + size + '</em>' : '')
+    + '</span>';
+}
+
 // ── Render a single ad from /api/ads into a container ────────────
 // zone maps to the ad `zone` field (homepage/sidebar/article/products/forum/ticker).
-// If no active ad matches, the container is hidden. Impressions + clicks are tracked.
+// If the zone has no active ad, a house-ad icon placeholder is shown instead of
+// hiding the slot, so every planned position is always visible.
+// Impressions + clicks are tracked for real (booked) ads only.
 async function renderAdSlot(zone, containerId, opts) {
   opts = opts || {};
   const el = document.getElementById(containerId);
   if (!el) return;
+  const size = adSlotSize(el);
+  const fallback = AD_ZONE_DEFAULTS[zone] || { emoji: '📢', title: 'Advertise with NexAmuse' };
+
+  // House-ad placeholder: icon + copy, links to the contact page.
+  function renderPlaceholder() {
+    el.innerHTML = '<a href="/pages/contact.html" class="ad-slot-link" style="display:flex;width:100%;height:100%;'
+      + 'align-items:center;justify-content:center;gap:10px;border-radius:inherit;text-decoration:none;position:relative;'
+      + 'background:linear-gradient(135deg,rgba(245,208,110,.06),rgba(10,14,26,.9));color:rgba(245,208,110,.75);'
+      + 'font-weight:600;font-size:13px;padding:0 16px;text-align:center;">'
+      + '<span style="font-size:20px;line-height:1;">' + fallback.emoji + '</span><span>' + fallback.title + '</span>'
+      + adBadge(size) + '</a>';
+    el.style.display = 'block';
+  }
+
+  // opts.index lets a page host several slots in the same zone without repeating
+  // the same creative: slot N takes the Nth ad, unsold slots fall back to the house ad.
+  const idx = Number(opts.index) || 0;
+
   try {
-    const r = await fetch('/api/ads?zone=' + encodeURIComponent(zone) + '&limit=1');
-    if (!r.ok) { el.style.display = 'none'; return; }
+    const r = await fetch('/api/ads?zone=' + encodeURIComponent(zone) + '&limit=' + (idx + 1));
+    if (!r.ok) { renderPlaceholder(); return; }
     const data = await r.json();
     const ads = data.ads || [];
-    if (!ads.length) { el.style.display = 'none'; return; }
-    const ad = ads[0];
+    if (ads.length <= idx) { renderPlaceholder(); return; }
+
+    const ad = ads[idx];
     const href = ad.link_url || '#';
+    const emoji = ad.emoji || fallback.emoji;
     const creative = ad.image_url
-      ? '<img src="' + ad.image_url + '" alt="' + (ad.alt_text || ad.title || 'Advertisement') + '" style="width:100%;height:100%;object-fit:cover;display:block;">'
-      : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#1a1208,#0a0e1a);color:#f5d06e;font-weight:600;font-size:14px;padding:0 16px;text-align:center;">' + (ad.emoji ? ad.emoji + '&nbsp;' : '') + (ad.title || 'Sponsor') + '</div>';
+      ? '<img src="' + ad.image_url + '" alt="' + (ad.alt_text || ad.title || 'Advertisement') + '" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;">'
+      : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:10px;'
+        + 'background:linear-gradient(135deg,#1a1208,#0a0e1a);color:#f5d06e;font-weight:600;font-size:14px;padding:0 16px;text-align:center;">'
+        + '<span style="font-size:20px;line-height:1;">' + emoji + '</span><span>' + (ad.title || 'Sponsor') + '</span></div>';
+
     el.innerHTML = '<a href="' + href + '" target="_blank" rel="nofollow sponsored" class="ad-slot-link" data-ad-id="' + ad.id + '" style="display:block;width:100%;height:100%;border-radius:inherit;text-decoration:none;position:relative;">'
-      + creative
-      + '<span style="position:absolute;top:5px;right:7px;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.6);background:rgba(0,0,0,.4);padding:1px 6px;border-radius:6px;text-transform:uppercase;pointer-events:none;">Ad</span>'
-      + '</a>';
-    el.style.display = '';
+      + creative + adBadge(size) + '</a>';
+    // Dimensions are controlled by the slot's CSS class so the admin size matches the front-end placement.
+    el.style.display = 'block';
     // record impression
     fetch('/api/ads?id=' + ad.id + '&type=impression', { method: 'POST' }).catch(function(){});
     const link = el.querySelector('.ad-slot-link');
     if (link) link.addEventListener('click', function() {
       fetch('/api/ads?id=' + ad.id + '&type=click', { method: 'POST' }).catch(function(){});
     });
-  } catch (e) { el.style.display = 'none'; }
+  } catch (e) { renderPlaceholder(); }
 }
 
 // ── Render Nav Auth State ─────────────────────────────────────────

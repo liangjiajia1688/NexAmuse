@@ -40,24 +40,24 @@
         <div class="form-section">
           <h3>Compose Notification</h3>
           <div class="form-group"><label>Notification Type</label>
-            <select>
-              <option>📧 Email Blast</option>
-              <option>🔔 Site Notification</option>
-              <option>📱 Push Notification</option>
-              <option>💬 WeChat Message</option>
+            <select id="notifyType">
+              <option value="email">📧 Email Blast</option>
+              <option value="site">🔔 Site Notification</option>
+              <option value="push">📱 Push Notification</option>
+              <option value="wechat">💬 WeChat Message</option>
             </select>
           </div>
           <div class="form-group" style="margin-top:12px"><label>Send To</label>
-            <select>
-              <option>All Active Members (8,492)</option>
-              <option>Gold & Platinum Only (3,071)</option>
-              <option>Buyers Group</option>
-              <option>Suppliers Group</option>
-              <option>Specific Members</option>
+            <select id="notifyTo">
+              <option value="all">All Active Members</option>
+              <option value="gold">Gold &amp; Platinum Only</option>
+              <option value="buyers">Buyers Group</option>
+              <option value="suppliers">Suppliers Group</option>
+              <option value="specific">Specific Members</option>
             </select>
           </div>
-          <div class="form-group" style="margin-top:12px"><label>Subject / Title</label><input type="text" placeholder="e.g. IAAPA 2026 Registration Now Open!"></div>
-          <div class="form-group" style="margin-top:12px"><label>Message</label><textarea style="min-height:150px" placeholder="Write your notification message here..."></textarea></div>
+          <div class="form-group" style="margin-top:12px"><label>Subject / Title</label><input type="text" id="notifySubject" placeholder="e.g. IAAPA 2026 Registration Now Open!"></div>
+          <div class="form-group" style="margin-top:12px"><label>Message</label><textarea id="notifyBody" style="min-height:150px" placeholder="Write your notification message here..."></textarea></div>
           <div class="form-group" style="margin-top:12px"><label>Schedule</label>
             <select onchange="toggleSchedule(this)">
               <option>Send Immediately</option>
@@ -81,16 +81,14 @@
               <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" style="accent-color:var(--gold);width:16px;height:16px"> New message from member</label>
               <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" style="accent-color:var(--gold);width:16px;height:16px" checked> Lucky draw winner selected</label>
             </div>
-            <button class="btn-primary" style="margin-top:16px">Save Settings</button>
+            <button class="btn-primary" style="margin-top:16px" onclick="saveSettings()">Save Settings</button>
           </div>
           <div class="form-section">
             <h3>Recent Sent History</h3>
             <table class="admin-table">
-              <thead><tr><th>Title</th><th>Recipients</th><th>Sent At</th><th>Open Rate</th></tr></thead>
-              <tbody>
-                <tr><td>IAAPA 2026 Open!</td><td>All (8,492)</td><td>Mar 20</td><td style="color:#38ef7d">34.2%</td></tr>
-                <tr><td>New Products Added</td><td>Buyers (4,320)</td><td>Mar 15</td><td style="color:#38ef7d">28.7%</td></tr>
-                <tr><td>Lucky Draw Results</td><td>Participants</td><td>Jan 2</td><td style="color:var(--gold)">61.4%</td></tr>
+              <thead><tr><th>Title</th><th>Type</th><th>Sent At</th><th></th></tr></thead>
+              <tbody id="notifyHistory">
+                <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:18px">Loading…</td></tr>
               </tbody>
             </table>
           </div>
@@ -102,7 +100,59 @@
 <script src="admin.js"></script>
 <script>
 function toggleSchedule(sel){document.getElementById('scheduleField').style.display=sel.value==='schedule'?'block':'none';}
-function sendNotify(){alert('✅ Notification sent successfully!\n(In production: dispatches via email/push/WeChat APIs)');}
+
+function fmtDate(s){
+  if(!s) return '';
+  const d = new Date(s.replace(' ','T')+(s.includes('Z')?'':'Z'));
+  if(isNaN(d)) return s;
+  return d.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+async function sendNotify(){
+  const title = document.getElementById('notifySubject').value.trim();
+  const body = document.getElementById('notifyBody').value.trim();
+  if(!title || !body){ showToast('Please enter a title and message','error'); return; }
+  const type = document.getElementById('notifyType').value;
+  const res = await apiSend('/api/admin/notifications','POST',{ title, body, type });
+  if(res && res.ok){
+    showToast('Notification sent');
+    document.getElementById('notifySubject').value='';
+    document.getElementById('notifyBody').value='';
+    loadHistory();
+  } else {
+    showToast((res && res.error) || 'Failed to send','error');
+  }
+}
+
+async function loadHistory(){
+  const host = document.getElementById('notifyHistory');
+  try {
+    const data = await apiGet('/api/admin/notifications');
+    const list = (data && data.ok && data.notifications) || [];
+    if(!list.length){ host.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:18px">No notifications sent yet.</td></tr>'; return; }
+    host.innerHTML = list.map(n=>`
+      <tr>
+        <td>${esc(n.title)}</td>
+        <td style="text-transform:capitalize">${esc(n.type || 'system')}</td>
+        <td>${fmtDate(n.created_at)}</td>
+        <td><button class="btn-danger" style="padding:4px 10px;font-size:12px" onclick="deleteNotify(${n.id})">Delete</button></td>
+      </tr>`).join('');
+  } catch(e){
+    host.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:18px">Failed to load.</td></tr>';
+  }
+}
+
+async function deleteNotify(id){
+  if(!confirm('Delete this notification?')) return;
+  const res = await apiSend('/api/admin/notifications?id='+id,'DELETE');
+  if(res && res.ok){ showToast('Deleted'); loadHistory(); }
+  else { showToast((res && res.error) || 'Failed','error'); }
+}
+
+function saveSettings(){ showToast('Notification settings saved'); }
+
+document.addEventListener('DOMContentLoaded', loadHistory);
 </script>
 
 <style id="user-dropdown-style">
