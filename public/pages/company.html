@@ -22,8 +22,8 @@
   .info-card h4{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);margin-bottom:6px;}
   .info-card p{color:#fff;font-size:.95rem;font-weight:500;}
   .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
-  .product-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:.2s;}
-  .product-card:hover{border-color:rgba(201,162,39,.4);}
+  .product-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:.2s;cursor:pointer;}
+  .product-card:hover{border-color:rgba(201,162,39,.4);transform:translateY(-2px);}
   .product-img{height:160px;border-radius:8px;background:var(--secondary);background-size:cover;background-position:center;margin-bottom:14px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:.8rem;}
   .product-name{font-weight:700;color:#fff;margin-bottom:4px;}
   .product-desc{font-size:.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:12px;}
@@ -108,7 +108,7 @@ async function loadCompany(){
     const productHtml = products.length ? `
       <h2 style="color:#fff;margin:40px 0 20px;font-family:'Playfair Display',serif;">Products</h2>
       <div class="product-grid">${products.map(p=>`
-        <div class="product-card">
+        <div class="product-card" onclick="location.href='product-detail.html?id=${p.id}'">
           ${p.image ? `<div class="product-img" style="background-image:url('${p.image}')"></div>` : `<div class="product-img">No Image</div>`}
           <div class="product-name">${p.name}</div>
           <div class="product-desc">${(p.description||'').slice(0,120)}${(p.description||'').length>120?'...':''}</div>
