@@ -43,7 +43,9 @@
           <div class="search-box"><span>🔍</span><input type="text" placeholder="Search products..." id="prodSearch" oninput="filterProds()"></div>
           <select class="filter-select" id="catFilter" onchange="filterProds()">
             <option value="">All Categories</option>
-            <option>VR/AR</option><option>Redemption</option><option>Kiddie Rides</option><option>Simulator</option><option>Claw Machine</option><option>Indoor Play</option>
+            <option>Arcade Machines</option><option>VR / XR Attractions</option><option>Kids &amp; Family Rides</option>
+            <option>Redemption Games</option><option>Simulation Rides</option><option>Outdoor Attractions</option>
+            <option>Water Park Equipment</option><option>Payment Technology</option><option>Accessories &amp; Parts</option>
           </select>
           <select class="filter-select" id="statusFilter" onchange="filterProds()">
             <option value="">All Status</option><option>Published</option><option>Draft</option><option>Pending</option>
@@ -66,44 +68,91 @@
 </div>
 <script src="admin.js"></script>
 <script>
-const products=[
-  {id:1,name:'VR Racing Simulator X9',cat:'VR/AR',supplier:'TechPlay Corp.',price:'$8,500 - $12,000',inquiries:47,views:1892,status:'Published',img:'🏎'},
-  {id:2,name:'Redemption Station Pro',cat:'Redemption',supplier:'ArcadeWorld Ltd.',price:'$3,200 - $5,000',inquiries:31,views:1240,status:'Published',img:'🎯'},
-  {id:3,name:'Claw Master Elite',cat:'Claw Machine',supplier:'ClawTech Co.',price:'$1,800 - $3,500',inquiries:68,views:3201,status:'Published',img:'🦾'},
-  {id:4,name:'AR Adventure Zone',cat:'VR/AR',supplier:'ImmersivePlay',price:'$15,000 - $25,000',inquiries:22,views:892,status:'Published',img:'🥽'},
-  {id:5,name:'Kiddie Carousel Classic',cat:'Kiddie Rides',supplier:'FunRide Co.',price:'$2,400 - $4,200',inquiries:19,views:654,status:'Draft',img:'🎠'},
-  {id:6,name:'Indoor Play Fortress',cat:'Indoor Play',supplier:'PlaySafe Inc.',price:'$18,000 - $45,000',inquiries:8,views:431,status:'Pending',img:'🏰'},
-];
-let pp=1,perP=5;
-function filterProds(){pp=1;renderProds();}
-function renderProds(){
-  const q=document.getElementById('prodSearch').value.toLowerCase();
+// Live data: products uploaded by BOTH admins and members (from /api/admin/products)
+let products=[],pp=1,perP=20,total=0;
+const STATUS_MAP={active:'Published',draft:'Draft',pending:'Pending',pending_review:'Pending'};
+const STATUS_KEY={Published:'active',Draft:'draft',Pending:'pending'};
+
+async function loadProds(){
+  const token=getToken();
+  if(!token){location.href='login.html';return;}
+  const qs=new URLSearchParams({page:pp,limit:perP});
   const cf=document.getElementById('catFilter').value;
-  const sf=document.getElementById('statusFilter').value;
-  let data=products.filter(p=>(!q||(p.name+p.cat+p.supplier).toLowerCase().includes(q))&&(!cf||p.cat===cf)&&(!sf||p.status===sf));
-  const pages=Math.ceil(data.length/perP);
-  const slice=data.slice((pp-1)*perP,pp*perP);
-  document.getElementById('prodsBody').innerHTML=slice.map(p=>`
-    <tr>
-      <td><input type="checkbox" class="row-check"></td>
-      <td><div class="cell-avatar"><div style="font-size:28px;width:44px;text-align:center">${p.img}</div><div><div style="font-weight:500">${p.name}</div><div style="font-size:11px;color:var(--text-muted)">#PRD-${1000+p.id}</div></div></div></td>
-      <td><span class="badge">${p.cat}</span></td>
-      <td style="color:var(--text-muted);font-size:13px">${p.supplier}</td>
-      <td style="color:var(--gold)">${p.price}</td>
-      <td><span style="color:#4facfe">${p.inquiries}</span></td>
-      <td style="color:var(--text-muted)">${p.views.toLocaleString()}</td>
-      <td><span class="tag ${p.status==='Published'?'active':p.status==='Draft'?'closed':'processing'}">${p.status}</span></td>
-      <td>
-        <button class="btn-secondary" style="padding:4px 10px;font-size:12px">Edit</button>
-        <button class="btn-danger" style="padding:4px 10px;font-size:12px;margin-left:4px">Del</button>
-      </td>
-    </tr>`).join('');
-  let pg='';
-  for(let i=1;i<=pages;i++) pg+=`<div class="page-btn ${i===pp?'active':''}" onclick="goP(${i})">${i}</div>`;
+  const sf=STATUS_KEY[document.getElementById('statusFilter').value]||'';
+  const q=document.getElementById('prodSearch').value.trim();
+  if(cf)qs.set('cat',cf);
+  if(sf)qs.set('status',sf);
+  if(q)qs.set('q',q);
+  try{
+    const r=await fetch('/api/admin/products?'+qs.toString(),{headers:{'Authorization':'Bearer '+token}});
+    if(r.status===401){adminLogout();return;}
+    const data=await r.json();
+    if(!data.ok){document.getElementById('prodsBody').innerHTML=`<tr><td colspan="9" style="text-align:center;color:#f87171;padding:24px">${esc(data.error||'Failed to load')}</td></tr>`;return;}
+    products=data.products||[];total=data.total||0;
+    renderProds();
+  }catch(e){
+    document.getElementById('prodsBody').innerHTML='<tr><td colspan="9" style="text-align:center;color:#f87171;padding:24px">Network error loading products.</td></tr>';
+  }
+}
+
+function filterProds(){pp=1;loadProds();}
+let searchTimer;
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('prodSearch').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{pp=1;loadProds();},350);});
+  loadProds();
+});
+
+function priceText(p){
+  if(p.price)return p.price;
+  if(p.price_type==='fixed'&&p.min_price)return '$'+p.min_price+' USD';
+  if(p.min_price&&p.max_price)return '$'+p.min_price+' - $'+p.max_price;
+  return 'Price on Request';
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function renderProds(){
+  const body=document.getElementById('prodsBody');
+  if(!products.length){
+    body.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:32px">No products found. Products added by admins and members will appear here in real time.</td></tr>';
+    document.getElementById('prodPagination').innerHTML='';
+    return;
+  }
+  body.innerHTML=products.map(function(p){
+    const st=STATUS_MAP[p.status]||p.status;
+    const img=p.image
+      ?'<img src="'+esc(p.image)+'" style="width:44px;height:44px;object-fit:cover;border-radius:8px;" onerror="this.outerHTML=\'<div style=&quot;font-size:28px;width:44px;text-align:center&quot;>🎮</div>\'">'
+      :'<div style="font-size:28px;width:44px;text-align:center">🎮</div>';
+    const created=p.created_at?new Date(p.created_at+'Z').toLocaleDateString():'—';
+    return '<tr>'
+      +'<td><input type="checkbox" class="row-check"></td>'
+      +'<td><div class="cell-avatar">'+img+'<div><div style="font-weight:500">'+esc(p.name)+'</div><div style="font-size:11px;color:var(--text-muted)">#PRD-'+(1000+p.id)+' · '+created+(p.featured?' · ⭐':'')+'</div></div></div></td>'
+      +'<td><span class="badge">'+esc(p.category||'—')+'</span></td>'
+      +'<td style="color:var(--text-muted);font-size:13px">'+esc(p.company_name||'—')+'</td>'
+      +'<td style="color:var(--gold)">'+esc(priceText(p))+'</td>'
+      +'<td><span style="color:#4facfe">—</span></td>'
+      +'<td style="color:var(--text-muted)">—</td>'
+      +'<td><span class="tag '+(st==='Published'?'active':st==='Draft'?'closed':'processing')+'">'+esc(st)+'</span></td>'
+      +'<td>'
+      +'<button class="btn-secondary" style="padding:4px 10px;font-size:12px" onclick="location.href=\'products-add.html?id='+p.id+'\'">Edit</button> '
+      +'<button class="btn-danger" style="padding:4px 10px;font-size:12px;margin-left:4px" onclick="delProd('+p.id+')">Del</button>'
+      +'</td>'
+      +'</tr>';
+  }).join('');
+  const pages=Math.max(1,Math.ceil(total/perP));
+  let pg='<div style="font-size:12px;color:var(--text-muted);margin-right:10px;align-self:center">'+total+' products total</div>';
+  for(let i=1;i<=pages;i++) pg+='<div class="page-btn '+(i===pp?'active':'')+'" onclick="goP('+i+')">'+i+'</div>';
   document.getElementById('prodPagination').innerHTML=pg;
 }
-function goP(p){pp=p;renderProds();}
-renderProds();
+function goP(p){pp=p;loadProds();}
+async function delProd(id){
+  if(!confirm('Delete this product and all its images? This cannot be undone.'))return;
+  const token=getToken();
+  try{
+    const r=await fetch('/api/admin/products?id='+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+    const data=await r.json();
+    if(!data.ok){alert(data.error||'Delete failed');return;}
+    loadProds();
+  }catch(e){alert('Network error');}
+}
 </script>
 
 <style id="user-dropdown-style">

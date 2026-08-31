@@ -39,54 +39,20 @@
         <!-- Add Category -->
         <div class="form-section">
           <h3>Add New Category</h3>
-          <div class="form-group"><label>Category Name *</label><input type="text" placeholder="e.g. VR/AR Equipment"></div>
-          <div class="form-group" style="margin-top:12px"><label>Parent Category</label>
-            <select>
-              <option value="">None (Top Level)</option>
-              <option>VR/AR Equipment</option><option>Redemption Machines</option><option>Kiddie Rides</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-top:12px"><label>Category Icon</label><input type="text" placeholder="Emoji icon, e.g. 🥽"></div>
-          <div class="form-group" style="margin-top:12px"><label>Description</label><textarea placeholder="Brief description..." style="min-height:80px"></textarea></div>
-          <div class="form-group" style="margin-top:12px"><label>Sort Order</label><input type="number" placeholder="0 = first" min="0"></div>
+          <div class="form-group"><label>Category Name *</label><input type="text" id="newCatName" placeholder="e.g. Arcade Machines"></div>
+          <div class="form-group" style="margin-top:12px"><label>Category Icon</label><input type="text" id="newCatIcon" placeholder="Emoji icon, e.g. 🕹"></div>
+          <div class="form-group" style="margin-top:12px"><label>Description</label><textarea id="newCatDesc" placeholder="Brief description..." style="min-height:80px"></textarea></div>
+          <div class="form-group" style="margin-top:12px"><label>Sort Order</label><input type="number" id="newCatSort" placeholder="0 = first" min="0"></div>
           <div class="form-actions" style="margin-top:16px"><button class="btn-primary" onclick="addCat()">Add Category</button></div>
+          <div style="margin-top:20px;padding:12px;background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.25);border-radius:8px;font-size:12px;color:var(--text-muted)">
+            ℹ️ The catalog uses <strong style="color:#e2e8f0">9 fixed categories</strong>, identical to the "+ Add Product" form and the frontend category filter. Keeping them in sync ensures products always map to a valid category.
+          </div>
         </div>
         <!-- Category Tree -->
         <div class="form-section">
-          <h3>Category Tree</h3>
+          <h3>Category Tree <span style="font-size:12px;font-weight:400;color:var(--text-muted)">— synced with Add Product &amp; frontend (live product counts)</span></h3>
           <div id="catTree">
-            <div class="cat-node" style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
-              <div style="display:flex;align-items:center;justify-content:space-between">
-                <div style="display:flex;align-items:center;gap:8px"><span>🥽</span><strong>VR/AR Equipment</strong><span style="color:var(--text-muted);font-size:12px">(234 products)</span></div>
-                <div style="display:flex;gap:6px"><button class="btn-secondary" style="font-size:11px;padding:3px 8px">Edit</button><button class="btn-danger" style="font-size:11px;padding:3px 8px">Del</button></div>
-              </div>
-              <div style="margin-left:24px;margin-top:8px">
-                <div style="padding:8px;background:rgba(255,255,255,.02);border-radius:6px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
-                  <span style="font-size:13px;color:var(--text-muted)">└ VR Racing Simulators (89)</span>
-                  <div style="display:flex;gap:4px"><button class="btn-secondary" style="font-size:11px;padding:2px 6px">Edit</button></div>
-                </div>
-                <div style="padding:8px;background:rgba(255,255,255,.02);border-radius:6px;display:flex;justify-content:space-between;align-items:center">
-                  <span style="font-size:13px;color:var(--text-muted)">└ AR Adventure Systems (145)</span>
-                  <div style="display:flex;gap:4px"><button class="btn-secondary" style="font-size:11px;padding:2px 6px">Edit</button></div>
-                </div>
-              </div>
-            </div>
-            <div class="cat-node" style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-              <div style="display:flex;align-items:center;gap:8px"><span>🎯</span><strong>Redemption Machines</strong><span style="color:var(--text-muted);font-size:12px">(198 products)</span></div>
-              <div style="display:flex;gap:6px"><button class="btn-secondary" style="font-size:11px;padding:3px 8px">Edit</button><button class="btn-danger" style="font-size:11px;padding:3px 8px">Del</button></div>
-            </div>
-            <div class="cat-node" style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-              <div style="display:flex;align-items:center;gap:8px"><span>🎠</span><strong>Kiddie Rides</strong><span style="color:var(--text-muted);font-size:12px">(156 products)</span></div>
-              <div style="display:flex;gap:6px"><button class="btn-secondary" style="font-size:11px;padding:3px 8px">Edit</button><button class="btn-danger" style="font-size:11px;padding:3px 8px">Del</button></div>
-            </div>
-            <div class="cat-node" style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-              <div style="display:flex;align-items:center;gap:8px"><span>🦾</span><strong>Claw Machines</strong><span style="color:var(--text-muted);font-size:12px">(87 products)</span></div>
-              <div style="display:flex;gap:6px"><button class="btn-secondary" style="font-size:11px;padding:3px 8px">Edit</button><button class="btn-danger" style="font-size:11px;padding:3px 8px">Del</button></div>
-            </div>
-            <div class="cat-node" style="padding:12px;border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:space-between">
-              <div style="display:flex;align-items:center;gap:8px"><span>🏰</span><strong>Indoor Play Structures</strong><span style="color:var(--text-muted);font-size:12px">(73 products)</span></div>
-              <div style="display:flex;gap:6px"><button class="btn-secondary" style="font-size:11px;padding:3px 8px">Edit</button><button class="btn-danger" style="font-size:11px;padding:3px 8px">Del</button></div>
-            </div>
+            <div style="text-align:center;color:var(--text-muted);padding:24px">Loading categories…</div>
           </div>
         </div>
       </div>
@@ -94,7 +60,54 @@
   </div>
 </div>
 <script src="admin.js"></script>
-<script>function addCat(){alert('Category added!\n(In production: saves and refreshes tree)');}</script>
+<script>
+// The 9 canonical categories (synced with products-add.html & frontend filter)
+const CATS=[
+  {icon:'🕹',name:'Arcade Machines',desc:'Classic and modern arcade cabinets, video games and coin-op machines'},
+  {icon:'🥽',name:'VR / XR Attractions',desc:'Virtual reality, augmented reality and mixed reality entertainment systems'},
+  {icon:'🎠',name:'Kids & Family Rides',desc:'Kiddie rides, carousels and family-friendly attractions'},
+  {icon:'🎁',name:'Redemption Games',desc:'Ticket redemption games, prize machines and claw machines'},
+  {icon:'🎢',name:'Simulation Rides',desc:'Motion simulators, racing and flight simulation platforms'},
+  {icon:'🌳',name:'Outdoor Attractions',desc:'Outdoor rides, giant wheels, trains and park structures'},
+  {icon:'🏊',name:'Water Park Equipment',desc:'Water slides, splash pads and aquatic play systems'},
+  {icon:'💳',name:'Payment Technology',desc:'Card systems, ticketing, RFID wristbands and payment kiosks'},
+  {icon:'🔧',name:'Accessories & Parts',desc:'Spare parts, tokens, tickets and maintenance accessories'}
+];
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+async function loadCatCounts(){
+  const token=getToken();
+  if(!token){location.href='login.html';return;}
+  let counts={};
+  try{
+    const r=await fetch('/api/admin/products?limit=1',{headers:{'Authorization':'Bearer '+token}});
+    if(r.status===401){adminLogout();return;}
+    const data=await r.json();
+    if(data.ok)counts=data.counts||{};
+  }catch(e){}
+  const total=Object.values(counts).reduce((a,b)=>a+b,0);
+  document.getElementById('catTree').innerHTML=CATS.map(c=>{
+    const n=counts[c.name]||0;
+    return '<div class="cat-node" style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">'
+      +'<div style="display:flex;align-items:center;gap:8px"><span>'+c.icon+'</span><div><strong>'+esc(c.name)+'</strong>'
+      +'<div style="font-size:11px;color:var(--text-muted);margin-top:2px">'+esc(c.desc)+'</div></div>'
+      +'<span style="color:var(--text-muted);font-size:12px;margin-left:12px;white-space:nowrap">('+n+' products)</span></div>'
+      +'<div style="display:flex;gap:6px;align-items:center">'
+      +'<a class="btn-secondary" style="font-size:11px;padding:3px 8px;text-decoration:none" href="products.html" title="View products in Manage Products">View</a>'
+      +'</div></div>';
+  }).join('')
+  +'<div style="font-size:12px;color:var(--text-muted);padding:8px 2px">Total: <strong style="color:#e2e8f0">'+total+'</strong> products across 9 categories</div>';
+}
+function addCat(){
+  const name=document.getElementById('newCatName').value.trim();
+  if(!name){alert('Please enter a category name.');return;}
+  alert('Category "'+name+'" submitted for review.\nNote: the catalog currently uses 9 fixed categories synced with Add Product & the frontend. Adding a new category requires updating products-add.html, /api/products CAT_MAP and the frontend filters together.');
+  document.getElementById('newCatName').value='';
+  document.getElementById('newCatIcon').value='';
+  document.getElementById('newCatDesc').value='';
+  document.getElementById('newCatSort').value='';
+}
+document.addEventListener('DOMContentLoaded',loadCatCounts);
+</script>
 
 <style id="user-dropdown-style">
 .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s,transform .2s;}

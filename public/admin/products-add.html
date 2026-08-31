@@ -319,7 +319,15 @@ async function loadProduct(id){
   try{
     const r=await fetch('/api/company-products',{headers:{'Authorization':'Bearer '+token}});
     const data=await r.json();
-    const p=(data.products||[]).find(x=>x.id===id);
+    let p=(data.products||[]).find(x=>x.id===id);
+    // Admin fallback: product may belong to another member's company → load via public detail API
+    if(!p&&(user&&(user.role==='admin'||user.is_super))){
+      try{
+        const r2=await fetch('/api/products?id='+encodeURIComponent(id));
+        const d2=await r2.json();
+        if(d2&&d2.ok)p=d2.product;
+      }catch(e2){}
+    }
     if(!p) return;
     document.getElementById('pName').value=p.name||'';
     document.getElementById('pShortDesc').value=p.short_description||'';
