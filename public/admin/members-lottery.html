@@ -4,6 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lucky Draw — NexAmuse Admin</title>
 <link rel="stylesheet" href="admin.css">
+<style>.demo-notice{display:flex;align-items:flex-start;gap:10px;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:12px 16px;margin-bottom:24px;color:#f5d06e;font-size:13px;line-height:1.6}.demo-notice .dn-icon{font-size:16px;line-height:1.4}.demo-badge{display:inline-block;background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.4);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:20px;text-transform:uppercase;vertical-align:middle;margin-left:8px}</style>
 </head>
 <body>
 <div class="admin-wrapper">
@@ -34,7 +35,8 @@
         </div></div>
     </header>
     <div class="admin-content">
-      <div class="page-title"><h1>🎰 Lucky Draw</h1><p>Create and manage prize draws, raffles and lotteries for members.</p></div>
+      <div class="page-title"><h1>🎰 Lucky Draw <span class="demo-badge">Demo</span></h1><p>Create and manage prize draws, raffles and lotteries for members.</p></div>
+      <div class="demo-notice"><span class="dn-icon">⚠️</span><div>This is a <strong>UI preview (Demo)</strong>. Draws, entries and winners shown below are <strong>sample data</strong> and "Draw Now / Launch / Preview" are <strong>not connected to a real lottery backend</strong>. Wire up a draws API + entries table to enable live draws.</div></div>
       <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:24px">
         <!-- Create Draw -->
         <div class="form-section">
@@ -65,8 +67,8 @@
             <div class="form-group"><label>Draw Date</label><input type="date"></div>
           </div>
           <div class="form-actions" style="margin-top:16px">
-            <button class="btn-primary">Launch Draw</button>
-            <button class="btn-secondary">Preview</button>
+            <button class="btn-primary" onclick="showToast('Launch needs a lottery backend — demo only','warning')">Launch Draw</button>
+            <button class="btn-secondary" onclick="showToast('Preview is demo only — no backend connected','info')">Preview</button>
           </div>
         </div>
         <!-- Active Draws -->
@@ -106,9 +108,7 @@
 <script src="admin.js"></script>
 <script>
 function drawNow(){
-  const names=['James Lawson','Sofia Kramer','Takeshi Noda','Ahmed Mansour','Laura Chen','Emma Wilson'];
-  const winner=names[Math.floor(Math.random()*names.length)];
-  alert('🎰 DRAW RESULT\n\n🏆 1st Prize Winner: '+winner+'\n\n(In production: sends notification email & updates records)');
+  showToast('No lottery backend connected — draw is demo only (no winner recorded)','warning');
 }
 </script>
 

@@ -4,6 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WeChat Official — NexAmuse Admin</title>
 <link rel="stylesheet" href="admin.css">
+<style>.demo-notice{display:flex;align-items:flex-start;gap:10px;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:12px 16px;margin-bottom:24px;color:#f5d06e;font-size:13px;line-height:1.6}.demo-notice .dn-icon{font-size:16px;line-height:1.4}.demo-badge{display:inline-block;background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.4);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:20px;text-transform:uppercase;vertical-align:middle;margin-left:8px}</style>
 </head>
 <body>
 <div class="admin-wrapper">
@@ -34,7 +35,8 @@
         </div></div>
     </header>
     <div class="admin-content">
-      <div class="page-title"><h1>📱 WeChat Official Account</h1><p>Manage WeChat integration for member engagement and notifications.</p></div>
+      <div class="page-title"><h1>📱 WeChat Official Account <span class="demo-badge">Demo</span></h1><p>Manage WeChat integration for member engagement and notifications.</p></div>
+      <div class="demo-notice"><span class="dn-icon">⚠️</span><div>This is a <strong>UI preview (Demo)</strong>. WeChat is <strong>not connected</strong> — the AppID/AppSecret and follower counts shown are illustrative, and "Send Message" will not deliver. Wire up the WeChat Official Account API (AppID/AppSecret in Settings → API Keys) to enable real sending.</div></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
         <div class="form-section">
           <h3>Account Binding</h3>
@@ -43,9 +45,9 @@
             <div style="font-size:15px;font-weight:500;margin-bottom:8px">WeChat Official Account</div>
             <div style="color:var(--text-muted);font-size:13px;margin-bottom:20px">Configure AppID & AppSecret in Settings → API Keys</div>
             <div style="background:rgba(17,153,142,.1);border:1px solid rgba(17,153,142,.3);border-radius:10px;padding:16px;text-align:left">
-              <div style="font-size:13px;font-weight:500;color:#38ef7d;margin-bottom:8px">✓ Currently Connected</div>
-              <div style="font-size:12px;color:var(--text-muted)">AppID: wx4d8b3c9f1e2a7d05</div>
-              <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Followers: 12,480</div>
+              <div style="font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px">○ Not Connected (Demo)</div>
+              <div style="font-size:12px;color:var(--text-muted)">AppID: <span style="opacity:.6">not configured</span></div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Followers: —</div>
             </div>
           </div>
         </div>
@@ -68,7 +70,7 @@
             <textarea style="min-height:100px" placeholder="Message text..."></textarea>
           </div>
           <div class="form-actions" style="margin-top:16px">
-            <button class="btn-primary" onclick="alert('WeChat message sent!')">Send Message</button>
+            <button class="btn-primary" onclick="showToast('No WeChat backend connected — message not sent (demo)','warning')">Send Message</button>
           </div>
         </div>
       </div>

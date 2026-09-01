@@ -20,6 +20,7 @@
 | `admin/articles-add.html` | Featured Image 上传已写入 `articles.cover` |
 | `admin/articles.html` | 文章列表已增加 Cover 缩略图列 |
 | `public/pages/member-points.html` | 会员三档权限对比卡已完整列出 ✓/✗ + hover 说明 |
+| `admin/members-add.html` | Create Member 改为真实 `POST /api/admin/members`（密码 PBKDF2 哈希入库 + 档案字段），已端到端验证 |
 
 ---
 
@@ -29,7 +30,7 @@
 |---|---|---|---|
 | `admin/settings.html` | 6 个 Save/Update 按钮 | 全部 `alert('saved!')`，无 fetch | 接 `/api/admin/settings` 真实端点 |
 | `admin/settings.html` | Enable 2FA 按钮 | 无 `onclick`，死按钮 | 实现 2FA 流程或禁用标注 |
-| `admin/members-add.html` | Create Member Account 表单 | 仅 `alert('In production: saves to database')` | `POST /api/admin/members` |
+| `admin/members-add.html` | Create Member Account 表单 | ✅ 已修复：真实 `POST /api/admin/members`（见上方"已修复"） | — |
 | `admin/members-assistant.html` | Save Settings + 发送按钮 | 仅 `alert` / 无 `onclick` | 接助手配置 API |
 | `admin/members-wechat.html` | Send Message + 连接状态 | `alert('sent')` + 硬编码"已连接" | 接微信发送 API 与真实绑定状态 |
 | `admin/files.html` | 整个文件管理器 | `showToast`/无操作；`dirs/sampleFiles` 硬编码 | 接对象存储/文件 API |

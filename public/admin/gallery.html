@@ -16,6 +16,9 @@
 .gallery-check.checked{background:var(--gold);color:#000}
 .upload-zone{border:2px dashed var(--border);border-radius:12px;padding:60px 20px;text-align:center;cursor:pointer;transition:all .2s}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:rgba(212,175,55,.04)}
+.demo-notice{display:flex;align-items:flex-start;gap:10px;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:12px 16px;margin-bottom:24px;color:#f5d06e;font-size:13px;line-height:1.6}
+.demo-notice .dn-icon{font-size:16px;line-height:1.4}
+.demo-badge{display:inline-block;background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.4);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:20px;text-transform:uppercase;vertical-align:middle;margin-left:8px}
 </style>
 </head>
 <body>
@@ -57,9 +60,10 @@
     </header>
     <div class="admin-content">
       <div class="page-title">
-        <h1 class="title-h1">Gallery Manager</h1>
+        <h1 class="title-h1">Gallery Manager <span class="demo-badge">Demo</span></h1>
         <p class="title-sub">Organize and manage your photo albums</p>
       </div>
+      <div class="demo-notice"><span class="dn-icon">⚠️</span><div>This is a <strong>UI preview (Demo)</strong>. Albums, photos and categories below are <strong>sample data</strong>; "Create Album", "Upload" and "Add Category" are <strong>not connected to a real gallery backend</strong>. Wire up a gallery media API (e.g. Cloudflare R2) to enable live management.</div></div>
 
       <!-- Tabs -->
       <div style="display:flex;gap:4px;margin-bottom:24px;background:rgba(255,255,255,.04);padding:4px;border-radius:8px;width:fit-content">
@@ -119,7 +123,7 @@
                 <label class="form-label">Description</label>
                 <textarea class="form-textarea" rows="3"></textarea>
               </div>
-              <button class="btn btn-gold" style="width:100%" onclick="showToast('Category added!','success')">Add Category</button>
+              <button class="btn btn-gold" style="width:100%" onclick="showToast('No gallery backend connected — category not saved (demo)','warning')">Add Category</button>
             </div>
           </div>
           <div class="card">
@@ -243,9 +247,9 @@ function switchTab(tab,btn){
 function showAlbum(id){showToast('Opening album '+id,'info')}
 function editAlbum(id){showToast('Edit album '+id,'info')}
 function deleteAlbum(id){if(confirm('Delete album?')){showToast('Album deleted','warning')}}
-function createAlbum(){document.getElementById('uploadModal').style.display='none';showToast('Album created!','success')}
+function createAlbum(){document.getElementById('uploadModal').style.display='none';showToast('No gallery backend connected — album not saved (demo)','warning')}
 function triggerUpload(){document.getElementById('fileInput').click()}
-document.getElementById('fileInput').onchange=function(){showToast(this.files.length+' files selected','info')};
+document.getElementById('fileInput').onchange=function(){showToast(this.files.length+' file(s) selected — upload not connected (demo)','info')};
 renderAlbums();renderPhotos();renderGalCats();
 </script>
 
