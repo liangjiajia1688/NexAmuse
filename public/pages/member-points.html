@@ -66,6 +66,32 @@
 /* CTA card */
 .cta-card{background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(201,162,39,.03));border:1px solid rgba(201,162,39,.25);border-radius:14px;padding:28px;text-align:center;margin-top:24px}
 
+/* ── Level compare (3D lift cards) ─────────────────────── */
+.lvl-compare{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start}
+@media(max-width:820px){.lvl-compare{grid-template-columns:1fr}}
+.lvl-card{position:relative;border-radius:18px;padding:28px 24px 26px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 24px rgba(0,0,0,.35);transition:transform .28s cubic-bezier(.2,.7,.3,1),box-shadow .28s,border-color .28s;overflow:hidden}
+.lvl-card::before{content:'';position:absolute;inset:0;background:radial-gradient(120% 55% at 50% 0%,rgba(255,255,255,.06),transparent 60%);pointer-events:none}
+.lvl-card:hover{transform:translateY(-10px);box-shadow:0 22px 48px rgba(0,0,0,.5)}
+.lvl-card.std{--c:#818cf8;--cg:rgba(99,102,241,.25)}
+.lvl-card.pre{--c:#c9a227;--cg:rgba(201,162,39,.28)}
+.lvl-card.vip{--c:#f5d06e;--cg:rgba(245,208,110,.3)}
+.lvl-card.is-current{transform:translateY(-6px) scale(1.02);border-color:var(--c);box-shadow:0 0 0 1px var(--cg),0 18px 50px rgba(0,0,0,.5),0 0 36px var(--cg)}
+.lvl-card.is-current:hover{transform:translateY(-12px) scale(1.02)}
+.lvl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.lvl-name{font-size:1.15rem;font-weight:700;color:var(--c);font-family:'Playfair Display',serif}
+.lvl-icon{font-size:1.6rem}
+.lvl-req{font-size:12px;color:#9aa0b4;margin-bottom:4px}
+.lvl-tag{display:inline-block;font-size:11px;font-weight:600;color:var(--c);background:var(--cg);padding:3px 10px;border-radius:20px;margin-bottom:16px}
+.lvl-card .cur-flag{position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;color:#0a0e1a;background:linear-gradient(135deg,#c9a227,#f5d06e);padding:3px 9px;border-radius:20px;display:none;box-shadow:0 2px 8px rgba(201,162,39,.4)}
+.lvl-card.is-current .cur-flag{display:inline-block}
+.lvl-perks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.lvl-perks li{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:#d1d5db;line-height:1.35}
+.lvl-perks li .ck{color:var(--c);flex-shrink:0;font-weight:700;margin-top:1px}
+.lvl-perks li.add{color:#fff;font-weight:600}
+.lvl-perks li.add .ck{color:#34d399}
+.lvl-foot{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);font-size:12px;color:#9aa0b4;min-height:18px}
+.lvl-foot b{color:var(--c)}
+
 /* Earn cards */
 .earn-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:18px;text-align:center;transition:.2s}
 .earn-card:hover{border-color:rgba(201,162,39,.3);background:rgba(201,162,39,.04)}
@@ -378,55 +404,61 @@
 
       <!-- Tab: My Perks -->
       <div id="tab-perks" class="tab-content">
-        <div style="display:grid;gap:14px">
-          <!-- Unlocked perks (Regular) -->
-          <div style="background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.2);border-radius:12px;padding:18px 22px">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-              <span style="font-size:18px">✅</span>
-              <span style="font-size:14px;font-weight:600;color:#34d399">Unlocked — Standard Member (7+ pts)</span>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🔐</span> Access to all public content</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>💬</span> Forum posting (1/day)</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📩</span> Direct inquiry to suppliers</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📰</span> Newsletter subscription</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🎪</span> Exhibition pre-registration</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🔖</span> Save favorite suppliers</div>
-            </div>
+        <div style="margin-bottom:18px">
+          <h3 style="margin:0 0 6px;font-size:18px;color:#e2e8f0;font-family:'Playfair Display',serif">Membership Tiers Compared</h3>
+          <p style="margin:0;font-size:13px;color:#9aa0b4">Three levels, one community. Hover any card to lift it — your current tier glows gold. Reach the next tier to unlock more.</p>
+        </div>
+        <div class="lvl-compare" id="lvlCompare">
+          <!-- Standard -->
+          <div class="lvl-card std" data-level="Standard">
+            <span class="cur-flag">YOU ARE HERE</span>
+            <div class="lvl-top"><span class="lvl-name">Standard</span><span class="lvl-icon">🥉</span></div>
+            <div class="lvl-req">7 points to unlock</div>
+            <span class="lvl-tag">Starter · Free</span>
+            <ul class="lvl-perks">
+              <li><span class="ck">✓</span> Browse all public content</li>
+              <li><span class="ck">✓</span> Forum posting (1 / day)</li>
+              <li><span class="ck">✓</span> Direct inquiry to suppliers</li>
+              <li><span class="ck">✓</span> Newsletter subscription</li>
+              <li><span class="ck">✓</span> Exhibition pre-registration</li>
+              <li><span class="ck">✓</span> Save favorite suppliers</li>
+            </ul>
+            <div class="lvl-foot"></div>
           </div>
-          <!-- Locked perks (Premium) -->
-          <div style="background:rgba(201,162,39,.04);border:1px solid rgba(201,162,39,.2);border-radius:12px;padding:18px 22px">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-              <div style="display:flex;align-items:center;gap:10px">
-                <span style="font-size:18px">🔒</span>
-                <span style="font-size:14px;font-weight:600;color:#c9a227">Premium Member (30 pts required) — <span style="color:#e2e8f0;font-weight:400">6 pts to go!</span></span>
-              </div>
-              <div style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600">24/30 pts</div>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;opacity:.6">
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📦</span> Upload & manage products</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>✍️</span> Publish articles & news</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>💬</span> Unlimited daily posts</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📊</span> Access analytics reports</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🎯</span> Priority supplier listing</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📬</span> Receive buyer inquiries</div>
-              <a href="company-profile.html" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#f5d06e;text-decoration:none;font-weight:600"><span>🏢</span> Create company profile</a>
-            </div>
+          <!-- Premium -->
+          <div class="lvl-card pre" data-level="Premium">
+            <span class="cur-flag">YOU ARE HERE</span>
+            <div class="lvl-top"><span class="lvl-name">Premium</span><span class="lvl-icon">⭐</span></div>
+            <div class="lvl-req">30 points to unlock</div>
+            <span class="lvl-tag">Creator · +7 perks</span>
+            <ul class="lvl-perks">
+              <li class="add"><span class="ck">✓</span> Upload &amp; manage products</li>
+              <li class="add"><span class="ck">✓</span> Publish articles &amp; news</li>
+              <li class="add"><span class="ck">✓</span> Unlimited daily posts</li>
+              <li class="add"><span class="ck">✓</span> Analytics reports</li>
+              <li class="add"><span class="ck">✓</span> Priority supplier listing</li>
+              <li class="add"><span class="ck">✓</span> Receive buyer inquiries</li>
+              <li class="add"><span class="ck">✓</span> <a href="company-profile.html" style="color:#fff;text-decoration:none">Create company profile</a></li>
+              <li><span class="ck">✓</span> All Standard perks included</li>
+            </ul>
+            <div class="lvl-foot"></div>
           </div>
-          <!-- Locked perks (VIP) -->
-          <div style="background:rgba(245,208,110,.03);border:1px solid rgba(245,208,110,.15);border-radius:12px;padding:18px 22px">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-              <span style="font-size:18px">👑</span>
-              <span style="font-size:14px;font-weight:600;color:#f5d06e">VIP Member (100 pts required)</span>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;opacity:.45">
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🏢</span> Create company profile</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🔝</span> Priority ranking in search</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🌟</span> Featured supplier badge</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📣</span> Custom ad campaign access</span></div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>🤝</span> Dedicated account manager</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><span>📅</span> Exhibition booth booking priority</div>
-            </div>
+          <!-- VIP -->
+          <div class="lvl-card vip" data-level="VIP">
+            <span class="cur-flag">YOU ARE HERE</span>
+            <div class="lvl-top"><span class="lvl-name">VIP</span><span class="lvl-icon">👑</span></div>
+            <div class="lvl-req">100 points to unlock</div>
+            <span class="lvl-tag">Elite · +5 perks</span>
+            <ul class="lvl-perks">
+              <li class="add"><span class="ck">✓</span> Priority ranking in search</li>
+              <li class="add"><span class="ck">✓</span> Featured supplier badge</li>
+              <li class="add"><span class="ck">✓</span> Custom ad campaigns</li>
+              <li class="add"><span class="ck">✓</span> Dedicated account manager</li>
+              <li class="add"><span class="ck">✓</span> Exhibition booth priority</li>
+              <li><span class="ck">✓</span> Everything in Premium</li>
+              <li><span class="ck">✓</span> Create company profile</li>
+            </ul>
+            <div class="lvl-foot"></div>
           </div>
         </div>
       </div>
@@ -600,7 +632,33 @@ function renderMyLevel() {
   if (meIdx >= 0) { LEADER[meIdx].points = pts; LEADER[meIdx].level = level; }
   renderTop3();
   renderLB();
+  highlightCurrentTier();
 }
+
+function highlightCurrentTier(){
+  const s = JSON.parse(localStorage.getItem('nexamuse_user') || 'null');
+  const level = (s && s.level) || 'Standard';
+  const pts = (s && typeof s.points === 'number') ? s.points : 0;
+  const order = ['Standard','Premium','VIP'];
+  const idx = order.indexOf(level);
+  const cards = document.querySelectorAll('#lvlCompare .lvl-card');
+  cards.forEach(c => {
+    const lv = c.getAttribute('data-level');
+    c.classList.toggle('is-current', lv === level);
+    const foot = c.querySelector('.lvl-foot');
+    if (!foot) return;
+    if (lv === level) {
+      const next = order[idx + 1];
+      foot.innerHTML = next
+        ? '✓ You are here · <b>' + Math.max(0, LVL_THRESHOLD[next] - pts) + ' pts</b> to ' + next
+        : '✓ Top tier reached · enjoy everything';
+    } else {
+      const need = LVL_THRESHOLD[lv] - pts;
+      foot.innerHTML = need > 0 ? '<b>' + need + ' pts</b> to unlock' : 'Unlocked ✓';
+    }
+  });
+}
+
 function renderLB() {
   document.getElementById('lbList').innerHTML = LB.map(u=>`
   <div class="lb-row" style="${u.isMe?'background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.2);border-radius:8px;':''}">
