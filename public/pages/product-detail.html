@@ -227,8 +227,8 @@
   }
 
   window.openInquiry = function(id,name){
-    // Future: open inquiry modal pre-filled with product id
-    alert('Quote request for: ' + name + '\n\nThis feature will open the inquiry form pre-filled with this product.');
+    // Route the quote request to the real contact form, pre-filled with this product.
+    window.location.href = 'contact.html?product=' + encodeURIComponent(name) + '&pid=' + encodeURIComponent(id);
   };
 
   if (!id) { renderError('Missing product ID.'); return; }

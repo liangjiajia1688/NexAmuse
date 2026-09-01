@@ -144,6 +144,34 @@
 (function(){
   const form = document.getElementById('contactForm');
   if(!form) return;
+
+  // Pre-fill from URL params (inbound from product quote / forgot-password links).
+  (function prefill(){
+    try {
+      const q = new URLSearchParams(location.search);
+      const product = q.get('product');
+      const pid = q.get('pid');
+      const subj = q.get('subject');
+      const sel = document.getElementById('subject');
+      const msg = document.getElementById('message');
+      if (product) {
+        if (sel) {
+          const label = 'Product Quote: ' + product;
+          sel.add(new Option(label, label, true, true));
+        }
+        if (msg) msg.value = 'I would like a quote for: ' + product + (pid ? ' (Product ID: ' + pid + ')' : '') + '\n' + location.origin + '/pages/product-detail.html?id=' + (pid || '');
+        if (window.showToast) showToast('Pre-filled with your product inquiry — add your details and send.', 'info');
+      } else if (subj) {
+        if (sel) {
+          let matched = false;
+          for (const o of sel.options) { if (o.value.toLowerCase().includes(subj.toLowerCase())) { o.selected = true; matched = true; break; } }
+          if (!matched) sel.add(new Option(subj, subj, true, true));
+        }
+        if (msg && !msg.value) msg.value = 'Regarding: ' + subj + '\n';
+      }
+    } catch (e) {}
+  })();
+
   form.addEventListener('submit', async function(e){
     e.preventDefault();
     const btn = document.getElementById('contactBtn');
