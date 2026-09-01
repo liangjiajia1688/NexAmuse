@@ -186,6 +186,7 @@
           <div class="card" style="margin-bottom:16px">
             <div class="card-header"><h3>🖼 Featured Image</h3></div>
             <div class="card-body">
+              <input type="hidden" id="coverInput">
               <div onclick="pickImage()" style="border:2px dashed var(--border);border-radius:8px;padding:40px 20px;text-align:center;cursor:pointer;transition:border-color .2s" id="dropzone"
                 onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
                 <div style="font-size:36px;margin-bottom:8px">🖼</div>
@@ -264,7 +265,53 @@ function insertImage(){
   }
   input.click();
 }
-function pickImage(){ insertImage(); }
+// Upload a real image to /api/upload and store it as the Featured Image (articles.cover)
+function pickImage(){
+  let input = document.getElementById('coverFileInput');
+  if(!input){
+    input = document.createElement('input');
+    input.type = 'file'; input.id = 'coverFileInput'; input.accept = 'image/*';
+    input.style.display = 'none';
+    document.body.appendChild(input);
+    input.addEventListener('change', async () => {
+      const file = input.files && input.files[0];
+      if(!file) return;
+      const dz = document.getElementById('dropzone');
+      const oldHtml = dz.innerHTML;
+      dz.innerHTML = '<div style="font-size:16px;color:var(--gold);padding:20px 0">⏳ Uploading…</div>';
+      try {
+        const fd = new FormData();
+        fd.append('image', file);
+        const r = await fetch('/api/upload', { method:'POST', headers:{ 'Authorization':'Bearer '+getToken() }, body: fd });
+        const data = await r.json().catch(()=>({}));
+        if(!r.ok) throw new Error(data.error || 'Upload failed');
+        document.getElementById('coverInput').value = data.url || '';
+        renderCoverPreview(data.url);
+        showToast('Featured image set', 'success');
+      } catch(e){
+        dz.innerHTML = oldHtml;
+        showToast('Image upload failed: ' + e.message, 'error');
+      } finally { input.value = ''; }
+    });
+  }
+  input.click();
+}
+function renderCoverPreview(url){
+  const dz = document.getElementById('dropzone');
+  dz.style.padding = '12px';
+  dz.innerHTML = '<div style="position:relative;width:100%">'+
+    '<img src="' + url.replace(/"/g,'&quot;') + '" style="width:100%;border-radius:8px;display:block;min-height:120px;object-fit:cover" onerror="this.style.display=\'none\';showToast(\'Preview failed\',\'error\')">'+
+    '<button type="button" onclick="event.stopPropagation();removeCover()" style="position:absolute;top:8px;right:8px;background:rgba(10,14,26,.85);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer">Remove</button>'+
+    '</div>';
+}
+function removeCover(){
+  document.getElementById('coverInput').value = '';
+  const dz = document.getElementById('dropzone');
+  dz.style.padding = '40px 20px';
+  dz.innerHTML = '<div style="font-size:36px;margin-bottom:8px">🖼</div>'+
+    '<div style="color:var(--text-muted);font-size:13px">Click to upload or drag &amp; drop</div>'+
+    '<div style="font-size:11px;color:var(--text-muted);margin-top:4px">JPG, PNG, WebP · Max 5MB</div>';
+}
 let currentDraftId = null;
 async function saveDraft(){
   const token = getToken();
@@ -278,6 +325,8 @@ async function saveDraft(){
   if(!title){ showToast('Title is required to save a draft','error'); return; }
   const catCb = document.querySelector('.cat-cb:checked');
   const category = catCb ? catCb.dataset.cat : 'Industry News';
+  const coverEl = document.getElementById('coverInput');
+  const cover = coverEl ? coverEl.value.trim() : '';
   const base = isMember ? '/api/member/articles' : '/api/articles';
   try {
     let r, data, url, method;
@@ -287,7 +336,7 @@ async function saveDraft(){
     } else {
       url = base; method = 'POST';
     }
-    r = await fetch(url, { method, headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }, body: JSON.stringify({ title, excerpt, content, category, status:'draft' }) });
+    r = await fetch(url, { method, headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }, body: JSON.stringify({ title, excerpt, content, category, cover, status:'draft' }) });
     data = await r.json().catch(()=>({}));
     if(r.ok && data.id) currentDraftId = data.id;
     if(!r.ok) throw new Error(data.error || 'Save failed');
@@ -320,13 +369,15 @@ async function publishToApi(){
   if(!title){ showToast('Title is required','error'); return; }
   const catCb = document.querySelector('.cat-cb:checked');
   const category = catCb ? catCb.dataset.cat : 'Industry News';
+  const coverEl = document.getElementById('coverInput');
+  const cover = coverEl ? coverEl.value.trim() : '';
   const base = isMember ? '/api/member/articles' : '/api/articles';
   const url = editingId ? (isMember ? base+'?id='+editingId : base+'/'+editingId) : base;
   const method = editingId ? 'PUT' : 'POST';
   const btn = document.querySelector('button.btn-gold');
   try {
     if(btn){ btn.disabled = true; btn.textContent = editingId ? 'Updating…' : 'Publishing…'; }
-    const r = await fetch(url, { method, headers: apiHeaders(), body: JSON.stringify({ title, excerpt, content, category, status:'published', author:'NexAmuse Editorial' }) });
+    const r = await fetch(url, { method, headers: apiHeaders(), body: JSON.stringify({ title, excerpt, content, category, cover, status:'published', author:'NexAmuse Editorial' }) });
     const data = await r.json().catch(()=>({}));
     if(!r.ok){ showToast((editingId?'Update':'Publish')+' failed: '+(data.error||r.status),'error'); return; }
     if(isMember){
@@ -439,6 +490,12 @@ let editingId = null;
       const statusSelect = document.getElementById('statusSelect');
       if(statusSelect && a.status){
         statusSelect.value = ['draft','published','scheduled'].includes(a.status) ? a.status : 'draft';
+      }
+      // Featured Image (cover)
+      const coverInput = document.getElementById('coverInput');
+      if(coverInput && a.cover){
+        coverInput.value = a.cover;
+        renderCoverPreview(a.cover);
       }
     } catch(e){ showToast('Failed to load article: '+e.message, 'error'); }
   })();

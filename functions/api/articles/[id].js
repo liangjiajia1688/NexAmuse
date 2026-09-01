@@ -1,4 +1,4 @@
-import { json, fail } from '../../_lib/db.js';
+import { json, fail, now } from '../../_lib/db.js';
 import { authUser } from '../../_lib/auth.js';
 
 export async function onRequest(context) {
