@@ -80,3 +80,10 @@ CREATE TABLE IF NOT EXISTS assistant_settings (
   config TEXT NOT NULL,
   updated_at INTEGER
 );
+
+-- Admin site settings, stored per section as JSON (key = section name)
+CREATE TABLE IF NOT EXISTS site_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at INTEGER
+);
