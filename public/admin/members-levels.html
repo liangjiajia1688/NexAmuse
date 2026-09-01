@@ -157,7 +157,7 @@
       <!-- Member Groups (with Amusement Park) -->
       <div class="card">
         <div class="card-header">
-          <h3>🗂 Member Groups / Industry Types</h3>
+          <h3>🗂 Member Groups</h3>
           <button class="btn btn-gold btn-sm" onclick="addGroup()">➕ Add Group</button>
         </div>
         <div class="card-body">
@@ -264,32 +264,86 @@ async function loadLevelStats(){
 
 loadRules();
 loadLevelStats();
+loadGroups();
 
-const GROUPS = [
-  {icon:'🎡',name:'Amusement Park',color:'#c9a227'},
-  {icon:'🏭',name:'Equipment Supplier',color:'#4facfe'},
-  {icon:'🛒',name:'Buyer / Operator',color:'#56ab2f'},
-  {icon:'📰',name:'Media & Press',color:'#f093fb'},
-  {icon:'🤝',name:'Distributor',color:'#11998e'},
-  {icon:'🎪',name:'Theme Park',color:'#ee0979'},
-  {icon:'🎮',name:'Arcade Operator',color:'#667eea'},
-  {icon:'🌊',name:'Water Park',color:'#00c2ff'},
-  {icon:'🏢',name:'Industry Association',color:'#f59e0b'},
-  {icon:'👑',name:'VIP Partner',color:'#c084fc'},
-];
-document.getElementById('groupsGrid').innerHTML = GROUPS.map(g=>`
-  <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:16px;transition:.2s;cursor:pointer" onmouseover="this.style.borderColor='${g.color}40'" onmouseout="this.style.borderColor='var(--border)'">
-    <div style="font-size:28px;margin-bottom:8px">${g.icon}</div>
-    <div style="font-weight:600;color:#e2e8f0;font-size:14px;margin-bottom:4px">${g.name}</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Industry type label</div>
+const groupsEl = document.getElementById('groupsGrid');
+
+function renderGroups(groups){
+  if(!groups.length){
+    groupsEl.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px;font-size:13px">No member groups yet. Click “Add Group” to create one.</div>';
+    return;
+  }
+  groupsEl.innerHTML=groups.map(g=>`<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:16px;transition:.2s" onmouseover="this.style.borderColor='${(g.color||'#94a3b8')}40'" onmouseout="this.style.borderColor='var(--border)'">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span style="width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#0a0e1a;background:${(g.color||'#94a3b8')}">${(g.name||'?').slice(0,1).toUpperCase()}</span>
+    </div>
+    <div style="font-weight:600;color:#e2e8f0;font-size:14px;margin-bottom:4px">${esc(g.name)}</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${esc(g.description||'Member grouping')}</div>
+    <div style="font-size:12px;color:var(--gold);margin-bottom:12px">${(g.members||0).toLocaleString()} members · min ${g.min_points||0} pts</div>
     <div style="display:flex;gap:6px">
-      <button class="btn btn-outline btn-sm" style="flex:1;font-size:11px;opacity:.5;cursor:not-allowed" disabled title="Static demo — group editing not wired">Edit</button>
+      <button class="btn btn-outline btn-sm" style="flex:1;font-size:11px" onclick="editGroup(${g.id})">Edit</button>
+      <button class="btn btn-outline btn-sm" style="flex:1;font-size:11px;color:#f87171;border-color:rgba(248,113,113,.3)" onclick="deleteGroup(${g.id})">Delete</button>
     </div>
   </div>`).join('');
+}
+
+async function loadGroups(){
+  try{
+    const data=await apiGet('/api/admin/member-groups');
+    renderGroups(data.groups||[]);
+  }catch(e){
+    console.error(e);
+    groupsEl.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#f87171;padding:24px;font-size:13px">Failed to load member groups.</div>';
+  }
+}
+
+async function addGroup(){
+  const name=prompt('Group / industry type name (e.g. "Amusement Park"):');
+  if(!name)return;
+  const description=prompt('Short description (optional):','');
+  if(description===null)return;
+  const color=prompt('Color hex (optional, e.g. #c9a227):','#94a3b8');
+  if(color===null)return;
+  try{
+    await apiSend('/api/admin/member-groups','POST',{name,description,color,min_points:0});
+    showToast('Group created','success');
+    loadGroups();
+  }catch(e){showToast(e.message||'Create failed','error');}
+}
+
+async function editGroup(id){
+  let cur=null;
+  try{
+    const all=await apiGet('/api/admin/member-groups');
+    cur=(all.groups||[]).find(g=>g.id===id);
+  }catch(e){return;}
+  if(!cur)return;
+  const name=prompt('Group name:',cur.name);
+  if(!name)return;
+  const description=prompt('Short description:',cur.description||'');
+  if(description===null)return;
+  const color=prompt('Color hex:',cur.color||'#94a3b8');
+  if(color===null)return;
+  const min_points=prompt('Minimum points for this group tier:',String(cur.min_points||0));
+  if(min_points===null)return;
+  try{
+    await apiSend('/api/admin/member-groups?id='+id,'PUT',{name,description,color,min_points:parseInt(min_points,10)||0});
+    showToast('Group updated','success');
+    loadGroups();
+  }catch(e){showToast(e.message||'Update failed','error');}
+}
+
+async function deleteGroup(id){
+  if(!confirm('Delete this member group?'))return;
+  try{
+    await apiSend('/api/admin/member-groups?id='+id,'DELETE');
+    showToast('Group deleted','success');
+    loadGroups();
+  }catch(e){showToast(e.message||'Delete failed','error');}
+}
 
 function editLevel(l){showToast('Level thresholds are defined by the points system (30 pts → Premium, 100 pts → VIP).','info');}
 function viewMembers(l){window.location.href='members-points.html?level='+l;}
-function addGroup(){showToast('Member groups are not stored in the database yet','info');}
 </script>
 <style>
 .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#111827;border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:999;overflow:hidden;opacity:0;transform:translateY(-8px);pointer-events:none;transition:.2s;}

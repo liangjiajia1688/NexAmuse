@@ -21,6 +21,9 @@
 | `admin/articles.html` | 文章列表已增加 Cover 缩略图列 |
 | `public/pages/member-points.html` | 会员三档权限对比卡已完整列出 ✓/✗ + hover 说明 |
 | `admin/members-add.html` | Create Member 改为真实 `POST /api/admin/members`（密码 PBKDF2 哈希入库 + 档案字段），已端到端验证 |
+| `admin/members-wechat.html` | WeChat 假连接态 + 假发送 → 诚实标 Demo（Not Connected、发送不投递） |
+| `admin/members-lottery.html` | 假抽奖/死按钮 → 诚实标 Demo（样例数据、Draw Now 不记录） |
+| `admin/gallery.html` | 假相册/上传/分类 → 诚实标 Demo（样例数据、保存不落库） |
 
 ---
 
@@ -32,9 +35,9 @@
 | `admin/settings.html` | Enable 2FA 按钮 | 无 `onclick`，死按钮 | 实现 2FA 流程或禁用标注 |
 | `admin/members-add.html` | Create Member Account 表单 | ✅ 已修复：真实 `POST /api/admin/members`（见上方"已修复"） | — |
 | `admin/members-assistant.html` | Save Settings + 发送按钮 | 仅 `alert` / 无 `onclick` | 接助手配置 API |
-| `admin/members-wechat.html` | Send Message + 连接状态 | `alert('sent')` + 硬编码"已连接" | 接微信发送 API 与真实绑定状态 |
+| `admin/members-wechat.html` | Send Message + 连接状态 | ✅ 已修复：诚实标 Demo（见上方"已修复"） | — |
 | `admin/files.html` | 整个文件管理器 | `showToast`/无操作；`dirs/sampleFiles` 硬编码 | 接对象存储/文件 API |
-| `admin/members-lottery.html` | Draw Now / Launch / Preview 等 | 从硬编码名单随机抽取 + `alert`；其余按钮无 `onclick` | 接抽奖 API |
+| `admin/members-lottery.html` | Draw Now / Launch / Preview 等 | ✅ 已修复：诚实标 Demo（见上方"已修复"） | — |
 | `admin/gallery.html` | Create Album / Upload / 批量操作 | `showToast` 或空 `onclick`；无实际上传 | 接图库 API + `/api/upload` |
 | `pages/product-detail.html` | Quote request / 询价按钮 | `alert('This feature will open the inquiry form')` 但未打开 | 打开真实询价弹窗 |
 | `pages/magazine.html` | 整页杂志归档 | 全部硬编码；Load More 为 `href="#"` | 接 CMS/数据源或标注 Demo |
