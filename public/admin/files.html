@@ -28,6 +28,9 @@
 .fm-breadcrumb a{color:var(--gold);cursor:pointer}
 .storage-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:6px}
 .storage-fill{height:100%;background:linear-gradient(90deg,var(--gold),#f5d06e);border-radius:3px}
+.demo-notice{display:flex;align-items:flex-start;gap:10px;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:12px 16px;margin-bottom:24px;color:#f5d06e;font-size:13px;line-height:1.6}
+.demo-notice .dn-icon{font-size:16px;line-height:1.4}
+.demo-badge{display:inline-block;background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.4);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:20px;text-transform:uppercase;vertical-align:middle;margin-left:8px}
 </style>
 </head>
 <body>
@@ -68,21 +71,22 @@
     </header>
     <div class="admin-content">
       <div class="page-title">
-        <h1 class="title-h1">File Manager</h1>
+        <h1 class="title-h1">File Manager <span class="demo-badge">Demo</span></h1>
         <p class="title-sub">Virtual root directory — manage all uploaded files and media</p>
       </div>
+      <div class="demo-notice"><span class="dn-icon">⚠️</span><div>This is a <strong>UI preview (Demo)</strong>. No files are actually stored — the list below is sample data, and Upload / New Folder / Rename / Move / Delete are <strong>not connected to a real storage backend</strong>. Wire up Cloudflare R2 + a media API to enable live file management.</div></div>
       <!-- Storage Stats -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
         <div class="stat-card">
           <div class="stat-icon">💾</div>
-          <div class="stat-value">2.4 GB</div>
+          <div class="stat-value">0 B</div>
           <div class="stat-label">Total Used</div>
-          <div class="storage-bar"><div class="storage-fill" style="width:48%"></div></div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">48% of 5 GB</div>
+          <div class="storage-bar"><div class="storage-fill" style="width:0%"></div></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">No storage connected</div>
         </div>
-        <div class="stat-card"><div class="stat-icon">🖼</div><div class="stat-value">1,284</div><div class="stat-label">Images</div></div>
-        <div class="stat-card"><div class="stat-icon">📄</div><div class="stat-value">247</div><div class="stat-label">Documents</div></div>
-        <div class="stat-card"><div class="stat-icon">🎬</div><div class="stat-value">38</div><div class="stat-label">Videos</div></div>
+        <div class="stat-card"><div class="stat-icon">🖼</div><div class="stat-value">0</div><div class="stat-label">Images</div></div>
+        <div class="stat-card"><div class="stat-icon">📄</div><div class="stat-value">0</div><div class="stat-label">Documents</div></div>
+        <div class="stat-card"><div class="stat-icon">🎬</div><div class="stat-value">0</div><div class="stat-label">Videos</div></div>
       </div>
 
       <!-- File Manager UI -->
@@ -203,12 +207,12 @@ function navTo(path,el){
   document.getElementById('statusRight').textContent='Current: '+path;
   renderFiles(sampleFiles);
 }
-function uploadFile(){showToast('File picker opened','info')}
-function newFolder(){const n=prompt('Folder name:');if(n)showToast('Folder "'+n+'" created','success')}
-function renameSelected(){const n=prompt('New name:');if(n)showToast('File renamed to "'+n+'"','success')}
-function moveSelected(){showToast('Move dialog opened — select destination','info')}
-function deleteSelected(){if(confirm(`Delete ${selectedFiles.size} selected file(s)?`)){showToast(selectedFiles.size+' files deleted','warning');selectedFiles.clear()}}
-function confirmDelete(name){if(confirm('Delete "'+name+'"?')){showToast('"'+name+'" deleted','warning')}}
+function uploadFile(){showToast('No storage backend connected — upload is unavailable in this demo','warning')}
+function newFolder(){showToast('Folder creation needs a storage backend — demo only','warning')}
+function renameSelected(){showToast('Rename needs a storage backend — demo only','warning')}
+function moveSelected(){showToast('Move needs a storage backend — demo only','warning')}
+function deleteSelected(){showToast('Delete is disabled in the demo (no real files)','warning')}
+function confirmDelete(name){showToast('Delete is disabled in the demo (no real files)','warning')}
 renderDirTree();renderFiles(sampleFiles);
 </script>
 

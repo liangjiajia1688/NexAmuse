@@ -77,6 +77,8 @@
     .pl-dur{position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.75);color:#fff;font-size:.62rem;padding:1px 5px;border-radius:3px;}
     .pl-info .pl-title{font-size:.8rem;color:#e2e8f0;line-height:1.3;margin-bottom:4px;}
     .pl-info .pl-meta{font-size:.72rem;color:var(--text-secondary);}
+    .preview-banner{display:flex;align-items:center;gap:10px;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:12px 16px;margin-bottom:28px;color:#f5d06e;font-size:13px;line-height:1.6}
+    .coming-soon-note{display:inline-block;color:var(--text-secondary);font-size:.85rem;padding:10px 18px;border:1px dashed var(--border);border-radius:8px}
 
     @media(max-width:1024px){.vid-featured{grid-template-columns:1fr}.vid-featured-info{padding:0}.vid-layout{grid-template-columns:1fr}}
     @media(max-width:768px){.video-grid{grid-template-columns:1fr 1fr}.channel-strip{grid-template-columns:repeat(3,1fr)}}
@@ -85,7 +87,7 @@
 </head>
 <body>
 <div class="top-bar"><div class="container">
-  <div class="top-bar-left"><span><span class="live-badge"><span class="live-dot"></span>LIVE</span>&nbsp;GTI Asia Pacific 2026 — March 28–30, Guangzhou</span></div>
+  <div class="top-bar-left"><span><span class="live-badge"><span class="live-dot"></span>PREVIEW</span>&nbsp;NexAmuse Video Library — sample collection</span></div>
   <div class="top-bar-right"><a href="#">Advertise</a><a href="contact.html">Contact</a></div>
 </div></div>
 
@@ -154,12 +156,14 @@
     <h1 style="color:#fff;">Industry <em style="color:var(--accent);font-style:normal;">Video</em> Library</h1>
     <p style="color:var(--text-secondary);max-width:560px;margin-top:12px;">Exhibition walkthroughs, new product reveals, factory tours, and executive interviews — the amusement industry on screen.</p>
     <div style="display:flex;gap:14px;margin-top:20px;flex-wrap:wrap;">
-      <span class="badge badge-gold">🎬 200+ Videos</span>
-      <span class="badge badge-blue">🎪 10 Exhibitions Covered</span>
-      <span class="badge badge-green">🆓 Free to Watch</span>
+      <span class="badge badge-gold">🎬 Video Previews</span>
+      <span class="badge badge-blue">🎪 Show Coverage</span>
+      <span class="badge badge-green">🆓 Preview Collection</span>
     </div>
   </div>
 </div>
+
+<div class="preview-banner">🎬 <strong>Preview Collection</strong> — These entries are sample videos. Playback hosting is not yet connected, and all stats shown are illustrative.</div>
 
 <!-- Featured Video -->
 <section class="section">
@@ -182,7 +186,6 @@
         <p>A complete tour of all exhibition halls at GTI Guangzhou 2025, featuring the biggest new product launches, interactive demos, and exclusive behind-the-scenes access to top manufacturers.</p>
         <div class="vid-meta-row">
           <span>📅 December 2025</span>
-          <span>👁 48,200 views</span>
           <span>⏱ 18 min 42 sec</span>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -203,11 +206,11 @@
       <p>Filter by topic to find exactly what you need</p>
     </div>
     <div class="channel-strip fade-in">
-      <div class="ch-card active" onclick="filterVideos('all',this)"><div class="ch-icon">🎬</div><div class="ch-name">All Videos</div><div class="ch-count">200+ videos</div></div>
-      <div class="ch-card" onclick="filterVideos('expo',this)"><div class="ch-icon">🎪</div><div class="ch-name">Show Coverage</div><div class="ch-count">68 videos</div></div>
-      <div class="ch-card" onclick="filterVideos('product',this)"><div class="ch-icon">🎮</div><div class="ch-name">New Products</div><div class="ch-count">54 videos</div></div>
-      <div class="ch-card" onclick="filterVideos('company',this)"><div class="ch-icon">🏭</div><div class="ch-name">Company Features</div><div class="ch-count">42 videos</div></div>
-      <div class="ch-card" onclick="filterVideos('interview',this)"><div class="ch-icon">🎙️</div><div class="ch-name">Interviews</div><div class="ch-count">36 videos</div></div>
+      <div class="ch-card active" onclick="filterVideos('all',this)"><div class="ch-icon">🎬</div><div class="ch-name">All Videos</div><div class="ch-count">Preview</div></div>
+      <div class="ch-card" onclick="filterVideos('expo',this)"><div class="ch-icon">🎪</div><div class="ch-name">Show Coverage</div><div class="ch-count">Preview</div></div>
+      <div class="ch-card" onclick="filterVideos('product',this)"><div class="ch-icon">🎮</div><div class="ch-name">New Products</div><div class="ch-count">Preview</div></div>
+      <div class="ch-card" onclick="filterVideos('company',this)"><div class="ch-icon">🏭</div><div class="ch-name">Company Features</div><div class="ch-count">Preview</div></div>
+      <div class="ch-card" onclick="filterVideos('interview',this)"><div class="ch-icon">🎙️</div><div class="ch-name">Interviews</div><div class="ch-count">Preview</div></div>
     </div>
 
     <!-- Video Grid + Playlist -->
@@ -218,86 +221,86 @@
 
           <div class="video-card-full filterable-item" data-category="expo" onclick="playVideo(this.querySelector('.v-title').textContent)">
             <div class="v-thumb" style="background:linear-gradient(135deg,#1a2540,#0d1530);">🎪<span class="v-play">▶</span><span class="v-dur">18:42</span><div class="v-overlay"></div></div>
-            <div class="v-body"><div class="v-cat">Show Coverage</div><div class="v-title">GTI 2025 Full Exhibition Walkthrough — All Halls</div><div class="v-meta">📅 Dec 2025 · 👁 48,200 views</div></div>
+            <div class="v-body"><div class="v-cat">Show Coverage</div><div class="v-title">GTI 2025 Full Exhibition Walkthrough — All Halls</div><div class="v-meta">📅 Dec 2025</div></div>
           </div>
 
           <div class="video-card-full filterable-item" data-category="product" onclick="playVideo(this.querySelector('.v-title').textContent)">
             <div class="v-thumb" style="background:linear-gradient(135deg,#1e3a5f,#0d1f3c);">🥽<span class="v-play">▶</span><span class="v-dur">6:18</span><div class="v-overlay"></div></div>
-            <div class="v-body"><div class="v-cat">Product Review</div><div class="v-title">Inside the World's Most Advanced Free-Roam VR Arena</div><div class="v-meta">📅 Mar 2026 · 👁 32,100 views</div></div>
+            <div class="v-body"><div class="v-cat">Product Review</div><div class="v-title">Inside the World's Most Advanced Free-Roam VR Arena</div><div class="v-meta">📅 Mar 2026</div></div>
           </div>
 
           <div class="video-card-full filterable-item" data-category="company" onclick="playVideo(this.querySelector('.v-title').textContent)">
             <div class="v-thumb" style="background:linear-gradient(135deg,#0d2010,#1a3520);">🎢<span class="v-play">▶</span><span class="v-dur">12:30</span><div class="v-overlay"></div></div>
-            <div class="v-body"><div class="v-cat">Company Feature</div><div class="v-title">Dubai Mega FEC Project — Behind the Scenes Construction Tour</div><div class="v-meta">📅 Feb 2026 · 👁 27,400 views</div></div>
+            <div class="v-body"><div class="v-cat">Company Feature</div><div class="v-title">Dubai Mega FEC Project — Behind the Scenes Construction Tour</div><div class="v-meta">📅 Feb 2026</div></div>
           </div>
 
           <div class="video-card-full filterable-item" data-category="interview" onclick="playVideo(this.querySelector('.v-title').textContent)">
             <div class="v-thumb" style="background:linear-gradient(135deg,#3b1e1e,#200d0d);">🎙️<span class="v-play">▶</span><span class="v-dur">22:15</span><div class="v-overlay"></div></div>
-            <div class="v-body"><div class="v-cat">Executive Interview</div><div class="v-title">IAAPA CEO Interview: The Future of Global Attractions Industry</div><div class="v-meta">📅 Jan 2026 · 👁 19,800 views</div></div>
+            <div class="v-body"><div class="v-cat">Executive Interview</div><div class="v-title">IAAPA CEO Interview: The Future of Global Attractions Industry</div><div class="v-meta">📅 Jan 2026</div></div>
           </div>
 
           <div class="video-card-full filterable-item" data-category="product" onclick="playVideo(this.querySelector('.v-title').textContent)">
             <div class="v-thumb" style="background:linear-gradient(135deg,#3b2b1e,#1a1208);">🎠<span class="v-play">▶</span><span class="v-dur">4:55</span><div class="v-overlay"></div></div>
-            <div class="v-body"><div class="v-cat">New Product</div><div class="v-title">New 2026 Luxury Carousel — DreamRide Factory Walkthrough</div><div class="v-meta">📅 Mar 2026 · 👁 15,600 views</div></div>
+            <div class="v-body"><div class="v-cat">New Product</div><div class="v-title">New 2026 Luxury Carousel — DreamRide Factory Walkthrough</div><div class="v-meta">📅 Mar 2026</div></div>
           </div>
 
           <div class="video-card-full filterable-item" data-category="expo" onclick="playVideo(this.querySelector('.v-title').textContent)">
             <div class="v-thumb" style="background:linear-gradient(135deg,#1e2e3b,#0d1825);">🌍<span class="v-play">▶</span><span class="v-dur">9:40</span><div class="v-overlay"></div></div>
-            <div class="v-body"><div class="v-cat">Show Coverage</div><div class="v-title">EAG London 2025 — Best of Show Highlights & Top Innovations</div><div class="v-meta">📅 Oct 2025 · 👁 22,300 views</div></div>
+            <div class="v-body"><div class="v-cat">Show Coverage</div><div class="v-title">EAG London 2025 — Best of Show Highlights & Top Innovations</div><div class="v-meta">📅 Oct 2025</div></div>
           </div>
 
           <div class="video-card-full filterable-item" data-category="interview" onclick="playVideo(this.querySelector('.v-title').textContent)">
             <div class="v-thumb" style="background:linear-gradient(135deg,#1e2e3b,#2a1a40);">🎤<span class="v-play">▶</span><span class="v-dur">14:08</span><div class="v-overlay"></div></div>
-            <div class="v-body"><div class="v-cat">Executive Interview</div><div class="v-title">Bandai Namco VP on 2026 Amusement Strategy & New IP Rollouts</div><div class="v-meta">📅 Feb 2026 · 👁 12,900 views</div></div>
+            <div class="v-body"><div class="v-cat">Executive Interview</div><div class="v-title">Bandai Namco VP on 2026 Amusement Strategy & New IP Rollouts</div><div class="v-meta">📅 Feb 2026</div></div>
           </div>
 
           <div class="video-card-full filterable-item" data-category="company" onclick="playVideo(this.querySelector('.v-title').textContent)">
             <div class="v-thumb" style="background:linear-gradient(135deg,#1a3520,#0d2010);">🏗️<span class="v-play">▶</span><span class="v-dur">8:22</span><div class="v-overlay"></div></div>
-            <div class="v-body"><div class="v-cat">Company Feature</div><div class="v-title">Sega Amusements' New R&D Center — Inside the Innovation Lab</div><div class="v-meta">📅 Jan 2026 · 👁 10,400 views</div></div>
+            <div class="v-body"><div class="v-cat">Company Feature</div><div class="v-title">Sega Amusements' New R&D Center — Inside the Innovation Lab</div><div class="v-meta">📅 Jan 2026</div></div>
           </div>
 
           <div class="video-card-full filterable-item" data-category="product" onclick="playVideo(this.querySelector('.v-title').textContent)">
             <div class="v-thumb" style="background:linear-gradient(135deg,#2e1e3b,#1a0d28);">🚀<span class="v-play">▶</span><span class="v-dur">5:30</span><div class="v-overlay"></div></div>
-            <div class="v-body"><div class="v-cat">New Product</div><div class="v-title">4D Motion Theater System — Complete Install & Demo Reel</div><div class="v-meta">📅 Mar 2026 · 👁 9,700 views</div></div>
+            <div class="v-body"><div class="v-cat">New Product</div><div class="v-title">4D Motion Theater System — Complete Install & Demo Reel</div><div class="v-meta">📅 Mar 2026</div></div>
           </div>
 
         </div>
         <div class="view-all-wrap fade-in" style="margin-top:32px;">
-          <a href="#" class="btn btn-outline">Load More Videos →</a>
+          <span class="coming-soon-note">🎬 More videos coming soon — this is a preview collection.</span>
         </div>
       </div>
 
       <!-- Playlist sidebar -->
       <div>
         <div class="playlist-panel fade-in">
-          <div class="playlist-header">📋 Up Next — GTI 2026 Playlist</div>
+          <div class="playlist-header">📋 Up Next — Preview Playlist</div>
           <div class="playlist-item active">
             <div class="pl-thumb" style="background:linear-gradient(135deg,#1a2540,#0d1530);">🎪<span class="pl-dur">18:42</span></div>
-            <div class="pl-info"><div class="pl-title">GTI 2025 Full Exhibition Walkthrough</div><div class="pl-meta">Show Coverage · 48K views</div></div>
+            <div class="pl-info"><div class="pl-title">GTI 2025 Full Exhibition Walkthrough</div><div class="pl-meta">Show Coverage</div></div>
           </div>
           <div class="playlist-item" onclick="this.classList.toggle('active')">
             <div class="pl-thumb" style="background:linear-gradient(135deg,#1e3a5f,#0d1f3c);">🥽<span class="pl-dur">6:18</span></div>
-            <div class="pl-info"><div class="pl-title">Free-Roam VR Arena Inside Look</div><div class="pl-meta">Product Review · 32K views</div></div>
+            <div class="pl-info"><div class="pl-title">Free-Roam VR Arena Inside Look</div><div class="pl-meta">Product Review</div></div>
           </div>
           <div class="playlist-item" onclick="this.classList.toggle('active')">
             <div class="pl-thumb" style="background:linear-gradient(135deg,#3b1e1e,#200d0d);">🎙️<span class="pl-dur">22:15</span></div>
-            <div class="pl-info"><div class="pl-title">IAAPA CEO Interview: Future of Attractions</div><div class="pl-meta">Interview · 19.8K views</div></div>
+            <div class="pl-info"><div class="pl-title">IAAPA CEO Interview: Future of Attractions</div><div class="pl-meta">Interview</div></div>
           </div>
           <div class="playlist-item" onclick="this.classList.toggle('active')">
             <div class="pl-thumb" style="background:linear-gradient(135deg,#1e2e3b,#0d1825);">🌍<span class="pl-dur">9:40</span></div>
-            <div class="pl-info"><div class="pl-title">EAG London 2025 Highlights</div><div class="pl-meta">Show Coverage · 22.3K views</div></div>
+            <div class="pl-info"><div class="pl-title">EAG London 2025 Highlights</div><div class="pl-meta">Show Coverage</div></div>
           </div>
           <div class="playlist-item" onclick="this.classList.toggle('active')">
             <div class="pl-thumb" style="background:linear-gradient(135deg,#3b2b1e,#1a1208);">🎠<span class="pl-dur">4:55</span></div>
-            <div class="pl-info"><div class="pl-title">2026 Luxury Carousel Factory Tour</div><div class="pl-meta">New Product · 15.6K views</div></div>
+            <div class="pl-info"><div class="pl-title">2026 Luxury Carousel Factory Tour</div><div class="pl-meta">New Product</div></div>
           </div>
           <div class="playlist-item" onclick="this.classList.toggle('active')">
             <div class="pl-thumb" style="background:linear-gradient(135deg,#1e2e3b,#2a1a40);">🎤<span class="pl-dur">14:08</span></div>
-            <div class="pl-info"><div class="pl-title">Bandai Namco VP 2026 Strategy Talk</div><div class="pl-meta">Interview · 12.9K views</div></div>
+            <div class="pl-info"><div class="pl-title">Bandai Namco VP 2026 Strategy Talk</div><div class="pl-meta">Interview</div></div>
           </div>
           <div class="playlist-item" onclick="this.classList.toggle('active')">
             <div class="pl-thumb" style="background:linear-gradient(135deg,#0d2010,#1a3520);">🎢<span class="pl-dur">12:30</span></div>
-            <div class="pl-info"><div class="pl-title">Dubai Mega FEC — Behind the Scenes</div><div class="pl-meta">Company Feature · 27.4K views</div></div>
+            <div class="pl-info"><div class="pl-title">Dubai Mega FEC — Behind the Scenes</div><div class="pl-meta">Company Feature</div></div>
           </div>
         </div>
 
@@ -306,11 +309,11 @@
           <div style="font-size:2rem;margin-bottom:10px;">🔔</div>
           <h4 style="color:#fff;font-size:.95rem;margin-bottom:8px;">Never Miss a Video</h4>
           <p style="color:var(--text-secondary);font-size:.8rem;margin-bottom:16px;line-height:1.6;">Get notified when new exhibition coverage and product videos go live.</p>
-          <form onsubmit="return false;" style="display:flex;flex-direction:column;gap:8px;">
+          <form onsubmit="event.preventDefault(); document.getElementById('subStatus').textContent='🔔 Subscriptions coming soon — no backend connected yet.'; return false;" style="display:flex;flex-direction:column;gap:8px;">
             <input type="email" placeholder="your@email.com" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 13px;color:#e2e8f0;font-size:.85rem;outline:none;width:100%;font-family:inherit;"/>
             <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Subscribe Free</button>
           </form>
-          <p style="color:var(--text-secondary);font-size:.72rem;margin-top:10px;">Join 28,000+ subscribers · No spam</p>
+          <p id="subStatus" style="color:var(--text-secondary);font-size:.72rem;margin-top:10px;">Preview list · No backend connected yet</p>
         </div>
       </div>
     </div>
@@ -324,7 +327,7 @@
     <div style="aspect-ratio:16/9;background:linear-gradient(135deg,#0d1530,#1a2540);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;border:1px solid rgba(201,162,39,.2);">
       <div style="font-size:4rem;">🎬</div>
       <div id="videoModalTitle" style="color:#fff;font-size:1.1rem;font-weight:600;text-align:center;max-width:600px;padding:0 20px;"></div>
-      <div style="color:var(--text-secondary);font-size:.85rem;">Video player coming soon — connect your video hosting (YouTube / Vimeo / self-hosted)</div>
+      <div style="color:var(--text-secondary);font-size:.85rem;">This is a preview — video hosting (YouTube / Vimeo / self-hosted) is not connected yet. Add real video URLs to enable playback.</div>
     </div>
   </div>
 </div>
