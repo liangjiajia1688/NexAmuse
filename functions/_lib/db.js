@@ -26,6 +26,13 @@ export function now() {
   return Date.now();
 }
 
+// Resolve the company a user owns (membership linkage is companies.owner_id).
+// Ordered by id DESC so the most recently created company wins when a user
+// happens to own more than one (keeps the panel deterministic).
+export async function getMyCompany(env, userId) {
+  return env.DB.prepare('SELECT * FROM companies WHERE owner_id=? ORDER BY id DESC').bind(userId).first();
+}
+
 // Convert a D1 row (object) — no transformation needed, kept for symmetry.
 export function parseRow(row) {
   return row;

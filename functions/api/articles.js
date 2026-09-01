@@ -9,9 +9,14 @@ export async function onRequest(context) {
   if (request.method === 'GET') {
     const url = new URL(request.url);
     const cat = url.searchParams.get('cat');
+    const companyId = url.searchParams.get('company_id');
     const limit = parseInt(url.searchParams.get('limit') || '20', 10);
     let rows;
-    if (cat) {
+    if (companyId) {
+      rows = await env.DB.prepare(
+        'SELECT id,title,excerpt,category,cover,author,published_at,views FROM articles WHERE status=? AND company_id=? ORDER BY published_at DESC LIMIT ?'
+      ).bind('published', companyId, limit).all();
+    } else if (cat) {
       rows = await env.DB.prepare(
         'SELECT id,title,excerpt,category,cover,author,published_at,views FROM articles WHERE status=? AND category=? ORDER BY published_at DESC LIMIT ?'
       ).bind('published', cat, limit).all();

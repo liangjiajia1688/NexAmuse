@@ -67,6 +67,16 @@ export async function onRequest(context) {
       });
     }
 
+    // Public: threads authored by a specific user (company homepage "Forum Posts" tab).
+    const uidParam = url.searchParams.get('user_id');
+    if (uidParam) {
+      const uid = parseInt(uidParam, 10);
+      const rows = await env.DB.prepare(
+        'SELECT t.id, t.title, t.content, t.username, t.user_level, t.views, t.replies, t.pinned, t.created_at, s.name AS section FROM forum_threads t LEFT JOIN forum_sections s ON t.section_id = s.id WHERE t.user_id=? ORDER BY t.created_at DESC LIMIT 20'
+      ).bind(uid).all();
+      return json({ ok: true, threads: rows.results || [] });
+    }
+
     const tCount = await env.DB.prepare('SELECT COUNT(*) c FROM forum_threads').first();
     const rCount = await env.DB.prepare('SELECT COUNT(*) c FROM forum_replies').first();
     const uCount = await env.DB.prepare("SELECT COUNT(*) c FROM users WHERE role='user'").first();

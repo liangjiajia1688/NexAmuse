@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Company Dashboard — NexAmuse Global</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<style>
+  body{background:var(--bg);}
+  .dash{display:flex;min-height:100vh;}
+  .dash-side{width:240px;flex-shrink:0;background:#0c1222;border-right:1px solid var(--border);padding:22px 14px;position:sticky;top:0;height:100vh;overflow:auto;}
+  .dash-brand{display:flex;align-items:center;gap:10px;padding:6px 10px 18px;border-bottom:1px solid var(--border);margin-bottom:14px;}
+  .dash-brand .logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a;font-weight:900;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;}
+  .dash-brand b{color:#fff;font-family:'Playfair Display',serif;font-size:1.05rem;}
+  .dash-nav a{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:10px;color:var(--text-secondary);text-decoration:none;font-size:.92rem;font-weight:500;margin-bottom:4px;transition:.15s;cursor:pointer;}
+  .dash-nav a:hover{background:rgba(255,255,255,.05);color:#e2e8f0;}
+  .dash-nav a.active{background:rgba(201,162,39,.14);color:#f5d06e;}
+  .dash-nav a .ic{width:20px;text-align:center;}
+  .dash-main{flex:1;padding:30px 36px;max-width:1100px;}
+  .dash-h{font-family:'Playfair Display',serif;color:#fff;font-size:1.7rem;margin-bottom:4px;}
+  .dash-sub{color:var(--text-secondary);font-size:.9rem;margin-bottom:24px;}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:28px;}
+  .stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px;}
+  .stat-card .n{font-size:1.9rem;font-weight:700;color:#fff;font-family:'Playfair Display',serif;}
+  .stat-card .l{font-size:.78rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;}
+  .panel{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:22px;}
+  .panel h3{color:#fff;font-size:1.15rem;margin:0 0 16px;display:flex;align-items:center;justify-content:space-between;}
+  .section{display:none;}
+  .section.active{display:block;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:.8rem;color:var(--text-secondary);margin-bottom:6px;}
+  .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 12px;background:#0a0e1a;border:1px solid var(--border);border-radius:9px;color:#fff;font-size:.9rem;font-family:inherit;}
+  .form-group textarea{min-height:90px;resize:vertical;}
+  .btn{cursor:pointer;border:none;border-radius:9px;padding:10px 18px;font-weight:600;font-size:.9rem;font-family:inherit;}
+  .btn-primary{background:linear-gradient(135deg,#c9a227,#f5d06e);color:#0a0e1a;}
+  .btn-ghost{background:rgba(255,255,255,.06);color:#e2e8f0;border:1px solid var(--border);}
+  .btn-sm{padding:7px 12px;font-size:.82rem;}
+  .btn-danger{background:rgba(248,113,113,.14);color:#f87171;border:1px solid rgba(248,113,113,.3);}
+  .row-list{display:flex;flex-direction:column;gap:10px;}
+  .row-item{display:flex;align-items:center;gap:14px;padding:12px 14px;background:#0a0e1a;border:1px solid var(--border);border-radius:11px;}
+  .row-item .thumb{width:54px;height:54px;border-radius:8px;background:var(--secondary);background-size:cover;background-position:center;flex-shrink:0;}
+  .row-item .info{flex:1;min-width:0;}
+  .row-item .info b{color:#fff;font-size:.95rem;display:block;}
+  .row-item .info span{color:var(--text-secondary);font-size:.8rem;}
+  .row-item .acts{display:flex;gap:8px;flex-shrink:0;}
+  .empty{padding:30px;text-align:center;color:var(--text-secondary);}
+  .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:600;}
+  .pill-pub{background:rgba(34,197,94,.16);color:#4ade80;}
+  .pill-pend{background:rgba(245,208,110,.16);color:#f5d06e;}
+  .pill-draft{background:rgba(148,163,184,.16);color:#94a3b8;}
+  .imp-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .imp-tabs button{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-secondary);padding:8px 14px;border-radius:9px;cursor:pointer;font-size:.85rem;font-family:inherit;}
+  .imp-tabs button.active{background:rgba(201,162,39,.16);color:#f5d06e;border-color:rgba(201,162,39,.3);}
+  .imp-pane{display:none;}
+  .imp-pane.active{display:block;}
+  .prev-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.82rem;}
+  .prev-table th,.prev-table td{border:1px solid var(--border);padding:7px 9px;text-align:left;color:#e2e8f0;}
+  .prev-table th{background:#0a0e1a;color:var(--text-secondary);font-weight:600;}
+  .progress{height:8px;background:#0a0e1a;border-radius:6px;overflow:hidden;margin-top:12px;border:1px solid var(--border);}
+  .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c9a227,#f5d06e);transition:.3s;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1208;border:1px solid rgba(201,162,39,.4);color:#f5d06e;padding:12px 20px;border-radius:10px;font-size:.9rem;z-index:99;opacity:0;transition:.3s;pointer-events:none;}
+  .toast.show{opacity:1;}
+  .modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:90;padding:20px;}
+  .modal-mask.show{display:flex;}
+  .modal{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:26px;width:100%;max-width:560px;max-height:90vh;overflow:auto;}
+  @media(max-width:760px){.dash-side{display:none}.form-row{grid-template-columns:1fr}.dash-main{padding:20px}}
+</style>
+</head>
+<body>
+<div class="dash">
+  <aside class="dash-side">
+    <div class="dash-brand"><div class="logo-icon">N</div><b>NexAmuse</b></div>
+    <nav class="dash-nav" id="nav">
+      <a class="active" data-tab="dashboard"><span class="ic">📊</span> Dashboard</a>
+      <a data-tab="company"><span class="ic">🏢</span> Company</a>
+      <a data-tab="products"><span class="ic">📦</span> Products</a>
+      <a data-tab="articles"><span class="ic">📝</span> Articles</a>
+      <a data-tab="forum"><span class="ic">💬</span> Forum Posts</a>
+    </nav>
+    <div style="margin-top:auto;padding:10px;">
+      <a href="company.html?slug=" id="viewPublic" class="btn btn-ghost btn-sm" style="width:100%;text-align:center;margin-bottom:8px;">🌐 View Public Page</a>
+      <a href="#" onclick="frontendLogout();return false;" class="btn btn-danger btn-sm" style="width:100%;text-align:center;">🚪 Sign Out</a>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <!-- DASHBOARD -->
+    <section class="section active" id="sec-dashboard">
+      <div class="dash-h">Company Dashboard</div>
+      <div class="dash-sub" id="dashSub">Welcome back. Here is your storefront at a glance.</div>
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="panel">
+        <h3>Quick actions</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="goTab('products')">+ Add Product</button>
+          <button class="btn btn-ghost btn-sm" onclick="goTab('articles')">+ Write Article</button>
+          <button class="btn btn-ghost btn-sm" onclick="goTab('company')">Edit Company</button>
+          <button class="btn btn-ghost btn-sm" onclick="goTab('products')">⬆️ Bulk Import</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPANY -->
+    <section class="section" id="sec-company">
+      <div class="dash-h">Company Profile</div>
+      <div class="dash-sub">Information shown on your public company page.</div>
+      <div class="panel">
+        <form id="companyForm">
+          <div class="form-row">
+            <div class="form-group"><label>Company Name *</label><input id="c_name" required/></div>
+            <div class="form-group"><label>Primary Category *</label>
+              <select id="c_primary_category">
+                <option>Arcade Machines</option><option>VR / XR Attractions</option><option>Kids & Family Rides</option>
+                <option>Redemption Games</option><option>Simulation Rides</option><option>Outdoor Attractions</option>
+                <option>Water Park Equipment</option><option>Payment Technology</option><option>Accessories & Parts</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Country</label><input id="c_country"/></div>
+            <div class="form-group"><label>City</label><input id="c_city"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Contact Name</label><input id="c_contact_name"/></div>
+            <div class="form-group"><label>Business Email</label><input id="c_email" type="email"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Phone / WhatsApp</label><input id="c_phone"/></div>
+            <div class="form-group"><label>Website</label><input id="c_website" type="url"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Logo URL</label><input id="c_logo" placeholder="https://..."/></div>
+            <div class="form-group"><label>Banner URL</label><input id="c_banner" placeholder="https://... (hero image)"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Established Year</label><input id="c_established_year" type="number" min="1900" max="2099"/></div>
+            <div class="form-group"><label>Company Size</label>
+              <select id="c_company_size"><option></option><option>1-10</option><option>11-50</option><option>51-200</option><option>201-500</option><option>500+</option></select>
+            </div>
+          </div>
+          <div class="form-group"><label>Certifications (comma separated)</label><input id="c_certifications" placeholder="CE, ISO 9001"/></div>
+          <div class="form-group"><label>Description</label><textarea id="c_description"></textarea></div>
+          <button type="submit" class="btn btn-primary" id="cSave">Save Company</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section class="section" id="sec-products">
+      <div class="dash-h">Products</div>
+      <div class="dash-sub">Manage your catalogue. Bulk import supports CSV, AI text, link and images.</div>
+      <div class="panel">
+        <h3>Product list <button class="btn btn-primary btn-sm" onclick="openProductModal()">+ Add Product</button></h3>
+        <div class="row-list" id="prodList"></div>
+      </div>
+      <div class="panel">
+        <h3>⬆️ Bulk Import</h3>
+        <div class="imp-tabs">
+          <button class="active" data-imp="csv">📄 CSV / Excel</button>
+          <button data-imp="ai">🤖 AI Text</button>
+          <button data-imp="link">🔗 Link</button>
+          <button data-imp="img">🖼️ Images</button>
+        </div>
+        <div class="imp-pane active" id="imp-csv">
+          <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" class="btn btn-ghost btn-sm"/>
+          <button class="btn btn-ghost btn-sm" onclick="downloadTemplate()">⬇️ Download Template</button>
+          <div id="csvMap"></div>
+        </div>
+        <div class="imp-pane" id="imp-ai">
+          <textarea id="aiText" placeholder="Paste supplier text, e.g. VR shooting 2-seat 220V 1500W MOQ1 FOB Shenzhen $8500"></textarea>
+          <button class="btn btn-primary btn-sm" onclick="aiParse()">Structure with AI</button>
+        </div>
+        <div class="imp-pane" id="imp-link">
+          <input id="linkUrl" placeholder="https://shopify-store.com/products" style="width:100%;padding:10px;background:#0a0e1a;border:1px solid var(--border);border-radius:9px;color:#fff;"/>
+          <button class="btn btn-primary btn-sm" onclick="linkFetch()" style="margin-top:10px;">Fetch Products</button>
+        </div>
+        <div class="imp-pane" id="imp-img">
+          <input type="file" id="imgFiles" accept="image/*" multiple class="btn btn-ghost btn-sm"/>
+          <p style="color:var(--text-secondary);font-size:.82rem;margin-top:8px;">Each image becomes a draft product named after the file.</p>
+        </div>
+        <div id="impPreview"></div>
+        <div class="progress" id="impProgress" style="display:none;"><i></i></div>
+      </div>
+    </section>
+
+    <!-- ARTICLES -->
+    <section class="section" id="sec-articles">
+      <div class="dash-h">Articles</div>
+      <div class="dash-sub">Buyer-guide and company news shown on your public page.</div>
+      <div class="panel">
+        <h3>My Articles <button class="btn btn-primary btn-sm" onclick="openArticleModal()">+ New Article</button></h3>
+        <div class="row-list" id="artList"></div>
+      </div>
+    </section>
+
+    <!-- FORUM -->
+    <section class="section" id="sec-forum">
+      <div class="dash-h">Forum Posts</div>
+      <div class="dash-sub">Threads you published across the community.</div>
+      <div class="panel">
+        <h3>My Threads</h3>
+        <div class="row-list" id="forumList"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- product modal -->
+<div class="modal-mask" id="prodModal"><div class="modal">
+  <h3 style="color:#fff;margin-top:0;" id="prodModalTitle">Add Product</h3>
+  <div class="form-group"><label>Name *</label><input id="p_name"/></div>
+  <div class="form-row">
+    <div class="form-group"><label>Category</label><select id="p_category">
+      <option>Arcade Machines</option><option>VR / XR Attractions</option><option>Kids & Family Rides</option>
+      <option>Redemption Games</option><option>Simulation Rides</option><option>Outdoor Attractions</option>
+      <option>Water Park Equipment</option><option>Payment Technology</option><option>Accessories & Parts</option></select></div>
+    <div class="form-group"><label>Price</label><input id="p_price" placeholder="US$8500"/></div>
+  </div>
+  <div class="form-group"><label>Short Description</label><input id="p_short"/></div>
+  <div class="form-group"><label>Description</label><textarea id="p_desc"></textarea></div>
+  <div class="form-group"><label>Image URL (optional)</label><input id="p_image" placeholder="https://..."/></div>
+  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
+    <button class="btn btn-ghost btn-sm" onclick="closeModal('prodModal')">Cancel</button>
+    <button class="btn btn-primary btn-sm" id="pSave" onclick="saveProduct()">Save</button>
+  </div>
+</div></div>
+
+<!-- article modal -->
+<div class="modal-mask" id="artModal"><div class="modal">
+  <h3 style="color:#fff;margin-top:0;" id="artModalTitle">New Article</h3>
+  <div class="form-group"><label>Title *</label><input id="a_title"/></div>
+  <div class="form-row">
+    <div class="form-group"><label>Category</label><select id="a_category">
+      <option>Company News</option><option>Industry Dynamics</option><option>New Product Releases</option>
+      <option>Buyer Guide</option><option>Executive Interviews</option><option>Regulations & Compliance</option></select></div>
+    <div class="form-group"><label>Cover URL</label><input id="a_cover" placeholder="https://..."/></div>
+  </div>
+  <div class="form-group"><label>Excerpt</label><input id="a_excerpt"/></div>
+  <div class="form-group"><label>Content *</label><textarea id="a_content" style="min-height:140px;"></textarea></div>
+  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
+    <button class="btn btn-ghost btn-sm" onclick="closeModal('artModal')">Cancel</button>
+    <button class="btn btn-primary btn-sm" id="aSave" onclick="saveArticle()">Publish</button>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="../assets/js/main.js"></script>
+<script>
+const S = JSON.parse(localStorage.getItem('nexamuse_user')||'null');
+const TOKEN = S && S.token;
+if(!TOKEN){ location.href='login.html?next=company-dashboard.html'; }
+const api=(p,opt={})=>fetch(p,{...opt,headers:{'Content-Type':'application/json',Authorization:'Bearer '+TOKEN,...(opt.headers||{})}}).then(r=>r.json());
+function toast(m,t='success'){const el=document.getElementById('toast');el.textContent=m;el.className='toast show';setTimeout(()=>el.className='toast',2600);}
+function goTab(t){document.querySelectorAll('.dash-nav a').forEach(a=>a.classList.toggle('active',a.dataset.tab===t));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById('sec-'+t).classList.add('active');if(t==='dashboard')loadDash();if(t==='company')loadCompany();if(t==='products')loadProducts();if(t==='articles')loadArticles();if(t==='forum')loadForum();}
+document.getElementById('nav').addEventListener('click',e=>{const a=e.target.closest('a');if(a)goTab(a.dataset.tab);});
+document.querySelectorAll('.imp-tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.imp-tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.imp-pane').forEach(p=>p.classList.remove('active'));document.getElementById('imp-'+b.dataset.imp).classList.add('active');});
+const CATEGORIES=['Arcade Machines','VR / XR Attractions','Kids & Family Rides','Redemption Games','Simulation Rides','Outdoor Attractions','Water Park Equipment','Payment Technology','Accessories & Parts'];
+
+// ---- dashboard ----
+async function loadDash(){
+  const c=await api('/api/companies?mine=1');
+  const p=await api('/api/company-products');
+  const a=await api('/api/member/articles');
+  const f=await api('/api/member/forum-posts');
+  const comp=c.company||{};
+  document.getElementById('viewPublic').href='company.html?slug='+encodeURIComponent(comp.slug||'');
+  document.getElementById('dashSub').textContent=comp.name?('Managing '+comp.name+' — '+ (comp.products_count||0)+' products live.'):'Complete your company profile to go live.';
+  document.getElementById('statGrid').innerHTML=[
+    ['Products',(p.products||[]).length],['Articles',(a.articles||[]).length],
+    ['Forum Posts',(f.threads||[]).length],['Company Status',comp.status||'—']
+  ].map(([l,n])=>`<div class="stat-card"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+}
+
+// ---- company ----
+async function loadCompany(){
+  const c=await api('/api/companies?mine=1');
+  const comp=c.company;
+  if(!comp){toast('Create a company first','error');return;}
+  const set=(id,v)=>document.getElementById(id).value=v||'';
+  set('c_name',comp.name);set('c_primary_category',comp.primary_category);set('c_country',comp.country);set('c_city',comp.city);
+  set('c_contact_name',comp.contact_name);set('c_email',comp.email);set('c_phone',comp.phone);set('c_website',comp.website);
+  set('c_logo',comp.logo);set('c_banner',comp.banner);set('c_established_year',comp.established_year);set('c_company_size',comp.company_size);
+  set('c_certifications',comp.certifications);set('c_description',comp.description);
+}
+document.getElementById('companyForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const payload={name:c_name.value,primary_category:c_primary_category.value,country:c_country.value,city:c_city.value,
+    contact_name:c_contact_name.value,email:c_email.value,phone:c_phone.value,website:c_website.value,
+    logo:c_logo.value,banner:c_banner.value,established_year:c_established_year.value,company_size:c_company_size.value,
+    certifications:c_certifications.value,description:c_description.value};
+  const r=await api('/api/companies',{method:'POST',body:JSON.stringify(payload)});
+  toast(r.ok!==false?'Company saved':'Save failed','success');
+});
+
+// ---- products ----
+let editingPid=null;
+async function loadProducts(){
+  const p=await api('/api/company-products');
+  const list=p.products||[];
+  document.getElementById('prodList').innerHTML=list.length?list.map(pr=>`
+    <div class="row-item">
+      <div class="thumb" style="${pr.image?`background-image:url('${pr.image}')`:''}"></div>
+      <div class="info"><b>${esc(pr.name)}</b><span>${esc(pr.category||'')} · ${esc(pr.price||'')} · <span class="pill ${pr.status==='active'?'pill-pub':(pr.status==='pending'?'pill-pend':'pill-draft')}">${pr.status}</span></span></div>
+      <div class="acts">
+        <button class="btn btn-ghost btn-sm" onclick="editProduct(${pr.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="delProduct(${pr.id})">Delete</button>
+      </div>
+    </div>`).join(''):'<div class="empty">No products yet. Add one or use Bulk Import below.</div>';
+}
+function openProductModal(){editingPid=null;document.getElementById('prodModalTitle').textContent='Add Product';['p_name','p_short','p_desc','p_image'].forEach(i=>document.getElementById(i).value='');document.getElementById('prodModal').classList.add('show');}
+async function editProduct(id){const p=await api('/api/company-products');const pr=(p.products||[]).find(x=>x.id===id);if(!pr)return;editingPid=id;document.getElementById('prodModalTitle').textContent='Edit Product';p_name.value=pr.name||'';p_category.value=pr.category||'';p_price.value=pr.price||'';p_short.value=pr.short_description||'';p_desc.value=pr.description||'';p_image.value=pr.image||'';document.getElementById('prodModal').classList.add('show');}
+async function saveProduct(){
+  const body={name:p_name.value.trim(),category:p_category.value,price:p_price.value.trim(),short_description:p_short.value.trim(),description:p_desc.value.trim(),image:p_image.value.trim()};
+  if(!body.name){toast('Name required','error');return;}
+  let r;
+  if(editingPid){r=await api('/api/company-products?id='+editingPid,{method:'PUT',body:JSON.stringify(body)});}
+  else{r=await api('/api/company-products',{method:'POST',body:JSON.stringify(body)});}
+  if(r.ok!==false){closeModal('prodModal');toast('Product saved');loadProducts();loadDash();}else toast(r.error||'Failed','error');
+}
+async function delProduct(id){if(!confirm('Delete this product?'))return;const r=await api('/api/company-products?id='+id,{method:'DELETE'});toast(r.ok!==false?'Deleted':'Failed');loadProducts();loadDash();}
+
+// ---- articles ----
+let editingAid=null;
+async function loadArticles(){
+  const a=await api('/api/member/articles');
+  const list=a.articles||[];
+  document.getElementById('artList').innerHTML=list.length?list.map(ar=>`
+    <div class="row-item">
+      <div class="thumb" style="${ar.cover?`background-image:url('${ar.cover}')`:''}"></div>
+      <div class="info"><b>${esc(ar.title)}</b><span>${esc(ar.category||'')} · <span class="pill ${ar.status==='published'?'pill-pub':'pill-draft'}">${ar.status}</span> · ${ar.views||0} views</span></div>
+      <div class="acts">
+        <button class="btn btn-ghost btn-sm" onclick="editArticle(${ar.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="delArticle(${ar.id})">Delete</button>
+      </div>
+    </div>`).join(''):'<div class="empty">No articles yet.</div>';
+}
+function openArticleModal(){editingAid=null;document.getElementById('artModalTitle').textContent='New Article';['a_title','a_excerpt','a_content','a_cover'].forEach(i=>document.getElementById(i).value='');document.getElementById('artModal').classList.add('show');}
+async function editArticle(id){const a=await api('/api/member/articles');const ar=(a.articles||[]).find(x=>x.id===id);if(!ar)return;editingAid=id;document.getElementById('artModalTitle').textContent='Edit Article';a_title.value=ar.title||'';a_category.value=ar.category||'';a_cover.value=ar.cover||'';a_excerpt.value=ar.excerpt||'';a_content.value=ar.content||'';document.getElementById('artModal').classList.add('show');}
+async function saveArticle(){
+  const body={title:a_title.value.trim(),category:a_category.value,cover:a_cover.value.trim(),excerpt:a_excerpt.value.trim(),content:a_content.value.trim()};
+  if(!body.title||body.content.length<10){toast('Title & content required','error');return;}
+  let r;
+  if(editingAid){r=await api('/api/member/articles?id='+editingAid,{method:'PUT',body:JSON.stringify(body)});}
+  else{r=await api('/api/member/articles',{method:'POST',body:JSON.stringify(body)});}
+  if(r.ok!==false){closeModal('artModal');toast('Article saved');loadArticles();loadDash();}else toast(r.error||'Failed','error');
+}
+async function delArticle(id){if(!confirm('Delete this article?'))return;const r=await api('/api/member/articles?id='+id,{method:'DELETE'});toast(r.ok!==false?'Deleted':'Failed');loadArticles();loadDash();}
+
+// ---- forum ----
+async function loadForum(){
+  const f=await api('/api/member/forum-posts');
+  const list=f.threads||[];
+  document.getElementById('forumList').innerHTML=list.length?list.map(t=>`
+    <div class="row-item">
+      <div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.4rem;">💬</div>
+      <div class="info"><b>${esc(t.title)}</b><span>${esc(t.section||'')} · ${t.replies||0} replies · ${t.views||0} views</span></div>
+      <div class="acts">
+        <button class="btn btn-ghost btn-sm" onclick="editThread(${t.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="delThread(${t.id})">Delete</button>
+      </div>
+    </div>`).join(''):'<div class="empty">No forum posts yet.</div>';
+}
+async function editThread(id){const title=prompt('Edit title:');if(title===null)return;const content=prompt('Edit content:');if(content===null)return;const r=await api('/api/member/forum-posts?id='+id,{method:'PUT',body:JSON.stringify({title,content})});toast(r.ok!==false?'Updated':'Failed');loadForum();}
+async function delThread(id){if(!confirm('Delete this thread and its replies?'))return;const r=await api('/api/member/forum-posts?id='+id,{method:'DELETE'});toast(r.ok!==false?'Deleted':'Failed');loadForum();}
+
+// ---- bulk import ----
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function downloadTemplate(){
+  const head=['name','category','short_description','description','price','moq','image','tags'];
+  const rows=[['Claw Machine X1','Redemption Games','Mini claw machine','描述','US$850','1','https://...','claw'],['VR Racing','VR / XR Attractions','VR racing sim','描述','US$1200','1','https://...','vr']];
+  const csv=[head.join(',')].concat(rows.map(r=>r.map(x=>`"${x}"`).join(','))).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nexamuse-products-template.csv';a.click();
+}
+
+let PREVIEW=[];
+document.getElementById('csvFile').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1});
+      buildCsvMap(rows);
+    }catch(err){toast('Could not parse file','error');}
+  };
+  reader.readAsArrayBuffer(f);
+});
+function buildCsvMap(rows){
+  if(!rows.length){toast('Empty file','error');return;}
+  const headers=rows[0].map(h=>String(h||'').trim());
+  const data=rows.slice(1).filter(r=>r.some(c=>c!==''&&c!=null));
+  const fields=[{k:'name',l:'Name *'},{k:'category',l:'Category'},{k:'short_description',l:'Short Desc'},{k:'description',l:'Description'},{k:'price',l:'Price'},{k:'moq',l:'MOQ'},{k:'image',l:'Image URL'},{k:'tags',l:'Tags'}];
+  const guessOf=h=>{const l=h.toLowerCase();if(l.includes('name'))return'name';if(l.includes('categ'))return'category';if(l.includes('desc'))return'description';if(l.includes('short'))return'short_description';if(l.includes('price'))return'price';if(l.includes('moq'))return'moq';if(l.includes('image')||l.includes('img')||l.includes('photo'))return'image';if(l.includes('tag'))return'tags';return'';};
+  const opts='<option value="">— ignore —</option>'+fields.map(f=>'<option value="'+f.k+'">'+f.l+'</option>').join('');
+  document.getElementById('csvMap').innerHTML='<p style="color:var(--text-secondary);font-size:.82rem;">Map columns:</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+headers.map((h,i)=>{const g=guessOf(h);return `<div style="display:flex;gap:6px;align-items:center;font-size:.8rem;color:var(--text-secondary);"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(h)}</span><select data-col="${i}" style="background:#0a0e1a;color:#fff;border:1px solid var(--border);border-radius:6px;padding:4px;">${opts.replace('value="'+g+'"','value="'+g+'" selected')}</select></div>`;}).join('')+'</div><button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="commitCsv()">Import '+data.length+' rows</button>';
+  window._csvData=data;
+}
+async function commitCsv(){
+  const map={};document.querySelectorAll('#csvMap select').forEach(s=>{if(s.value)map[s.dataset.col]=s.value;});
+  const prods=window._csvData.map(r=>{const o={};for(const c in map){o[map[c]]=String(r[c]||'').trim();}return o;}).filter(p=>p.name);
+  if(!prods.length){toast('No named rows','error');return;}
+  await runCommit(prods);
+}
+
+async function aiParse(){
+  const text=document.getElementById('aiText').value.trim();if(!text){toast('Paste some text','error');return;}
+  const r=await api('/api/member/product-import',{method:'POST',body:JSON.stringify({action:'parse-text',text})});
+  if(r.ok===false){toast(r.error||'AI failed','error');return;}
+  PREVIEW=r.products||[];renderPreview();
+}
+async function linkFetch(){
+  const url=document.getElementById('linkUrl').value.trim();if(!url){toast('Enter a URL','error');return;}
+  const r=await api('/api/member/product-import',{method:'POST',body:JSON.stringify({action:'fetch-link',url})});
+  if(r.ok===false){toast(r.error||'Failed','error');return;}
+  if(!r.supported){toast(r.reason||'Site not supported','error');return;}
+  PREVIEW=r.products||[];renderPreview();
+}
+document.getElementById('imgFiles').addEventListener('change',e=>{
+  const files=[...e.target.files];if(!files.length)return;
+  PREVIEW=files.map(f=>({name:f.name.replace(/\.[^.]+$/,''),category:'',description:'',price:'',moq:'',images:[URL.createObjectURL(f)],tags:''}));
+  renderPreview();
+});
+function renderPreview(){
+  if(!PREVIEW.length){document.getElementById('impPreview').innerHTML='';return;}
+  document.getElementById('impPreview').innerHTML=`<p style="color:var(--text-secondary);font-size:.85rem;">${PREVIEW.length} product(s) ready. Review then import:</p>
+   <table class="prev-table"><tr><th>Name</th><th>Category</th><th>Price</th><th>Images</th></tr>
+   ${PREVIEW.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.category||'—')}</td><td>${esc(p.price||'—')}</td><td>${(p.images||[]).length}</td></tr>`).join('')}</table>
+   <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="runCommit(PREVIEW)">⬆️ Import ${PREVIEW.length} product(s)</button>`;
+}
+async function runCommit(list){
+  const prog=document.getElementById('impProgress');prog.style.display='block';prog.firstElementChild.style.width='10%';
+  let remaining=[...list];let imported=0;
+  while(remaining.length){
+    const chunk=remaining.splice(0,5);
+    const r=await api('/api/member/product-import',{method:'POST',body:JSON.stringify({action:'commit',products:chunk})});
+    if(r.ok===false){toast(r.error||'Import failed','error');break;}
+    imported+=r.imported||0;
+    prog.firstElementChild.style.width=Math.min(100,Math.round(imported/list.length*100))+'%';
+  }
+  prog.style.display='none';toast('Imported '+imported+' product(s)');PREVIEW=[];document.getElementById('impPreview').innerHTML='';loadProducts();loadDash();
+}
+
+// init
+if(location.hash && ['dashboard','company','products','articles','forum'].includes(location.hash.slice(1))){
+  goTab(location.hash.slice(1));
+} else {
+  loadDash();
+}
+</script>
+</body>
+</html>
