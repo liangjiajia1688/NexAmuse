@@ -213,7 +213,11 @@ function apiHeaders() {
   } catch (e) {}
   return headers;
 }
-const cats=['Industry News','Product Release','Exhibition','Technology','Business','Interview'];
+const _params=new URLSearchParams(location.search);
+const isMember=_params.get('member')==='1';
+const isModal=_params.get('modal')==='1';
+let cats=['Industry News','Product Release','Exhibition','Technology','Business','Interview'];
+if(isMember) cats=['Industry Dynamics','Company News','Executive Interviews','New Product Releases','Regulations & Compliance','Buyer Guide'];
 document.getElementById('catList').innerHTML=cats.map(c=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" class="cat-cb" data-cat="${c}"> ${c}</label>`).join('');
 function fmt(cmd,val){document.execCommand(cmd,false,val||null)}
 function insertLink(){const url=prompt('Enter URL:');if(url)document.execCommand('createLink',false,url)}
@@ -263,17 +267,23 @@ async function saveDraft(){
   if(!title){ showToast('Title is required to save a draft','error'); return; }
   const catCb = document.querySelector('.cat-cb:checked');
   const category = catCb ? catCb.dataset.cat : 'Industry News';
+  const base = isMember ? '/api/member/articles' : '/api/articles';
   try {
-    let r, data;
+    let r, data, url, method;
     if(currentDraftId){
-      r = await fetch('/api/articles/'+currentDraftId, { method:'PUT', headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }, body: JSON.stringify({ title, excerpt, content, category, status:'draft' }) });
-      data = await r.json().catch(()=>({}));
+      url = isMember ? base+'?id='+currentDraftId : base+'/'+currentDraftId;
+      method = 'PUT';
     } else {
-      r = await fetch('/api/articles', { method:'POST', headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }, body: JSON.stringify({ title, excerpt, content, category, status:'draft' }) });
-      data = await r.json().catch(()=>({}));
-      if(r.ok && data.id) currentDraftId = data.id;
+      url = base; method = 'POST';
     }
+    r = await fetch(url, { method, headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }, body: JSON.stringify({ title, excerpt, content, category, status:'draft' }) });
+    data = await r.json().catch(()=>({}));
+    if(r.ok && data.id) currentDraftId = data.id;
     if(!r.ok) throw new Error(data.error || 'Save failed');
+    if(isMember){
+      if(isModal){ window.parent.postMessage({type:'nexamuse:article-saved'}, '*'); return; }
+      window.location.href='../pages/company-dashboard.html#articles'; return;
+    }
     showToast('Draft saved' + (currentDraftId ? ' (#'+currentDraftId+')' : ''), 'success');
   } catch(e){ showToast('Draft save failed: ' + e.message, 'error'); }
 }
@@ -299,14 +309,19 @@ async function publishToApi(){
   if(!title){ showToast('Title is required','error'); return; }
   const catCb = document.querySelector('.cat-cb:checked');
   const category = catCb ? catCb.dataset.cat : 'Industry News';
+  const base = isMember ? '/api/member/articles' : '/api/articles';
+  const url = editingId ? (isMember ? base+'?id='+editingId : base+'/'+editingId) : base;
+  const method = editingId ? 'PUT' : 'POST';
   const btn = document.querySelector('button.btn-gold');
   try {
     if(btn){ btn.disabled = true; btn.textContent = editingId ? 'Updating…' : 'Publishing…'; }
-    const url = editingId ? '/api/articles/'+editingId : '/api/articles';
-    const method = editingId ? 'PUT' : 'POST';
     const r = await fetch(url, { method, headers: apiHeaders(), body: JSON.stringify({ title, excerpt, content, category, status:'published', author:'NexAmuse Editorial' }) });
     const data = await r.json().catch(()=>({}));
     if(!r.ok){ showToast((editingId?'Update':'Publish')+' failed: '+(data.error||r.status),'error'); return; }
+    if(isMember){
+      if(isModal){ window.parent.postMessage({type:'nexamuse:article-saved'}, '*'); return; }
+      window.location.href='../pages/company-dashboard.html#articles'; return;
+    }
     showToast(editingId ? 'Article updated successfully!' : 'Article published successfully!','success');
     setTimeout(()=>{ window.location.href='articles.html'; }, 900);
   } catch(e){ showToast((editingId?'Update':'Publish')+' error: '+e.message,'error'); }
@@ -370,10 +385,19 @@ let editingId = null;
   document.title = 'Edit Article — NexAmuse Admin';
   (async()=>{
     try {
-      const r = await fetch('/api/articles/'+id, { headers:{ 'Authorization':'Bearer '+getToken() } });
-      if(!r.ok) throw new Error('Article not found');
-      const data = await r.json();
-      const a = data.article;
+      let a;
+      if(isMember){
+        const r2 = await fetch('/api/member/articles', { headers:{ 'Authorization':'Bearer '+getToken() } });
+        if(!r2.ok) throw new Error('Article not found');
+        const d2 = await r2.json();
+        a = (d2.articles||[]).find(x=>String(x.id)===String(id));
+        if(!a) throw new Error('Article not found');
+      } else {
+        const r = await fetch('/api/articles/'+id, { headers:{ 'Authorization':'Bearer '+getToken() } });
+        if(!r.ok) throw new Error('Article not found');
+        const data = await r.json();
+        a = data.article;
+      }
       const titleInput = document.getElementById('titleInput');
       const excerptInput = document.getElementById('excerptInput');
       const editor = document.getElementById('editor');

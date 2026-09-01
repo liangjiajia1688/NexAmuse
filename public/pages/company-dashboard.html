@@ -208,42 +208,16 @@
   </main>
 </div>
 
-<!-- product modal -->
-<div class="modal-mask" id="prodModal"><div class="modal">
-  <h3 style="color:#fff;margin-top:0;" id="prodModalTitle">Add Product</h3>
-  <div class="form-group"><label>Name *</label><input id="p_name"/></div>
-  <div class="form-row">
-    <div class="form-group"><label>Category</label><select id="p_category">
-      <option>Arcade Machines</option><option>VR / XR Attractions</option><option>Kids & Family Rides</option>
-      <option>Redemption Games</option><option>Simulation Rides</option><option>Outdoor Attractions</option>
-      <option>Water Park Equipment</option><option>Payment Technology</option><option>Accessories & Parts</option></select></div>
-    <div class="form-group"><label>Price</label><input id="p_price" placeholder="US$8500"/></div>
-  </div>
-  <div class="form-group"><label>Short Description</label><input id="p_short"/></div>
-  <div class="form-group"><label>Description</label><textarea id="p_desc"></textarea></div>
-  <div class="form-group"><label>Image URL (optional)</label><input id="p_image" placeholder="https://..."/></div>
-  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
-    <button class="btn btn-ghost btn-sm" onclick="closeModal('prodModal')">Cancel</button>
-    <button class="btn btn-primary btn-sm" id="pSave" onclick="saveProduct()">Save</button>
-  </div>
+<!-- product modal (reuse original admin add page) -->
+<div class="modal-mask" id="prodModal"><div class="modal" style="max-width:1000px;width:95%">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn btn-ghost btn-sm" onclick="closeModal('prodModal')">✕ Close</button></div>
+  <iframe id="prodFrame" src="" style="width:100%;height:78vh;border:none;background:#0a0e1a;border-radius:12px"></iframe>
 </div></div>
 
-<!-- article modal -->
-<div class="modal-mask" id="artModal"><div class="modal">
-  <h3 style="color:#fff;margin-top:0;" id="artModalTitle">New Article</h3>
-  <div class="form-group"><label>Title *</label><input id="a_title"/></div>
-  <div class="form-row">
-    <div class="form-group"><label>Category</label><select id="a_category">
-      <option>Company News</option><option>Industry Dynamics</option><option>New Product Releases</option>
-      <option>Buyer Guide</option><option>Executive Interviews</option><option>Regulations & Compliance</option></select></div>
-    <div class="form-group"><label>Cover URL</label><input id="a_cover" placeholder="https://..."/></div>
-  </div>
-  <div class="form-group"><label>Excerpt</label><input id="a_excerpt"/></div>
-  <div class="form-group"><label>Content *</label><textarea id="a_content" style="min-height:140px;"></textarea></div>
-  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
-    <button class="btn btn-ghost btn-sm" onclick="closeModal('artModal')">Cancel</button>
-    <button class="btn btn-primary btn-sm" id="aSave" onclick="saveArticle()">Publish</button>
-  </div>
+<!-- article modal (reuse original admin add page) -->
+<div class="modal-mask" id="artModal"><div class="modal" style="max-width:1000px;width:95%">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn btn-ghost btn-sm" onclick="closeModal('artModal')">✕ Close</button></div>
+  <iframe id="artFrame" src="" style="width:100%;height:78vh;border:none;background:#0a0e1a;border-radius:12px"></iframe>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -257,6 +231,12 @@ const api=(p,opt={})=>fetch(p,{...opt,headers:{'Content-Type':'application/json'
 function toast(m,t='success'){const el=document.getElementById('toast');el.textContent=m;el.className='toast show';setTimeout(()=>el.className='toast',2600);}
 function goTab(t){document.querySelectorAll('.dash-nav a').forEach(a=>a.classList.toggle('active',a.dataset.tab===t));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById('sec-'+t).classList.add('active');if(t==='dashboard')loadDash();if(t==='company')loadCompany();if(t==='products')loadProducts();if(t==='articles')loadArticles();if(t==='forum')loadForum();}
 document.getElementById('nav').addEventListener('click',e=>{const a=e.target.closest('a');if(a)goTab(a.dataset.tab);});
+// Listen for saves coming from the embedded admin add pages (iframe modals)
+window.addEventListener('message',e=>{
+  if(!e.data) return;
+  if(e.data.type==='nexamuse:product-saved'){ closeModal('prodModal'); toast('Product saved'); loadProducts(); loadDash(); }
+  if(e.data.type==='nexamuse:article-saved'){ closeModal('artModal'); toast('Article saved'); loadArticles(); loadDash(); }
+});
 document.querySelectorAll('.imp-tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.imp-tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.imp-pane').forEach(p=>p.classList.remove('active'));document.getElementById('imp-'+b.dataset.imp).classList.add('active');});
 const CATEGORIES=['Arcade Machines','VR / XR Attractions','Kids & Family Rides','Redemption Games','Simulation Rides','Outdoor Attractions','Water Park Equipment','Payment Technology','Accessories & Parts'];
 
@@ -311,16 +291,8 @@ async function loadProducts(){
       </div>
     </div>`).join(''):'<div class="empty">No products yet. Add one or use Bulk Import below.</div>';
 }
-function openProductModal(){editingPid=null;document.getElementById('prodModalTitle').textContent='Add Product';['p_name','p_short','p_desc','p_image'].forEach(i=>document.getElementById(i).value='');document.getElementById('prodModal').classList.add('show');}
-async function editProduct(id){const p=await api('/api/company-products');const pr=(p.products||[]).find(x=>x.id===id);if(!pr)return;editingPid=id;document.getElementById('prodModalTitle').textContent='Edit Product';p_name.value=pr.name||'';p_category.value=pr.category||'';p_price.value=pr.price||'';p_short.value=pr.short_description||'';p_desc.value=pr.description||'';p_image.value=pr.image||'';document.getElementById('prodModal').classList.add('show');}
-async function saveProduct(){
-  const body={name:p_name.value.trim(),category:p_category.value,price:p_price.value.trim(),short_description:p_short.value.trim(),description:p_desc.value.trim(),image:p_image.value.trim()};
-  if(!body.name){toast('Name required','error');return;}
-  let r;
-  if(editingPid){r=await api('/api/company-products?id='+editingPid,{method:'PUT',body:JSON.stringify(body)});}
-  else{r=await api('/api/company-products',{method:'POST',body:JSON.stringify(body)});}
-  if(r.ok!==false){closeModal('prodModal');toast('Product saved');loadProducts();loadDash();}else toast(r.error||'Failed','error');
-}
+function openProductModal(){editingPid=null;document.getElementById('prodFrame').src='../admin/products-add.html?modal=1';document.getElementById('prodModal').classList.add('show');}
+async function editProduct(id){editingPid=id;document.getElementById('prodFrame').src='../admin/products-add.html?modal=1&id='+id;document.getElementById('prodModal').classList.add('show');}
 async function delProduct(id){if(!confirm('Delete this product?'))return;const r=await api('/api/company-products?id='+id,{method:'DELETE'});toast(r.ok!==false?'Deleted':'Failed');loadProducts();loadDash();}
 
 // ---- articles ----
@@ -338,16 +310,8 @@ async function loadArticles(){
       </div>
     </div>`).join(''):'<div class="empty">No articles yet.</div>';
 }
-function openArticleModal(){editingAid=null;document.getElementById('artModalTitle').textContent='New Article';['a_title','a_excerpt','a_content','a_cover'].forEach(i=>document.getElementById(i).value='');document.getElementById('artModal').classList.add('show');}
-async function editArticle(id){const a=await api('/api/member/articles');const ar=(a.articles||[]).find(x=>x.id===id);if(!ar)return;editingAid=id;document.getElementById('artModalTitle').textContent='Edit Article';a_title.value=ar.title||'';a_category.value=ar.category||'';a_cover.value=ar.cover||'';a_excerpt.value=ar.excerpt||'';a_content.value=ar.content||'';document.getElementById('artModal').classList.add('show');}
-async function saveArticle(){
-  const body={title:a_title.value.trim(),category:a_category.value,cover:a_cover.value.trim(),excerpt:a_excerpt.value.trim(),content:a_content.value.trim()};
-  if(!body.title||body.content.length<10){toast('Title & content required','error');return;}
-  let r;
-  if(editingAid){r=await api('/api/member/articles?id='+editingAid,{method:'PUT',body:JSON.stringify(body)});}
-  else{r=await api('/api/member/articles',{method:'POST',body:JSON.stringify(body)});}
-  if(r.ok!==false){closeModal('artModal');toast('Article saved');loadArticles();loadDash();}else toast(r.error||'Failed','error');
-}
+function openArticleModal(){editingAid=null;document.getElementById('artFrame').src='../admin/articles-add.html?modal=1&member=1';document.getElementById('artModal').classList.add('show');}
+async function editArticle(id){editingAid=id;document.getElementById('artFrame').src='../admin/articles-add.html?modal=1&member=1&id='+id;document.getElementById('artModal').classList.add('show');}
 async function delArticle(id){if(!confirm('Delete this article?'))return;const r=await api('/api/member/articles?id='+id,{method:'DELETE'});toast(r.ok!==false?'Deleted':'Failed');loadArticles();loadDash();}
 
 // ---- forum ----
