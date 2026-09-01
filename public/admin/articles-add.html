@@ -254,8 +254,8 @@ let currentDraftId = null;
 async function saveDraft(){
   const token = getToken();
   if(!token){ showToast('Session expired. Please sign in again.','error'); return; }
-  const titleEl = document.querySelector('.form-input[placeholder="Article Title..."]');
-  const excerptEl = document.querySelector('.form-input[placeholder="Subtitle or excerpt (optional)..."]');
+  const titleEl = document.getElementById('titleInput');
+  const excerptEl = document.getElementById('excerptInput');
   const editor = document.getElementById('editor');
   const title = titleEl ? titleEl.value.trim() : '';
   const excerpt = excerptEl ? excerptEl.value.trim() : '';
@@ -290,8 +290,8 @@ async function publishToApi(){
     setTimeout(() => window.location.href = 'login.html?reason=expired', 1200);
     return;
   }
-  const titleEl = document.querySelector('.form-input[placeholder="Article Title..."]');
-  const excerptEl = document.querySelector('.form-input[placeholder="Subtitle or excerpt (optional)..."]');
+  const titleEl = document.getElementById('titleInput');
+  const excerptEl = document.getElementById('excerptInput');
   const editor = document.getElementById('editor');
   const title = titleEl ? titleEl.value.trim() : '';
   const excerpt = excerptEl ? excerptEl.value.trim() : '';
@@ -328,11 +328,11 @@ async function publishToApi(){
     document.querySelector('.admin-content').insertBefore(banner, document.querySelector('.admin-content').firstChild);
 
     // Fill title
-    const titleInput=document.querySelector('.form-input[placeholder="Article Title..."]');
+    const titleInput=document.getElementById('titleInput');
     if(titleInput) titleInput.value=data.title;
 
     // Fill excerpt
-    const excerptInput=document.querySelector('.form-input[placeholder="Subtitle or excerpt (optional)..."]');
+    const excerptInput=document.getElementById('excerptInput');
     if(excerptInput) excerptInput.value=data.excerpt?data.excerpt.slice(0,160):'';
 
     // Fill editor content
