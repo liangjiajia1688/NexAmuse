@@ -11,8 +11,10 @@
 <style>
   .cp-hero{background:linear-gradient(135deg,#0a0e1a 0%,#12192e 60%,#1a1208 100%);border-bottom:1px solid rgba(201,162,39,.2);padding:0 0 32px;position:relative;}
   .cp-banner{height:200px;background:linear-gradient(135deg,#1a1208,#2a1f10);background-size:cover;background-position:center;}
+  .cp-banner.empty{height:8px;background:linear-gradient(90deg,#c9a227,#f5d06e,#c9a227);border-bottom:1px solid rgba(201,162,39,.3);}
   .cp-hero .container{position:relative;}
   .company-head{display:flex;gap:24px;align-items:flex-start;margin:-46px 0 26px;flex-wrap:wrap;}
+  .cp-hero.no-banner .company-head{margin-top:18px;}
   .company-logo{width:104px;height:104px;border-radius:18px;background:linear-gradient(135deg,#c9a227,#f5d06e);display:flex;align-items:center;justify-content:center;font-size:2.6rem;font-weight:700;color:#0a0e1a;font-family:'Playfair Display',serif;flex-shrink:0;overflow:hidden;border:3px solid #0a0e1a;}
   .company-logo img{width:100%;height:100%;object-fit:cover;}
   .company-meta{color:var(--text-secondary);font-size:.9rem;margin-top:8px;}
@@ -109,7 +111,14 @@ async function loadCompany(){
     const products = data.products || [];
     document.getElementById('cName').textContent = c.name;
     document.getElementById('cTagline').textContent = c.primary_category ? c.primary_category + ' supplier' : 'Verified supplier';
-    if(c.banner) document.getElementById('cBanner').style.backgroundImage = `url('${c.banner}')`;
+    if(c.banner){
+      document.getElementById('cBanner').style.backgroundImage = `url('${c.banner}')`;
+      document.getElementById('cBanner').classList.remove('empty');
+      document.querySelector('.cp-hero').classList.remove('no-banner');
+    } else {
+      document.getElementById('cBanner').classList.add('empty');
+      document.querySelector('.cp-hero').classList.add('no-banner');
+    }
     // owner manage button
     if(S && c.owner_id && S.id === c.owner_id){
       document.getElementById('ownerBar').style.display = 'block';
