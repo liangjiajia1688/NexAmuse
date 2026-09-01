@@ -5,8 +5,8 @@
 <title>Ad Zones — NexAmuse Admin</title>
 <link rel="stylesheet" href="admin.css">
 <style>
-.ad-zone-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;transition:all .2s}
-.ad-zone-card:hover{border-color:rgba(201,162,39,.4)}
+.ad-zone-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;transition:all .2s;cursor:pointer}
+.ad-zone-card:hover{border-color:rgba(201,162,39,.4);background:rgba(255,255,255,.05)}
 .ad-zone-card.active{border-left:3px solid #56ab2f}
 .ad-zone-card.paused{border-left:3px solid #f59e0b}
 .ad-zone-card.expired{border-left:3px solid #f87171;opacity:.7}
@@ -129,7 +129,8 @@ function renderAds(data){
     const thumb=a.image_url
       ? `<img src="${esc(a.image_url)}" style="width:80px;height:50px;border-radius:6px;object-fit:cover" alt="">`
       : `<div class="ad-thumb">${esc(a.emoji||'📢')}</div>`;
-    return `<div class="ad-zone-card ${esc(a.status)}" id="adcard${a.id}">
+    const hasLink = !!a.link_url;
+    return `<div class="ad-zone-card ${esc(a.status)}" id="adcard${a.id}" onclick="openAdLink(${a.id}, event)" ${hasLink?'title="Click to open link"':''}>
       <div style="display:flex;gap:16px;align-items:flex-start">
         ${thumb}
         <div style="flex:1;min-width:0">
@@ -152,10 +153,10 @@ function renderAds(data){
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
-          <button class="btn btn-outline btn-sm" onclick="editAd(${a.id})">✏️ Edit</button>
-          ${a.status==='active'?`<button class="btn btn-outline btn-sm" onclick="setStatus(${a.id},'paused')">⏸ Pause</button>`:''}
-          ${(a.status==='paused'||a.status==='pending')?`<button class="btn btn-outline btn-sm" style="color:#56ab2f;border-color:#56ab2f" onclick="setStatus(${a.id},'active')">▶ Resume</button>`:''}
-          <button class="btn btn-outline btn-sm" style="color:#f87171;border-color:rgba(248,113,113,.3)" onclick="deleteAd(${a.id})">🗑</button>
+          <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();editAd(${a.id})">✏️ Edit</button>
+          ${a.status==='active'?`<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();setStatus(${a.id},'paused')">⏸ Pause</button>`:''}
+          ${(a.status==='paused'||a.status==='pending')?`<button class="btn btn-outline btn-sm" style="color:#56ab2f;border-color:#56ab2f" onclick="event.stopPropagation();setStatus(${a.id},'active')">▶ Resume</button>`:''}
+          <button class="btn btn-outline btn-sm" style="color:#f87171;border-color:rgba(248,113,113,.3)" onclick="event.stopPropagation();deleteAd(${a.id})">🗑</button>
         </div>
       </div>
     </div>`;
@@ -209,6 +210,15 @@ async function deleteAd(id){
 }
 
 function editAd(id){window.location.href='ads-add.html?id='+id}
+
+function openAdLink(id, ev){
+  if(ev && (ev.target.closest('button') || ev.target.closest('a'))) return;
+  const a=CURRENT_ADS.find(x=>x.id===id);
+  if(!a || !a.link_url){ showToast('This ad has no configured link','info'); return; }
+  // Record the click asynchronously; do not block opening.
+  fetch('/api/ads?id='+id+'&type=click',{method:'POST'}).catch(()=>{});
+  window.open(a.link_url,'_blank','noopener,noreferrer');
+}
 
 function exportAds(){
   if(!CURRENT_ADS.length){showToast('No data to export','info');return;}
