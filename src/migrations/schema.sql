@@ -73,3 +73,10 @@ CREATE TABLE IF NOT EXISTS exhibitions (
 CREATE INDEX IF NOT EXISTS idx_news_published ON news(published_at DESC);
 CREATE INDEX IF NOT EXISTS idx_exhibitions_start ON exhibitions(startDate);
 CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(published_at DESC);
+
+-- Site Assistant configuration (single-row settings store)
+CREATE TABLE IF NOT EXISTS assistant_settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  config TEXT NOT NULL,
+  updated_at INTEGER
+);
