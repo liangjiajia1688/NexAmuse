@@ -5,8 +5,16 @@ export async function onRequest(context) {
   const { request, env, params } = context;
   const id = params.id;
 
-  // GET — public single article (increments views)
+  // Authenticate first so we can tell admin GET apart from public GET.
+  const user = await authUser(request, env);
+
+  // GET — admin sees any article (draft/published); public only sees published.
   if (request.method === 'GET') {
+    if (user && user.role === 'admin') {
+      const row = await env.DB.prepare('SELECT * FROM articles WHERE id=?').bind(id).first();
+      if (!row) return fail('Not found', 404);
+      return json({ article: row });
+    }
     const row = await env.DB.prepare('SELECT * FROM articles WHERE id=? AND status=?').bind(id, 'published').first();
     if (!row) return fail('Not found', 404);
     await env.DB.prepare('UPDATE articles SET views = views + 1 WHERE id=?').bind(id).run();
@@ -14,7 +22,6 @@ export async function onRequest(context) {
   }
 
   // Everything below requires an admin token.
-  const user = await authUser(request, env);
   if (!user || user.role !== 'admin') return fail('Unauthorized', 403);
 
   // DELETE — remove an article

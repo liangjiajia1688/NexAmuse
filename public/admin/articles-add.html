@@ -72,8 +72,8 @@
         <div>
           <div class="card" style="margin-bottom:20px">
             <div class="card-body">
-              <input type="text" class="form-input" placeholder="Article Title..." style="font-size:22px;font-weight:600;padding:14px 16px;margin-bottom:12px">
-              <input type="text" class="form-input" placeholder="Subtitle or excerpt (optional)...">
+              <input type="text" class="form-input" id="titleInput" placeholder="Article Title..." style="font-size:22px;font-weight:600;padding:14px 16px;margin-bottom:12px">
+              <input type="text" class="form-input" id="excerptInput" placeholder="Subtitle or excerpt (optional)...">
             </div>
           </div>
           <div class="card" style="margin-bottom:20px">
@@ -136,8 +136,8 @@
             <div class="card-body">
               <div class="form-group">
                 <label class="form-label">Status</label>
-                <select class="form-select">
-                  <option>Draft</option><option>Published</option><option>Scheduled</option>
+                <select class="form-select" id="statusSelect">
+                  <option value="draft">Draft</option><option value="published">Published</option><option value="scheduled">Scheduled</option>
                 </select>
               </div>
               <div class="form-group">
@@ -301,14 +301,16 @@ async function publishToApi(){
   const category = catCb ? catCb.dataset.cat : 'Industry News';
   const btn = document.querySelector('button.btn-gold');
   try {
-    if(btn){ btn.disabled = true; btn.textContent = 'Publishing…'; }
-    const r = await fetch('/api/articles', { method:'POST', headers: apiHeaders(), body: JSON.stringify({ title, excerpt, content, category, author:'NexAmuse Editorial' }) });
+    if(btn){ btn.disabled = true; btn.textContent = editingId ? 'Updating…' : 'Publishing…'; }
+    const url = editingId ? '/api/articles/'+editingId : '/api/articles';
+    const method = editingId ? 'PUT' : 'POST';
+    const r = await fetch(url, { method, headers: apiHeaders(), body: JSON.stringify({ title, excerpt, content, category, status:'published', author:'NexAmuse Editorial' }) });
     const data = await r.json().catch(()=>({}));
-    if(!r.ok){ showToast('Publish failed: '+(data.error||r.status),'error'); return; }
-    showToast('Article published successfully!','success');
+    if(!r.ok){ showToast((editingId?'Update':'Publish')+' failed: '+(data.error||r.status),'error'); return; }
+    showToast(editingId ? 'Article updated successfully!' : 'Article published successfully!','success');
     setTimeout(()=>{ window.location.href='articles.html'; }, 900);
-  } catch(e){ showToast('Publish error: '+e.message,'error'); }
-  finally { if(btn){ btn.disabled=false; btn.textContent='Publish'; } }
+  } catch(e){ showToast((editingId?'Update':'Publish')+' error: '+e.message,'error'); }
+  finally { if(btn){ btn.disabled=false; btn.textContent= editingId ? 'Update' : 'Publish'; } }
 }
 
 // ── Load AI-generated article if coming from AI writer ──────
@@ -355,6 +357,58 @@ async function publishToApi(){
     sessionStorage.removeItem('ai_edit_article');
   } catch(e){ console.warn('AI article load failed',e); }
 })();
+
+// ── Edit existing article ───────────────────────────────────
+let editingId = null;
+(function loadExistingArticle(){
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('edit') || params.get('id');
+  if(!id) return;
+  editingId = id;
+  currentDraftId = id;
+  document.querySelector('.breadcrumb').innerHTML = 'Articles / <span>Edit Article</span>';
+  document.title = 'Edit Article — NexAmuse Admin';
+  (async()=>{
+    try {
+      const r = await fetch('/api/articles/'+id, { headers:{ 'Authorization':'Bearer '+getToken() } });
+      if(!r.ok) throw new Error('Article not found');
+      const data = await r.json();
+      const a = data.article;
+      const titleInput = document.getElementById('titleInput');
+      const excerptInput = document.getElementById('excerptInput');
+      const editor = document.getElementById('editor');
+      if(titleInput) titleInput.value = a.title || '';
+      if(excerptInput) excerptInput.value = a.excerpt || '';
+      if(editor) editor.innerHTML = a.content || '';
+      const seoTitleEl = document.getElementById('seoTitle');
+      const seoDescEl = document.getElementById('seoDesc');
+      if(seoTitleEl) seoTitleEl.value = a.title ? a.title.slice(0,60) : '';
+      if(seoDescEl) seoDescEl.value = a.excerpt ? a.excerpt.slice(0,160) : '';
+      if(typeof updateSEO==='function') setTimeout(updateSEO,100);
+      // Category
+      let matched = false;
+      if(a.category){
+        document.querySelectorAll('.cat-cb').forEach(cb=>{
+          if(cb.dataset.cat===a.category){ cb.checked=true; matched=true; }
+        });
+        if(!matched){
+          const catList = document.getElementById('catList');
+          const safeCat = String(a.category).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          const label = document.createElement('label');
+          label.style.cssText='display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px';
+          label.innerHTML = `<input type="checkbox" class="cat-cb" data-cat="${safeCat}" checked> ${safeCat}`;
+          catList.insertBefore(label, catList.firstChild);
+        }
+      }
+      // Status
+      const statusSelect = document.getElementById('statusSelect');
+      if(statusSelect && a.status){
+        statusSelect.value = ['draft','published','scheduled'].includes(a.status) ? a.status : 'draft';
+      }
+    } catch(e){ showToast('Failed to load article: '+e.message, 'error'); }
+  })();
+})();
+
 const chips=[];
 function addTagChip(e){if(e.key==='Enter'){const v=e.target.value.trim();if(v&&!chips.includes(v)){chips.push(v);renderChips()}e.target.value=''}}
 function renderChips(){document.getElementById('tagChips').innerHTML=chips.map((c,i)=>`<span style="background:rgba(212,175,55,.12);color:var(--gold);padding:4px 10px;border-radius:12px;font-size:12px;display:flex;align-items:center;gap:4px">${c}<span onclick="removeChip(${i})" style="cursor:pointer;opacity:.7">×</span></span>`).join('')}

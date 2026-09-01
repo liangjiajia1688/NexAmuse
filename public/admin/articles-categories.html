@@ -127,7 +127,7 @@ document.getElementById('catBody').innerHTML=cats.map(c=>`
     <td><span class="badge">${c.count}</span></td>
     <td style="color:var(--text-muted)">${c.order}</td>
     <td>
-      <button class="btn-sm btn-outline">Edit</button>
+      <button class="btn-sm btn-outline" disabled title="Static demo — category editing not wired">Edit</button>
       <button class="btn-sm btn-danger" onclick="deleteCat(${c.id})">Del</button>
     </td>
   </tr>`).join('');
