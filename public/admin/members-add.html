@@ -44,39 +44,39 @@
         <div class="form-section">
           <h3>Basic Information</h3>
           <div class="form-grid">
-            <div class="form-group"><label>First Name *</label><input type="text" placeholder="John" required></div>
-            <div class="form-group"><label>Last Name *</label><input type="text" placeholder="Doe" required></div>
-            <div class="form-group"><label>Email Address *</label><input type="email" placeholder="john@company.com" required></div>
-            <div class="form-group"><label>Phone Number</label><input type="tel" placeholder="+1 555 0100"></div>
-            <div class="form-group"><label>Company Name</label><input type="text" placeholder="Company Inc."></div>
-            <div class="form-group"><label>Job Title</label><input type="text" placeholder="Purchasing Manager"></div>
+            <div class="form-group"><label>First Name *</label><input id="firstName" type="text" placeholder="John" required></div>
+            <div class="form-group"><label>Last Name *</label><input id="lastName" type="text" placeholder="Doe" required></div>
+            <div class="form-group"><label>Email Address *</label><input id="email" type="email" placeholder="john@company.com" required></div>
+            <div class="form-group"><label>Phone Number</label><input id="phone" type="tel" placeholder="+1 555 0100"></div>
+            <div class="form-group"><label>Company Name</label><input id="company" type="text" placeholder="Company Inc."></div>
+            <div class="form-group"><label>Job Title</label><input id="jobTitle" type="text" placeholder="Purchasing Manager"></div>
             <div class="form-group"><label>Country *</label>
-              <select required>
+              <select id="country" required>
                 <option value="">Select Country</option>
                 <option>United States</option><option>United Kingdom</option><option>Germany</option><option>Japan</option><option>Australia</option><option>Singapore</option><option>UAE</option><option>Canada</option><option>France</option><option>Brazil</option>
               </select>
             </div>
-            <div class="form-group"><label>City</label><input type="text" placeholder="New York"></div>
+            <div class="form-group"><label>City</label><input id="city" type="text" placeholder="New York"></div>
           </div>
         </div>
         <div class="form-section">
           <h3>Account Settings</h3>
           <div class="form-grid">
-            <div class="form-group"><label>Username *</label><input type="text" placeholder="johndoe" required></div>
-            <div class="form-group"><label>Password *</label><input type="password" placeholder="Min 8 characters" required></div>
+            <div class="form-group"><label>Username *</label><input id="username" type="text" placeholder="johndoe" required></div>
+            <div class="form-group"><label>Password *</label><input id="password" type="password" placeholder="Min 8 characters" required></div>
             <div class="form-group"><label>Member Level</label>
-              <select>
+              <select id="level">
                 <option>Standard</option><option>Silver</option><option>Gold</option><option>Platinum</option>
               </select>
             </div>
             <div class="form-group"><label>Member Group</label>
-              <select>
+              <select id="memberGroup">
                 <option>Buyers</option><option>Suppliers</option><option>Media</option><option>VIP</option>
               </select>
             </div>
-            <div class="form-group"><label>Initial Points</label><input type="number" placeholder="0" min="0"></div>
+            <div class="form-group"><label>Initial Points</label><input id="points" type="number" placeholder="0" min="0"></div>
             <div class="form-group"><label>Status</label>
-              <select>
+              <select id="status">
                 <option>Active</option><option>Inactive</option><option>Pending Verification</option>
               </select>
             </div>
@@ -87,12 +87,12 @@
           <div class="form-grid">
             <div class="form-group">
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                <input type="checkbox" style="width:16px;height:16px;accent-color:var(--gold)" checked> Send welcome email
+                <input id="welcomeEmail" type="checkbox" style="width:16px;height:16px;accent-color:var(--gold)" checked> Send welcome email
               </label>
             </div>
             <div class="form-group">
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                <input type="checkbox" style="width:16px;height:16px;accent-color:var(--gold)" checked> Subscribe to newsletter
+                <input id="newsletter" type="checkbox" style="width:16px;height:16px;accent-color:var(--gold)" checked> Subscribe to newsletter
               </label>
             </div>
           </div>
@@ -107,10 +107,45 @@
 </div>
 <script src="admin.js"></script>
 <script>
-function submitForm(e){
+async function submitForm(e){
   e.preventDefault();
-  alert('✅ Member created successfully!\n(In production: saves to database)');
-  location.href='members.html';
+  const btn = e.target.querySelector('button[type=submit]');
+  const data = {
+    first_name: document.getElementById('firstName').value,
+    last_name: document.getElementById('lastName').value,
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value,
+    company: document.getElementById('company').value,
+    job_title: document.getElementById('jobTitle').value,
+    country: document.getElementById('country').value,
+    city: document.getElementById('city').value,
+    username: document.getElementById('username').value,
+    password: document.getElementById('password').value,
+    level: document.getElementById('level').value,
+    member_group: document.getElementById('memberGroup').value,
+    points: document.getElementById('points').value || '0',
+    status: document.getElementById('status').value
+  };
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/admin/members', {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify(data)
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.ok) {
+      showToast(j.error || ('Failed: ' + r.status), 'warning');
+    } else {
+      showToast('Member created successfully', 'success');
+      setTimeout(() => { location.href = 'members.html'; }, 800);
+      return;
+    }
+  } catch (err) {
+    showToast('Network error: ' + err.message, 'warning');
+  } finally {
+    btn.disabled = false;
+  }
 }
 </script>
 
