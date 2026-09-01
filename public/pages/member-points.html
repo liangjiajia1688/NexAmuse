@@ -85,10 +85,12 @@
 .lvl-card .cur-flag{position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;color:#0a0e1a;background:linear-gradient(135deg,#c9a227,#f5d06e);padding:3px 9px;border-radius:20px;display:none;box-shadow:0 2px 8px rgba(201,162,39,.4)}
 .lvl-card.is-current .cur-flag{display:inline-block}
 .lvl-perks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
-.lvl-perks li{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:#d1d5db;line-height:1.35}
-.lvl-perks li .ck{color:var(--c);flex-shrink:0;font-weight:700;margin-top:1px}
-.lvl-perks li.add{color:#fff;font-weight:600}
-.lvl-perks li.add .ck{color:#34d399}
+.lvl-perks li{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:#6b7280;line-height:1.35}
+.lvl-perks li .ck{flex-shrink:0;font-weight:700;margin-top:1px}
+.lvl-perks li.yes{color:#d1d5db}
+.lvl-perks li.yes .ck{color:#34d399}
+.lvl-perks li.no{color:#6b7280}
+.lvl-perks li.no .ck{color:#4b5563}
 .lvl-foot{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);font-size:12px;color:#9aa0b4;min-height:18px}
 .lvl-foot b{color:var(--c)}
 
@@ -416,12 +418,23 @@
             <div class="lvl-req">7 points to unlock</div>
             <span class="lvl-tag">Starter · Free</span>
             <ul class="lvl-perks">
-              <li><span class="ck">✓</span> Browse all public content</li>
-              <li><span class="ck">✓</span> Forum posting (1 / day)</li>
-              <li><span class="ck">✓</span> Direct inquiry to suppliers</li>
-              <li><span class="ck">✓</span> Newsletter subscription</li>
-              <li><span class="ck">✓</span> Exhibition pre-registration</li>
-              <li><span class="ck">✓</span> Save favorite suppliers</li>
+              <li class="yes"><span class="ck">✓</span> Browse all public content</li>
+              <li class="yes"><span class="ck">✓</span> Forum posting (1 / day)</li>
+              <li class="yes"><span class="ck">✓</span> Direct inquiry to suppliers</li>
+              <li class="yes"><span class="ck">✓</span> Newsletter subscription</li>
+              <li class="yes"><span class="ck">✓</span> Exhibition pre-registration</li>
+              <li class="yes"><span class="ck">✓</span> Save favorite suppliers</li>
+              <li class="no"><span class="ck">✗</span> Upload &amp; manage products</li>
+              <li class="no"><span class="ck">✗</span> Publish articles &amp; news</li>
+              <li class="no"><span class="ck">✗</span> Analytics reports</li>
+              <li class="no"><span class="ck">✗</span> Priority supplier listing</li>
+              <li class="no"><span class="ck">✗</span> Receive buyer inquiries</li>
+              <li class="no"><span class="ck">✗</span> Create company profile</li>
+              <li class="no"><span class="ck">✗</span> Priority ranking in search</li>
+              <li class="no"><span class="ck">✗</span> Featured supplier badge</li>
+              <li class="no"><span class="ck">✗</span> Custom ad campaigns</li>
+              <li class="no"><span class="ck">✗</span> Dedicated account manager</li>
+              <li class="no"><span class="ck">✗</span> Exhibition booth priority</li>
             </ul>
             <div class="lvl-foot"></div>
           </div>
@@ -430,16 +443,25 @@
             <span class="cur-flag">YOU ARE HERE</span>
             <div class="lvl-top"><span class="lvl-name">Premium</span><span class="lvl-icon">⭐</span></div>
             <div class="lvl-req">30 points to unlock</div>
-            <span class="lvl-tag">Creator · +7 perks</span>
+            <span class="lvl-tag">Creator · +6 perks</span>
             <ul class="lvl-perks">
-              <li class="add"><span class="ck">✓</span> Upload &amp; manage products</li>
-              <li class="add"><span class="ck">✓</span> Publish articles &amp; news</li>
-              <li class="add"><span class="ck">✓</span> Unlimited daily posts</li>
-              <li class="add"><span class="ck">✓</span> Analytics reports</li>
-              <li class="add"><span class="ck">✓</span> Priority supplier listing</li>
-              <li class="add"><span class="ck">✓</span> Receive buyer inquiries</li>
-              <li class="add"><span class="ck">✓</span> <a href="company-profile.html" style="color:#fff;text-decoration:none">Create company profile</a></li>
-              <li><span class="ck">✓</span> All Standard perks included</li>
+              <li class="yes"><span class="ck">✓</span> Browse all public content</li>
+              <li class="yes"><span class="ck">✓</span> Forum posting (unlimited)</li>
+              <li class="yes"><span class="ck">✓</span> Direct inquiry to suppliers</li>
+              <li class="yes"><span class="ck">✓</span> Newsletter subscription</li>
+              <li class="yes"><span class="ck">✓</span> Exhibition pre-registration</li>
+              <li class="yes"><span class="ck">✓</span> Save favorite suppliers</li>
+              <li class="yes"><span class="ck">✓</span> Upload &amp; manage products</li>
+              <li class="yes"><span class="ck">✓</span> Publish articles &amp; news</li>
+              <li class="yes"><span class="ck">✓</span> Analytics reports</li>
+              <li class="yes"><span class="ck">✓</span> Priority supplier listing</li>
+              <li class="yes"><span class="ck">✓</span> Receive buyer inquiries</li>
+              <li class="yes"><span class="ck">✓</span> <a href="company-profile.html" style="color:inherit;text-decoration:none">Create company profile</a></li>
+              <li class="no"><span class="ck">✗</span> Priority ranking in search</li>
+              <li class="no"><span class="ck">✗</span> Featured supplier badge</li>
+              <li class="no"><span class="ck">✗</span> Custom ad campaigns</li>
+              <li class="no"><span class="ck">✗</span> Dedicated account manager</li>
+              <li class="no"><span class="ck">✗</span> Exhibition booth priority</li>
             </ul>
             <div class="lvl-foot"></div>
           </div>
@@ -448,15 +470,25 @@
             <span class="cur-flag">YOU ARE HERE</span>
             <div class="lvl-top"><span class="lvl-name">VIP</span><span class="lvl-icon">👑</span></div>
             <div class="lvl-req">100 points to unlock</div>
-            <span class="lvl-tag">Elite · +5 perks</span>
+            <span class="lvl-tag">Elite · All perks</span>
             <ul class="lvl-perks">
-              <li class="add"><span class="ck">✓</span> Priority ranking in search</li>
-              <li class="add"><span class="ck">✓</span> Featured supplier badge</li>
-              <li class="add"><span class="ck">✓</span> Custom ad campaigns</li>
-              <li class="add"><span class="ck">✓</span> Dedicated account manager</li>
-              <li class="add"><span class="ck">✓</span> Exhibition booth priority</li>
-              <li><span class="ck">✓</span> Everything in Premium</li>
-              <li><span class="ck">✓</span> Create company profile</li>
+              <li class="yes"><span class="ck">✓</span> Browse all public content</li>
+              <li class="yes"><span class="ck">✓</span> Forum posting (unlimited)</li>
+              <li class="yes"><span class="ck">✓</span> Direct inquiry to suppliers</li>
+              <li class="yes"><span class="ck">✓</span> Newsletter subscription</li>
+              <li class="yes"><span class="ck">✓</span> Exhibition pre-registration</li>
+              <li class="yes"><span class="ck">✓</span> Save favorite suppliers</li>
+              <li class="yes"><span class="ck">✓</span> Upload &amp; manage products</li>
+              <li class="yes"><span class="ck">✓</span> Publish articles &amp; news</li>
+              <li class="yes"><span class="ck">✓</span> Analytics reports</li>
+              <li class="yes"><span class="ck">✓</span> Priority supplier listing</li>
+              <li class="yes"><span class="ck">✓</span> Receive buyer inquiries</li>
+              <li class="yes"><span class="ck">✓</span> <a href="company-profile.html" style="color:inherit;text-decoration:none">Create company profile</a></li>
+              <li class="yes"><span class="ck">✓</span> Priority ranking in search</li>
+              <li class="yes"><span class="ck">✓</span> Featured supplier badge</li>
+              <li class="yes"><span class="ck">✓</span> Custom ad campaigns</li>
+              <li class="yes"><span class="ck">✓</span> Dedicated account manager</li>
+              <li class="yes"><span class="ck">✓</span> Exhibition booth priority</li>
             </ul>
             <div class="lvl-foot"></div>
           </div>
