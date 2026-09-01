@@ -691,6 +691,33 @@ function highlightCurrentTier(){
   });
 }
 
+function initPerkTips(){
+  const tips = {
+    'Browse all public content': 'Read articles, products and news without signing in.',
+    'Forum posting (1 / day)': 'Post one new forum thread per day as a Standard member.',
+    'Forum posting (unlimited)': 'Create unlimited forum threads and replies every day.',
+    'Direct inquiry to suppliers': 'Send messages directly to supplier profiles.',
+    'Newsletter subscription': 'Receive weekly industry updates by email.',
+    'Exhibition pre-registration': 'Pre-register for GTI, IAAPA and other exhibitions.',
+    'Save favorite suppliers': 'Bookmark suppliers for quick access later.',
+    'Upload & manage products': 'List your amusement equipment and manage product pages.',
+    'Publish articles & news': 'Write and publish company or industry articles.',
+    'Analytics reports': 'View views, clicks and engagement on your content.',
+    'Priority supplier listing': 'Your company and products rank higher in listings.',
+    'Receive buyer inquiries': 'Buyers can send purchase inquiries to your inbox.',
+    'Create company profile': 'Build a branded company page visible to all buyers.',
+    'Priority ranking in search': 'Your products and company appear at the top of search.',
+    'Featured supplier badge': 'A gold badge shown on your company profile and listings.',
+    'Custom ad campaigns': 'Run homepage or category banner ads managed by NexAmuse.',
+    'Dedicated account manager': 'Get a personal account manager for support and campaigns.',
+    'Exhibition booth priority': 'Priority booth selection and discounts at partner shows.'
+  };
+  document.querySelectorAll('#lvlCompare .lvl-perks li').forEach(li => {
+    const raw = li.textContent.replace(/^[✓✗]\s*/, '').trim().split('\n')[0];
+    if (tips[raw]) li.setAttribute('title', tips[raw]);
+  });
+}
+
 function renderLB() {
   document.getElementById('lbList').innerHTML = LB.map(u=>`
   <div class="lb-row" style="${u.isMe?'background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.2);border-radius:8px;':''}">
@@ -804,7 +831,7 @@ function renderLB() {
 }
 
 // Render leaderboard (now async from API), then show live level/points everywhere.
-loadLeaderboard().then(renderMyLevel);
+loadLeaderboard().then(renderMyLevel).then(initPerkTips);
 
 // ── Tab switching ────────────────────────────────────────────
 function showTab(id, btn){
