@@ -27,6 +27,17 @@
 .score-bar{flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
 .score-fill{height:100%;border-radius:3px;transition:width .5s}
 </style>
+<script>
+(function(){
+  const p = new URLSearchParams(location.search);
+  if (p.get('modal') === '1' || p.get('member') === '1') {
+    document.documentElement.classList.add('modal-mode');
+    var s = document.createElement('style');
+    s.textContent = '.modal-mode body{padding:0;background:#0a0e1a} .modal-mode .sidebar,.modal-mode .admin-header{display:none!important} .modal-mode .admin-main{margin-left:0!important;min-height:auto!important} .modal-mode .admin-content{padding:0!important} .modal-mode .admin-wrapper{display:block!important;min-height:auto!important} .modal-mode .page-title{display:none!important}';
+    document.head.appendChild(s);
+  }
+})();
+</script>
 </head>
 <body>
 <div class="admin-wrapper">
