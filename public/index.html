@@ -652,10 +652,10 @@
       <h2>Latest Industry Videos</h2>
       <p>Exhibition walkthroughs, product reveals, factory tours &amp; executive interviews</p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px;" class="fade-in">
+    <div id="homeVideosGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px;" class="fade-in">
 
-      <div class="video-card card" style="cursor:pointer;" onclick="alert('Video player coming soon')">
-        <div class="video-thumb"><span>🎪</span><span class="play-btn">▶</span><span class="video-duration">18:42</span>
+      <div class="video-card card" style="cursor:pointer;" onclick="location.href='pages/magazine.html'">
+        <div class="video-thumb"><span>🎪</span><span class="play-btn">▶</span>
           <div class="video-overlay"><div class="video-title">GTI 2025 Full Exhibition Walkthrough — All Halls</div></div>
         </div>
         <div style="padding:14px 16px;">
@@ -665,8 +665,8 @@
         </div>
       </div>
 
-      <div class="video-card card" style="cursor:pointer;" onclick="alert('Video player coming soon')">
-        <div class="video-thumb" style="background:linear-gradient(135deg,#1e3a5f,#0d1f3c);"><span>🥽</span><span class="play-btn">▶</span><span class="video-duration">6:18</span>
+      <div class="video-card card" style="cursor:pointer;" onclick="location.href='pages/magazine.html'">
+        <div class="video-thumb" style="background:linear-gradient(135deg,#1e3a5f,#0d1f3c);"><span>🥽</span><span class="play-btn">▶</span>
           <div class="video-overlay"><div class="video-title">Inside the World's Most Advanced Free-Roam VR Arena</div></div>
         </div>
         <div style="padding:14px 16px;">
@@ -676,8 +676,8 @@
         </div>
       </div>
 
-      <div class="video-card card" style="cursor:pointer;" onclick="alert('Video player coming soon')">
-        <div class="video-thumb" style="background:linear-gradient(135deg,#3b1e1e,#200d0d);"><span>🎙️</span><span class="play-btn">▶</span><span class="video-duration">22:15</span>
+      <div class="video-card card" style="cursor:pointer;" onclick="location.href='pages/magazine.html'">
+        <div class="video-thumb" style="background:linear-gradient(135deg,#3b1e1e,#200d0d);"><span>🎙️</span><span class="play-btn">▶</span>
           <div class="video-overlay"><div class="video-title">IAAPA CEO Interview: The Future of Global Attractions Industry</div></div>
         </div>
         <div style="padding:14px 16px;">
@@ -1166,6 +1166,47 @@
       if (u && u !== '#') window.open(u, '_blank', 'noopener');
     }));
   } catch (e) { console.warn('Home news load failed', e); }
+})();
+</script>
+
+<script>
+// Populate the homepage "Latest Industry Videos" section with live data from D1.
+(function(){
+  const grid = document.getElementById('homeVideosGrid');
+  if(!grid) return;
+  const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  const PLATFORM_EMOJI = {youtube:'▶️',vimeo:'🎬',tiktok:'🎵',instagram:'📸',other:'🎞️'};
+  const PLATFORM_LABEL = {youtube:'YouTube',vimeo:'Vimeo',tiktok:'TikTok',instagram:'Instagram',other:'Video'};
+  const fmt = ts => { try { return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); } catch(e){ return 'Recent'; } };
+
+  function cardHtml(v){
+    const emoji = PLATFORM_EMOJI[v.platform] || '🎞️';
+    const label = PLATFORM_LABEL[v.platform] || 'Video';
+    const thumbStyle = v.cover_url ? `background-image:url('${esc(v.cover_url)}');background-size:cover;background-position:center;` : '';
+    return `<div class="video-card card" style="cursor:pointer;" onclick="location.href='pages/magazine.html?play=${v.id}'">
+      <div class="video-thumb" style="${thumbStyle}">
+        ${v.cover_url ? '' : `<span>${emoji}</span>`}
+        <span class="play-btn">▶</span>
+        <div class="video-overlay"><div class="video-title">${esc(v.title || 'Untitled')}</div></div>
+      </div>
+      <div style="padding:14px 16px;">
+        <div style="font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;">${esc(label)}</div>
+        <div style="font-size:.85rem;font-weight:600;color:#e2e8f0;margin-bottom:5px;">${esc(v.title || 'Untitled')}</div>
+        <div style="font-size:.73rem;color:var(--text-secondary);">📅 ${fmt(v.created_at)}</div>
+      </div>
+    </div>`;
+  }
+
+  async function load(){
+    try{
+      const r = await fetch('/api/videos?limit=3');
+      const data = await r.json().catch(()=>({videos:[]}));
+      const videos = (data.videos || []);
+      if(!videos.length) return; // keep static demo fallback
+      grid.innerHTML = videos.map(cardHtml).join('');
+    }catch(e){ console.warn('Home videos load failed', e); }
+  }
+  load();
 })();
 </script>
 

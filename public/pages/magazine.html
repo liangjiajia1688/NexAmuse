@@ -226,6 +226,14 @@ async function loadVideos(){
     window._videos = (d && d.videos) || [];
   }catch(e){ window._videos = []; }
   render();
+  autoPlayFromUrl();
+}
+
+function autoPlayFromUrl(){
+  const id = parseInt(new URLSearchParams(location.search).get('play'), 10);
+  if(!id || window._autoPlayHandled) return;
+  const v = (window._videos||[]).find(x=>x.id===id);
+  if(v){ window._autoPlayHandled = true; playVideo(id); }
 }
 
 renderAddBar();
