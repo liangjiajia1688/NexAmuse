@@ -241,14 +241,8 @@
 
 <script src="../assets/js/main.js"></script>
 <script>
-const SESSION_KEY = 'nexamuse_user';
 let currentUser = null;
 let pendingAvatarUrl = null;
-
-function getSession() {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
-  catch(e){ return null; }
-}
 
 function showMsg(type, text) {
   const el = document.getElementById('msg');
@@ -282,10 +276,10 @@ function initPage() {
   document.getElementById('roleStat').textContent = s.role === 'admin' ? 'Admin' : 'Member';
   renderAvatar(s.username, s.avatar);
 
-  // Sync latest profile from server
+  // Sync latest profile from server (provided by main.js)
   syncUser().then(u => {
-    if (u && u.user) {
-      currentUser = { ...s, ...u.user };
+    if (u) {
+      currentUser = u;
       localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
       document.getElementById('usernameInput').value = currentUser.username || '';
       document.getElementById('emailInput').value = currentUser.email || '';
