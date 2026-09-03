@@ -13,7 +13,3 @@ CRON_KEY = "nx2026_news_cron_7f3a9c2e5b81d4f6a0c3e9b7d1f5a8c4"
 binding = "DB"
 database_name = "nexamuse-db"
 database_id = "96d149d9-ab0f-4709-b7c6-a53173bdcd43"
-
-# Daily YouTube industry-video aggregator (functions/scheduled-video-aggregation.js)
-[triggers]
-crons = ["0 1 * * *"]
