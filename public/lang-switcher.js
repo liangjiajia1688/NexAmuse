@@ -90,6 +90,26 @@
   var STORAGE_KEY = 'nexamuse_lang';
   var current = localStorage.getItem(STORAGE_KEY) || 'en';
 
+  // ---------------------------------------------------------------------------
+  // Browser (Chrome) built-in translation coexistence
+  // ---------------------------------------------------------------------------
+  // Chrome's built-in translator updates the <html lang> attribute to the target
+  // language and rewrites visible text. Our own dictionary translator must NOT
+  // fight it: when the browser is translating we stop re-writing text and hide
+  // our switcher, otherwise scan() reverts text to English -> Chrome re-translates
+  // -> infinite 中英文 flicker on the nav bar.
+  var browserTranslateActive = false;
+  var selfLangUpdate = false;
+  var bodyObserver = null;
+
+  function isHtmlTranslatedByBrowser() {
+    var hl = (document.documentElement.getAttribute('lang') || '').toLowerCase();
+    if (!hl) return false;
+    // Our switcher only ever sets 'en' or the selected target. If <html lang> is
+    // something else (e.g. zh-CN while our target is 'en'), the browser did it.
+    return hl !== 'en' && hl !== current.toLowerCase();
+  }
+
   function translateEl(el) {
     // Always key the dictionary lookup off the original (English) text, so
     // repeated switches keep working even after the element was already translated.
@@ -101,6 +121,7 @@
   }
 
   function scan() {
+    if (browserTranslateActive || isHtmlTranslatedByBrowser()) return;
     var sel = '.navbar a, .mobile-menu a, .top-bar a, footer a, footer h4, ' +
       '.search-overlay h2, .search-overlay .search-suggestions p, .search-overlay .suggestion-tag, ' +
       '.breadcrumb a, .nav-actions button, .nav-actions a, .mobile-auth-wrap a, .mobile-auth-wrap button';
@@ -109,7 +130,10 @@
   }
 
   function applyHtmlLang() {
+    selfLangUpdate = true;
     document.documentElement.setAttribute('lang', current === 'zh-CN' ? 'zh-CN' : current);
+    // Reset the flag on the next tick so the html-lang observer ignores our own change.
+    setTimeout(function () { selfLangUpdate = false; }, 0);
   }
 
   // --- Build switcher UI ---
@@ -165,17 +189,70 @@
   root.appendChild(menu);
   document.body.appendChild(root);
 
-  setFlag();
-  applyHtmlLang();
-  scan();
+  // --- Detect browser (Chrome) translation via <html lang> attribute changes ---
+  var htmlObserver = null;
+  if (window.MutationObserver) {
+    htmlObserver = new MutationObserver(function (muts) {
+      for (var i = 0; i < muts.length; i++) {
+        if (muts[i].attributeName === 'lang' && !selfLangUpdate) {
+          if (isHtmlTranslatedByBrowser()) yieldToBrowserTranslate();
+          else if (browserTranslateActive) resumeOurTranslation();
+          break;
+        }
+      }
+    });
+    htmlObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  }
+
+  // Browser started translating -> hand the page over to it and stop fighting.
+  function yieldToBrowserTranslate() {
+    if (browserTranslateActive) return;
+    browserTranslateActive = true;
+    if (bodyObserver) { bodyObserver.disconnect(); bodyObserver = null; }
+    var ls = document.getElementById('langSwitcher');
+    if (ls) ls.style.display = 'none';
+  }
+
+  // Browser stopped translating (user clicked "Show original") -> take back control.
+  function resumeOurTranslation() {
+    browserTranslateActive = false;
+    var ls = document.getElementById('langSwitcher');
+    if (ls) ls.style.display = '';
+    setFlag();
+    applyHtmlLang();
+    scan();
+    if (window.MutationObserver) {
+      var debounce;
+      bodyObserver = new MutationObserver(function () {
+        if (browserTranslateActive) return;
+        clearTimeout(debounce);
+        debounce = setTimeout(scan, 250);
+      });
+      bodyObserver.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
+  // Initial state: if the browser already translated the page before our script
+  // ran (e.g. on load with Chrome auto-translate), do not scan and do not touch
+  // <html lang> -- let the browser own the page (no flicker).
+  if (isHtmlTranslatedByBrowser()) {
+    browserTranslateActive = true;
+    var ls0 = document.getElementById('langSwitcher');
+    if (ls0) ls0.style.display = 'none';
+  } else {
+    setFlag();
+    applyHtmlLang();
+    scan();
+  }
 
   // Re-translate dynamically injected nodes (e.g. login/sign-out nav rendered by main.js)
-  if (window.MutationObserver) {
-    var debounce;
-    var obs = new MutationObserver(function () {
-      clearTimeout(debounce);
-      debounce = setTimeout(scan, 250);
+  if (window.MutationObserver && !browserTranslateActive) {
+    var debounce0;
+    bodyObserver = new MutationObserver(function () {
+      if (browserTranslateActive) return;
+      clearTimeout(debounce0);
+      debounce0 = setTimeout(scan, 250);
     });
-    obs.observe(document.body, { childList: true, subtree: true });
+    bodyObserver.observe(document.body, { childList: true, subtree: true });
   }
 })();
