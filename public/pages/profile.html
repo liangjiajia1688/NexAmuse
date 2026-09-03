@@ -271,6 +271,7 @@ function renderAvatar(name, avatar) {
 
 function initPage() {
   const s = getSession();
+  console.log('[profile] session loaded:', s ? { id: s.id, username: s.username, level: s.level, hasToken: !!s.token } : null);
   if (!s || !s.token) { location.href = 'login.html'; return; }
 
   currentUser = s;
@@ -287,15 +288,18 @@ function initPage() {
       currentUser = { ...s, ...u.user };
       localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
       document.getElementById('usernameInput').value = currentUser.username || '';
+      document.getElementById('emailInput').value = currentUser.email || '';
       document.getElementById('levelStat').textContent = currentUser.level || 'Standard';
       document.getElementById('pointsStat').textContent = (typeof currentUser.points === 'number' ? currentUser.points : 0);
       renderAvatar(currentUser.username, currentUser.avatar);
+      console.log('[profile] synced with server:', { username: currentUser.username, email: currentUser.email, avatar: !!currentUser.avatar });
     }
-  });
+  }).catch(e => console.error('[profile] syncUser failed:', e));
 }
 
 async function onAvatarChange(e) {
   const file = e.target.files[0];
+  console.log('[avatar] file selected:', file?.name, file?.type, file?.size);
   if (!file) return;
   if (!file.type.startsWith('image/')) { showMsg('error','Please select an image file.'); return; }
   if (file.size > 5 * 1024 * 1024) { showMsg('error','Image must be smaller than 5MB.'); return; }
@@ -303,31 +307,42 @@ async function onAvatarChange(e) {
   const status = document.getElementById('avatarStatus');
   status.textContent = 'Uploading…';
   status.style.color = '#c9a227';
+  hideMsg();
 
   try {
     const dataUrl = await new Promise((res, rej) => {
       const r = new FileReader();
       r.onload = () => res(r.result);
-      r.onerror = rej;
+      r.onerror = (e) => rej(new Error('File read failed'));
       r.readAsDataURL(file);
     });
+    console.log('[avatar] dataUrl length:', dataUrl.length);
 
     const s = getSession();
+    if (!s || !s.token) { throw new Error('Session expired. Please log in again.'); }
     const fd = new FormData();
     fd.append('image', dataUrl);
     fd.append('purpose', 'avatar');
+    console.log('[avatar] uploading to /api/upload with purpose=avatar');
+
     const r = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + s.token }, body: fd });
+    console.log('[avatar] upload response status:', r.status);
     const data = await r.json().catch(() => ({}));
+    console.log('[avatar] upload response body:', data);
     if (!r.ok) throw new Error(data.error || `Upload failed (${r.status})`);
+    if (!data.url) throw new Error('Server did not return an image URL');
 
     pendingAvatarUrl = data.url;
     renderAvatar(currentUser.username, pendingAvatarUrl);
-    status.textContent = 'Avatar saved.';
+    status.textContent = 'Avatar uploaded. Saving to account…';
     status.style.color = '#34d399';
-    saveProfile(); // auto-persist so the change feels instant
+    await saveProfile({silent: true}); // auto-persist so the change feels instant
   } catch(err) {
-    status.textContent = 'Upload failed: ' + (err.message || 'unknown error');
+    console.error('[avatar] error:', err);
+    const msg = err.message || 'unknown error';
+    status.textContent = 'Upload failed: ' + msg;
     status.style.color = '#f87171';
+    showMsg('error', 'Avatar upload failed: ' + msg);
   }
 }
 
@@ -339,7 +354,7 @@ function removeAvatar() {
   saveProfile(); // auto-persist
 }
 
-async function saveProfile() {
+async function saveProfile(opts = {}) {
   const s = getSession();
   if (!s || !s.token) { location.href = 'login.html'; return; }
 
@@ -362,12 +377,14 @@ async function saveProfile() {
   }
 
   const btn = document.getElementById('saveBtn');
-  btn.disabled = true; btn.textContent = 'Saving…';
-  hideMsg();
+  const prevText = btn.textContent;
+  if (!opts.silent) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  if (!opts.silent) hideMsg();
 
   const payload = { username };
   if (emailChanged) payload.email = email;
   if (pendingAvatarUrl !== null) payload.avatar = pendingAvatarUrl;
+  console.log('[saveProfile] payload:', Object.keys(payload), opts);
 
   try {
     const res = await fetch('/api/me', {
@@ -376,6 +393,7 @@ async function saveProfile() {
       body: JSON.stringify(payload)
     });
     const data = await res.json().catch(() => ({}));
+    console.log('[saveProfile] response:', res.status, data);
     if (!res.ok) { throw new Error(data.error || 'Save failed'); }
 
     const updated = { ...s, ...data.user };
@@ -385,12 +403,14 @@ async function saveProfile() {
     document.getElementById('avatarStatus').textContent = '';
     if (updated.email) document.getElementById('emailInput').value = updated.email;
     renderAvatar(updated.username, updated.avatar);
-    showMsg('success', 'Profile saved successfully.' + (emailChanged ? ' Your new email is flagged for re-verification.' : ''));
+    if (!opts.silent) showMsg('success', 'Profile saved successfully.' + (emailChanged ? ' Your new email is flagged for re-verification.' : ''));
     try { renderAuthNav(); } catch (e) {}
   } catch(err) {
-    showMsg('error', err.message || 'Network error. Please try again.');
+    console.error('[saveProfile] error:', err);
+    if (!opts.silent) showMsg('error', err.message || 'Network error. Please try again.');
+    throw err; // let caller know it failed
   } finally {
-    btn.disabled = false; btn.textContent = 'Save Changes';
+    if (!opts.silent) { btn.disabled = false; btn.textContent = prevText; }
   }
 }
 
