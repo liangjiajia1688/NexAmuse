@@ -18,15 +18,18 @@ export async function onRequest(context) {
   if (request.method !== 'POST') return fail('Method not allowed', 405);
   const user = await authUser(request, env);
   if (!user) return fail('Unauthorized', 401);
-  // Admins bypass the member-level requirement (e.g. uploading ad creatives).
+  let form;
+  try { form = await request.formData(); } catch (e) { return fail('Invalid form data'); }
+  const purpose = (form.get('purpose') || '').toString().toLowerCase();
   const isAdmin = user.role === 'admin' || user.is_super === 1;
-  if (!isAdmin) {
+
+  // Avatar uploads are a basic profile feature open to all verified members.
+  // Other image uploads still require Premium+ (or admin).
+  if (!isAdmin && purpose !== 'avatar') {
     const perm = requireLevel(user, 'Premium', 'Upload images');
     if (!perm.ok) return fail(perm.message, perm.code);
   }
 
-  let form;
-  try { form = await request.formData(); } catch (e) { return fail('Invalid form data'); }
   const image = form.get('image');
   if (!image) return fail('No image provided');
 
