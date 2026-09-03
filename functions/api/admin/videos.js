@@ -14,8 +14,9 @@ export async function onRequest(context) {
 
   let where = '1=1';
   const binds = [];
-  if (status === 'active') where = "videos.status='active'";
-  else if (status === 'deleted') where = "videos.status='deleted'";
+  if (['active', 'deleted', 'pending', 'rejected'].includes(status)) {
+    where = `videos.status='${status}'`;
+  }
 
   const sql = `
     SELECT videos.*, users.username as creator_name, companies.name as company_name

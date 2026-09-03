@@ -21,7 +21,12 @@
   .btn-del{background:rgba(220,53,69,.1);color:#ff6b6b;border:1px solid rgba(220,53,69,.3)!important}
   .status-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
   .status-active{background:rgba(17,153,142,.15);color:#38ef7d}
+  .status-pending{background:rgba(245,158,11,.15);color:#f59e0b}
+  .status-rejected{background:rgba(248,113,113,.15);color:#ff6b6b}
   .status-deleted{background:rgba(255,107,107,.1);color:#ff6b6b}
+  .status-api{background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3)}
+  .btn-approve{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)!important}
+  .btn-reject{background:rgba(248,113,113,.12);color:#ff6b6b;border:1px solid rgba(248,113,113,.3)!important}
   .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
   .modal-box{max-width:900px;width:100%}
   .modal-body{padding:0}
@@ -57,7 +62,9 @@
         <div class="toolbar-left">
           <select id="statusFilter" class="filter-select" onchange="loadVideos()">
             <option value="all">All Status</option>
+            <option value="pending">⏳ Pending Review</option>
             <option value="active">Active</option>
+            <option value="rejected">Rejected</option>
             <option value="deleted">Deleted</option>
           </select>
           <span id="vidTotal" style="color:var(--text-muted);font-size:13px"></span>
@@ -102,18 +109,23 @@ async function loadVideos(offset=0){
 
 function vidCard(v){
   const cover = v.cover_url ? `background-image:url('${esc(v.cover_url)}')` : '';
-  const statusClass = v.status==='active'?'status-active':'status-deleted';
+  const sc = v.status==='active'?'status-active':(v.status==='pending'?'status-pending':(v.status==='rejected'?'status-rejected':'status-deleted'));
+  const sourceBadge = v.source==='youtube_api' ? ' <span class="status-badge status-api">🤖 Auto</span>' : '';
+  const modBtns = v.status==='pending'
+    ? `<button class="btn-approve" onclick="moderateVideo(${v.id},'approve',this)">✅ Approve</button>
+       <button class="btn-reject" onclick="moderateVideo(${v.id},'reject',this)">❌ Reject</button>`
+    : (v.status!=='deleted' ? `<button class="btn-del" onclick="deleteVideo(${v.id},this)">🗑 Delete</button>` : `<button class="btn-del" onclick="hardDeleteVideo(${v.id},this)">⚠ Permanently Delete</button>`);
   return `<div class="vid-card">
     <div class="vid-thumb" style="${cover}" onclick="playVideo(${v.id})"><span>▶</span></div>
     <div class="vid-body">
       <div class="vid-title">${esc(v.title||'Untitled')}</div>
-      <div class="vid-meta"><span class="status-badge ${statusClass}">${esc(v.status||'active')}</span> · ${esc(v.platform||'video')}</div>
+      <div class="vid-meta"><span class="status-badge ${sc}">${esc(v.status||'active')}</span> · ${esc(v.platform||'video')}${sourceBadge}</div>
       <div class="vid-meta">${v.company_name ? '🏢 '+esc(v.company_name) : '👤 '+esc(v.creator_name||'Unknown')}</div>
       <div class="vid-meta">URL: <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url).slice(0,40)}${v.url.length>40?'…':''}</a></div>
       <div class="vid-meta">${fmtDate(v.created_at)}</div>
       <div class="vid-actions">
         <button class="btn-play" onclick="playVideo(${v.id})">▶ Play</button>
-        ${v.status!=='deleted' ? `<button class="btn-del" onclick="deleteVideo(${v.id},this)">🗑 Delete</button>` : `<button class="btn-del" onclick="hardDeleteVideo(${v.id},this)">⚠ Permanently Delete</button>`}
+        ${modBtns}
       </div>
     </div>
   </div>`;
@@ -170,6 +182,18 @@ function renderPager(total){
 }
 
 document.getElementById('playModal').addEventListener('click', e=>{ if(e.target===document.getElementById('playModal')) closeModal(); });
+async function moderateVideo(id, action, btn){
+  if(!confirm(action==='approve'?'Approve and publish this video publicly?':'Reject this video (it will not be published)?')) return;
+  btn.disabled = true;
+  try{
+    const res = await fetch('/api/admin/videos/'+id, {method:'PATCH', headers:apiHeaders(), body:JSON.stringify({action})});
+    const d = await res.json();
+    if(d.ok){ showToast(action==='approve'?'Video approved & published':'Video rejected','success'); loadVideos(currentOffset); }
+    else showToast(d.error||'Failed','error');
+  }catch(e){ showToast('Network error','error'); }
+  btn.disabled = false;
+}
+
 document.addEventListener('DOMContentLoaded', ()=> loadVideos(0));
 </script>
 </body>
