@@ -430,6 +430,13 @@ async function publishToApi(){
       });
     }
 
+    // Featured image (AI-generated cover)
+    const coverInput = document.getElementById('coverInput');
+    if(coverInput && data.cover){
+      coverInput.value = data.cover;
+      renderCoverPreview(data.cover);
+    }
+
     showToast('AI article loaded — ready to edit!','success');
     sessionStorage.removeItem('ai_edit_article');
   } catch(e){ console.warn('AI article load failed',e); }
