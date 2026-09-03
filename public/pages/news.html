@@ -305,8 +305,12 @@ document.addEventListener('DOMContentLoaded', function loadLiveNews(){
     const url = n.url || '#';
     const source = esc(n.source || 'News');
     const d = fmt(n.published_at);
+    const coverStyle = n.image
+      ? `background-image:url('${n.image.replace(/'/g, "\\'")}');background-size:cover;background-position:center;`
+      : 'background:linear-gradient(135deg,#1a2540,#0d1530);';
+    const coverInner = n.image ? '' : emoji;
     featured.innerHTML = `
-      <a href="${url}" target="_blank" rel="noopener" class="cover" style="text-decoration:none;background:linear-gradient(135deg,#1a2540,#0d1530);">${emoji}</a>
+      <a href="${url}" target="_blank" rel="noopener" class="cover" style="text-decoration:none;${coverStyle}">${coverInner}</a>
       <div class="body">
         <span class="badge badge-gold" style="margin-bottom:12px;">★ FEATURED STORY</span>
         <h2 style="color:#fff;margin-bottom:12px;font-size:clamp(1.3rem,3vw,2rem);"><a href="${url}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;">${title}</a></h2>
@@ -346,8 +350,11 @@ document.addEventListener('DOMContentLoaded', function loadLiveNews(){
       const url = n.url || '#';
       const source = esc(n.source || 'News');
       const d = fmt(n.published_at);
+      const thumbStyle = n.image
+        ? `background-image:url('${n.image.replace(/'/g, "\\'")}');background-size:cover;background-position:center;background-color:#1e2e3b;`
+        : 'background:linear-gradient(135deg,#1e2e3b,#0d1825);';
       return `<div class="news-item-full filterable-item" data-category="${cat}">
-        <div class="thumb" style="background:linear-gradient(135deg,#1e2e3b,#0d1825);">${emoji}</div>
+        <div class="thumb" style="${thumbStyle}">${n.image ? '' : emoji}</div>
         <div class="body">
           <span class="card-tag">${source}</span>
           <div class="title"><a href="${url}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;" onclick="event.stopPropagation()">${title}</a></div>

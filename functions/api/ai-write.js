@@ -157,9 +157,10 @@ function bufToBase64(buf) {
 // Pollinations URL if tutu.to fails, or null if image generation itself fails.
 async function generateCover(article, env) {
   const theme = (article.category || 'amusement industry').replace(/[^a-z0-9 ]/gi, '').trim();
-  const prompt = `Professional vibrant photograph of a modern family entertainment center and arcade, VR headsets and neon lighting, happy families, cinematic 4k, no text, theme: ${theme}`;
+  const prompt = `Bright, clean editorial photograph of a modern family entertainment center and arcade in soft daylight, warm sunlight, happy diverse families and kids enjoying games and VR attractions, colorful and inviting, airy open space, professional magazine cover style, high detail, no text, theme: ${theme}`;
+  const neg = 'dark, night, neon, moody, gloomy, low-light, horror, text, watermark, logo';
   const seed = Math.floor(Math.random() * 1000000);
-  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1200&height=630&nologo=true&model=flux&seed=${seed}`;
+  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1200&height=630&nologo=true&model=flux&seed=${seed}&negative_prompt=${encodeURIComponent(neg)}`;
   const imgRes = await fetch(imgUrl, { redirect: 'follow' });
   if (!imgRes.ok) return null;
   const buf = await imgRes.arrayBuffer();

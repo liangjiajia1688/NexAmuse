@@ -88,9 +88,45 @@ export async function onRequestPost(context) {
   const message = String(body.message || '').trim();
   if (!message) return fail('message is required', 400);
 
-  // Optional: if an AI key is configured AND enableAi is on, you could route
-  // here. For now we stay fully rule-based as requested.
+  // Keep rule-based intent matching for relevant deep links.
   const intent = matchIntent(message);
+  const links = intent ? intent.links : [];
+
+  // If an AI key is configured, route the message to the LLM for a real answer.
+  const API_KEY = env.AI_API_KEY;
+  if (API_KEY) {
+    const BASE = env.AI_BASE_URL || 'https://api.openai.com/v1';
+    const PRIMARY = env.AI_MODEL || 'gpt-4o-mini';
+    const FALLBACK_MODELS = [
+      'minimax/minimax-m3:free',
+      'nvidia/nemotron-3-ultra-550b-a55b:free',
+      'z-ai/glm-5.2:free',
+      'google/gemma-4-26b-a4b-it:free',
+    ];
+    const MODELS = Array.from(new Set([PRIMARY, ...FALLBACK_MODELS]));
+    const sys = `You are Nex, the friendly AI assistant for NexAmuse Global — a B2B intelligence platform for the global amusement, arcade, VR/XR, family-entertainment-center (FEC) and attractions industry. Answer concisely and helpfully in the user's language. You may discuss amusement industry topics, products, suppliers, exhibitions, membership, and general questions. If you don't know a specific fact, say so. Keep replies under 120 words.`;
+    let lastErr = '';
+    for (const model of MODELS) {
+      try {
+        const upstream = await fetch(`${BASE}/chat/completions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}` },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: 'system', content: sys }, { role: 'user', content: message }],
+            temperature: 0.6,
+            max_tokens: 300,
+          }),
+        });
+        if (!upstream.ok) { lastErr = `LLM ${model} ${upstream.status}`; continue; }
+        const data = await upstream.json();
+        const text = (data?.choices?.[0]?.message?.content || '').trim();
+        if (text) return json({ ok: true, text, links, ai: true });
+      } catch (e) { lastErr = `err ${model}: ${e.message}`; continue; }
+    }
+    // fall through to rule-based if all models fail
+  }
+
   const reply = intent || FALLBACK;
   return json({ ok: true, text: reply.text, links: reply.links || [] });
 }

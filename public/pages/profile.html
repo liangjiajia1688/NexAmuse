@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>My Profile — NexAmuse Global</title>
+<meta name="description" content="Manage your NexAmuse Global account profile, username and avatar."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<style>
+.profile-hero{background:linear-gradient(135deg,#0a0e1a 0%,#12192e 60%,#1a1208 100%);border-bottom:1px solid rgba(201,162,39,.2);padding:52px 0 40px;position:relative;overflow:hidden}
+.profile-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(201,162,39,.07),transparent);pointer-events:none}
+.profile-hero h1{font-family:'Playfair Display',serif;font-size:2.4rem;color:#fff;margin-bottom:10px}
+.profile-hero p{color:#9aa0b4;font-size:1rem;max-width:560px}
+
+.profile-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:28px;margin-bottom:24px}
+.profile-card h3{font-family:'Playfair Display',serif;font-size:1.25rem;color:#fff;margin:0 0 18px}
+
+.avatar-wrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-bottom:24px}
+.avatar-preview{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#c9a227,#f5d06e);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:700;color:#0a0e1a;overflow:hidden;flex-shrink:0;border:3px solid rgba(201,162,39,.3)}
+.avatar-preview img{width:100%;height:100%;object-fit:cover}
+.avatar-actions{display:flex;flex-direction:column;gap:8px}
+.avatar-hint{font-size:.78rem;color:#6b7280}
+
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:.82rem;color:#9aa0b4;margin-bottom:7px;font-weight:500}
+.form-input-wrap{position:relative}
+.form-input-wrap input,.form-input-wrap select{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px;color:#e2e8f0;font-size:.9rem;outline:none;transition:all .25s;font-family:'Inter',sans-serif}
+.form-input-wrap input:focus,.form-input-wrap select:focus{border-color:#c9a227;background:rgba(201,162,39,.04)}
+.form-input-wrap input:disabled{opacity:.6;cursor:not-allowed}
+
+.readonly-row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;margin-bottom:12px}
+.readonly-label{font-size:.82rem;color:#9aa0b4}
+.readonly-value{font-size:.9rem;color:#e2e8f0;font-weight:500}
+
+.btn-gold{padding:12px 24px;background:linear-gradient(135deg,#c9a227,#f5d06e);border:none;border-radius:10px;color:#0a0e1a;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .25s;font-family:'Inter',sans-serif}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(201,162,39,.35)}
+.btn-gold:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-outline{padding:10px 18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#e2e8f0;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.btn-outline:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18)}
+
+.msg{display:none;padding:12px 16px;border-radius:8px;font-size:.85rem;margin-bottom:16px}
+.msg.success{background:rgba(86,171,47,.12);border:1px solid rgba(86,171,47,.25);color:#86efac}
+.msg.error{background:rgba(238,9,121,.10);border:1px solid rgba(238,9,121,.25);color:#fca5a5}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-top:20px}
+.stat-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px;text-align:center}
+.stat-box .num{font-size:1.6rem;font-weight:800;color:#c9a227}
+.stat-box .label{font-size:.78rem;color:#6b7280;margin-top:4px}
+
+@media(max-width:768px){
+  .profile-hero h1{font-size:1.8rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────────────────────── -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="../index.html" class="logo">
+      <div class="logo-icon">N</div>
+      <div>
+        <div class="logo-text">Nex<span>Amuse</span></div>
+        <div class="logo-sub">Global Portal</div>
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li>
+        <a href="products.html">Products ▾</a>
+        <div class="dropdown-menu">
+          <a href="products.html?cat=arcade">Arcade Machines</a>
+          <a href="products.html?cat=vr">VR / XR Attractions</a>
+          <a href="products.html?cat=kids">Kids & Family Rides</a>
+          <a href="products.html?cat=redemption">Redemption & Prize</a>
+          <a href="products.html?cat=simulation">Simulation Rides</a>
+          <a href="products.html?cat=outdoor">Outdoor Attractions</a>
+          <a href="products.html?cat=waterpark">Water Park Equipment</a>
+          <a href="products.html?cat=accessories">Accessories & Parts</a>
+        </div>
+      </li>
+      <li>
+        <a href="news.html">News ▾</a>
+        <div class="dropdown-menu">
+          <a href="news.html?cat=industry">Industry Dynamics</a>
+          <a href="news.html?cat=companies">Company News</a>
+          <a href="news.html?cat=interviews">Executive Interviews</a>
+          <a href="news.html?cat=newproducts">New Product Releases</a>
+          <a href="news.html?cat=regulations">Regulations & Compliance</a>
+        </div>
+      </li>
+      <li><a href="suppliers.html">Suppliers</a></li>
+      <li>
+        <a href="exhibitions.html">Exhibitions ▾</a>
+        <div class="dropdown-menu">
+          <a href="exhibitions.html#calendar">Exhibition Calendar</a>
+          <a href="exhibitions.html#reports">Show Reports</a>
+          <a href="exhibitions.html#register">Pre-Register</a>
+        </div>
+      </li>
+      <li><a href="news.html">Articles</a></li>
+      <li><a href="forum.html">Forum</a></li>
+      <li><a href="member-points.html">Points</a></li>
+      <li><a href="magazine.html">Videos</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="search-btn js-open-search">🔍 Search</button>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-menu-close" id="mobileClose">✕</button>
+  <ul class="mobile-nav-links">
+    <li><a href="../index.html">🏠 Home</a></li>
+    <li><a href="products.html">🎮 Products</a></li>
+    <li><a href="news.html">📰 News & Articles</a></li>
+    <li><a href="suppliers.html">🏭 Suppliers</a></li>
+    <li><a href="exhibitions.html">🎪 Exhibitions</a></li>
+    <li><a href="forum.html">💬 Forum</a></li>
+    <li><a href="member-points.html">⭐ Points</a></li>
+    <li><a href="magazine.html">🎬 Videos</a></li>
+    <li><a href="contact.html">📩 Contact</a></li>
+  </ul>
+  <div class="mobile-auth-wrap" style="margin-top:32px;display:flex;flex-direction:column;gap:12px"></div>
+</div>
+
+<!-- Search Overlay -->
+<div class="search-overlay" id="searchOverlay">
+  <button class="search-close" id="searchClose">✕</button>
+  <div class="search-box">
+    <h2>Search NexAmuse Global</h2>
+    <div class="search-input-wrap">
+      <input type="text" placeholder="Search products, suppliers, news…" autofocus/>
+      <button>Search</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── HERO ─────────────────────────────────────────────────── -->
+<section class="profile-hero">
+  <div class="container">
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.2);border-radius:20px;padding:5px 14px;font-size:12px;color:#c9a227;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">👤 Account Settings</div>
+    <h1>My Profile</h1>
+    <p>Update your display name, login email and avatar. Changes are saved to your account instantly.</p>
+  </div>
+</section>
+
+<!-- ── MAIN CONTENT ─────────────────────────────────────────── -->
+<div class="container" style="padding:40px 0 70px">
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start">
+
+    <!-- LEFT: Edit form -->
+    <div>
+      <div id="msg" class="msg"></div>
+
+      <div class="profile-card">
+        <h3>Public Profile</h3>
+
+        <div class="avatar-wrap">
+          <div class="avatar-preview" id="avatarPreview">?</div>
+          <div class="avatar-actions">
+            <div style="display:flex;gap:10px">
+              <button type="button" class="btn-outline" onclick="document.getElementById('avatarInput').click()">Upload Avatar</button>
+              <button type="button" class="btn-outline" id="removeAvatarBtn" style="display:none;color:#f87171;border-color:rgba(248,113,113,.2)" onclick="removeAvatar()">Remove</button>
+            </div>
+            <div class="avatar-hint">JPG / PNG / WEBP · Max 5MB · Square recommended</div>
+            <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="onAvatarChange(event)">
+            <div id="avatarStatus" style="font-size:.8rem;color:#6b7280;min-height:20px"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Display Name (Username)</label>
+          <div class="form-input-wrap">
+            <input type="text" id="usernameInput" placeholder="your_username" maxlength="32"/>
+          </div>
+          <div style="font-size:.75rem;color:#6b7280;margin-top:5px">3-32 characters, letters, numbers, underscore, hyphen or dot only.</div>
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <div class="form-input-wrap">
+            <input type="email" id="emailInput" placeholder="you@example.com" maxlength="120" autocomplete="email"/>
+          </div>
+          <div style="font-size:.75rem;color:#6b7280;margin-top:5px">Login email. Changing it flags the address for re-verification.</div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px">
+          <button type="button" class="btn-gold" id="saveBtn" onclick="saveProfile()">Save Changes</button>
+          <a href="../index.html" class="btn-outline" style="text-decoration:none;display:inline-flex;align-items:center">Cancel</a>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <h3>Account Security</h3>
+        <p style="color:#9aa0b4;font-size:.88rem;line-height:1.6;margin:0 0 16px">Need to change your password? Sign out and use the forgot-password flow, or contact support.</p>
+        <button type="button" class="btn-outline" onclick="frontendLogout();setTimeout(()=>location.href='login.html',200)">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Summary -->
+    <div>
+      <div class="profile-card">
+        <h3>Account Summary</h3>
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="num" id="levelStat">—</div>
+            <div class="label">Level</div>
+          </div>
+          <div class="stat-box">
+            <div class="num" id="pointsStat">—</div>
+            <div class="label">Points</div>
+          </div>
+          <div class="stat-box">
+            <div class="num" id="roleStat">—</div>
+            <div class="label">Role</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2026 NexAmuse Global. All rights reserved.</p>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy</a><a href="#">Terms</a><a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+<script>
+const SESSION_KEY = 'nexamuse_user';
+let currentUser = null;
+let pendingAvatarUrl = null;
+
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
+  catch(e){ return null; }
+}
+
+function showMsg(type, text) {
+  const el = document.getElementById('msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  el.style.display = 'block';
+}
+function hideMsg() { document.getElementById('msg').style.display = 'none'; }
+
+function renderAvatar(name, avatar) {
+  const box = document.getElementById('avatarPreview');
+  if (avatar) {
+    box.innerHTML = `<img src="${avatar}" alt="avatar">`;
+    document.getElementById('removeAvatarBtn').style.display = 'inline-block';
+  } else {
+    box.textContent = (name || '?').charAt(0).toUpperCase();
+    document.getElementById('removeAvatarBtn').style.display = 'none';
+  }
+}
+
+function initPage() {
+  const s = getSession();
+  if (!s || !s.token) { location.href = 'login.html'; return; }
+
+  currentUser = s;
+  document.getElementById('emailInput').value = s.email || '';
+  document.getElementById('usernameInput').value = s.username || '';
+  document.getElementById('levelStat').textContent = s.level || 'Standard';
+  document.getElementById('pointsStat').textContent = (typeof s.points === 'number' ? s.points : 0);
+  document.getElementById('roleStat').textContent = s.role === 'admin' ? 'Admin' : 'Member';
+  renderAvatar(s.username, s.avatar);
+
+  // Sync latest profile from server
+  syncUser().then(u => {
+    if (u && u.user) {
+      currentUser = { ...s, ...u.user };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+      document.getElementById('usernameInput').value = currentUser.username || '';
+      document.getElementById('levelStat').textContent = currentUser.level || 'Standard';
+      document.getElementById('pointsStat').textContent = (typeof currentUser.points === 'number' ? currentUser.points : 0);
+      renderAvatar(currentUser.username, currentUser.avatar);
+    }
+  });
+}
+
+async function onAvatarChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showMsg('error','Please select an image file.'); return; }
+  if (file.size > 5 * 1024 * 1024) { showMsg('error','Image must be smaller than 5MB.'); return; }
+
+  const status = document.getElementById('avatarStatus');
+  status.textContent = 'Uploading…';
+  status.style.color = '#c9a227';
+
+  try {
+    const dataUrl = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    const s = getSession();
+    const fd = new FormData();
+    fd.append('image', dataUrl);
+    const r = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + s.token }, body: fd });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || 'Upload failed');
+
+    pendingAvatarUrl = data.url;
+    renderAvatar(currentUser.username, pendingAvatarUrl);
+    status.textContent = 'Avatar saved.';
+    status.style.color = '#34d399';
+    saveProfile(); // auto-persist so the change feels instant
+  } catch(err) {
+    status.textContent = 'Upload failed: ' + (err.message || 'unknown error');
+    status.style.color = '#f87171';
+  }
+}
+
+function removeAvatar() {
+  pendingAvatarUrl = '';
+  renderAvatar(currentUser.username, null);
+  document.getElementById('avatarStatus').textContent = 'Avatar removed.';
+  document.getElementById('avatarStatus').style.color = '#f87171';
+  saveProfile(); // auto-persist
+}
+
+async function saveProfile() {
+  const s = getSession();
+  if (!s || !s.token) { location.href = 'login.html'; return; }
+
+  const username = document.getElementById('usernameInput').value.trim();
+  const email = document.getElementById('emailInput').value.trim();
+  const usernameChanged = username && username !== (currentUser.username || '');
+  const emailChanged = email && email !== (s.email || '');
+
+  if (!username) {
+    showMsg('error', 'Username is required.');
+    return;
+  }
+  if (usernameChanged && !/^[a-zA-Z0-9_\-\.]{3,32}$/.test(username)) {
+    showMsg('error', 'Username must be 3-32 characters and contain only letters, numbers, underscores, hyphens or dots.');
+    return;
+  }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showMsg('error', 'Please enter a valid email address.');
+    return;
+  }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  hideMsg();
+
+  const payload = { username };
+  if (emailChanged) payload.email = email;
+  if (pendingAvatarUrl !== null) payload.avatar = pendingAvatarUrl;
+
+  try {
+    const res = await fetch('/api/me', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + s.token },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { throw new Error(data.error || 'Save failed'); }
+
+    const updated = { ...s, ...data.user };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(updated));
+    currentUser = updated;
+    pendingAvatarUrl = null;
+    document.getElementById('avatarStatus').textContent = '';
+    if (updated.email) document.getElementById('emailInput').value = updated.email;
+    renderAvatar(updated.username, updated.avatar);
+    showMsg('success', 'Profile saved successfully.' + (emailChanged ? ' Your new email is flagged for re-verification.' : ''));
+    try { renderAuthNav(); } catch (e) {}
+  } catch(err) {
+    showMsg('error', err.message || 'Network error. Please try again.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Changes';
+  }
+}
+
+initPage();
+</script>
+<script src="/assets/js/assistant-widget.js" defer></script>
+</body>
+</html>

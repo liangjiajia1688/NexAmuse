@@ -29,8 +29,13 @@ button{cursor:pointer;font-family:inherit}
 .logo-sub{font-size:10px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase}
 .sidebar-toggle{margin-left:auto;background:none;border:none;color:var(--text-muted);font-size:18px;display:none}
 .sidebar-nav{padding:12px 0;flex:1}
-.nav-section{margin-bottom:4px}
-.nav-section-title{padding:10px 20px 4px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted)}
+.nav-section{margin-bottom:2px}
+.nav-section-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:12px 20px 8px;user-select:none;transition:background .2s}
+.nav-section-head:hover{background:rgba(255,255,255,.04)}
+.nav-section-head:hover .nav-section-title{color:var(--text)}
+.nav-section-title{padding:0;font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);transition:color .2s}
+.nav-section-chevron{color:var(--text-muted);font-size:10px;font-family:monospace}
+.nav-section-items{display:flex;flex-direction:column}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--text-muted);transition:all .2s;border-left:2px solid transparent;font-size:13px}
 .nav-item:hover{color:var(--text);background:rgba(255,255,255,.04);border-left-color:rgba(212,175,55,.4)}
 .nav-item.active{color:var(--gold);background:rgba(212,175,55,.08);border-left-color:var(--gold)}

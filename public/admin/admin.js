@@ -89,8 +89,9 @@ const NAV = [
     { href: 'news-crawler.html',      icon: '📡', label: 'RSS News',        page: 'news-crawler' },
     { href: 'news-categories.html',   icon: '🏷️', label: 'News Categories', page: 'news-categories', badge:'NEW' },
   ]},
-  { section: 'Directory', items: [
+  { section: 'Company', items: [
     { href: 'companies.html',     icon: '🏭', label: 'Company Directory', page: 'companies', badge:'NEW' },
+    { href: 'leads.html',         icon: '🤝', label: 'Business Leads',    page: 'leads', badge:'NEW' },
   ]},
   { section: 'Forum', items: [
     { href: 'forum.html',         icon: '💬', label: 'Forum Posts',      page: 'forum' },
@@ -108,6 +109,7 @@ const NAV = [
   ]},
   { section: 'Media', items: [
     { href: 'gallery.html', icon: '🖼', label: 'Gallery / Albums', page: 'gallery' },
+    { href: 'videos.html',  icon: '🎬', label: 'Videos',           page: 'videos', badge:'NEW' },
     { href: 'files.html',   icon: '💾', label: 'File Manager',     page: 'files' },
   ]},
   { section: 'Administration', items: [
@@ -122,14 +124,22 @@ const NAV = [
   ]},
 ];
 
-// ── Render Sidebar ────────────────────────────────────────────────
+// ── Render Sidebar (collapsible 1st/2nd level accordion) ───────────
 (function renderNav() {
   const nav = document.getElementById('sidebarNav');
   if (!nav) return;
   const currentPage = window.location.pathname.split('/').pop().replace('.html','');
   let html = '';
   NAV.forEach(sec => {
-    html += `<div class="nav-section"><div class="nav-section-title">${sec.section}</div>`;
+    const isActiveSec = sec.items.some(it => (it.page && it.page === currentPage) || it.href.includes(currentPage));
+    const collapsed = !isActiveSec ? 'none' : '';
+    const chevron = isActiveSec ? '▾' : '▸';
+    html += `<div class="nav-section">
+      <div class="nav-section-head" onclick="toggleNavSection(this)">
+        <span class="nav-section-title">${sec.section}</span>
+        <span class="nav-section-chevron">${chevron}</span>
+      </div>
+      <div class="nav-section-items" style="display:${collapsed}">`;
     sec.items.forEach(item => {
       const active = (item.page === currentPage || item.href.includes(currentPage)) && currentPage ? 'active' : '';
       const badge = item.badge ? `<span class="badge ${item.badge==='NEW'?'new':''}">${item.badge}</span>` : '';
@@ -139,10 +149,19 @@ const NAV = [
         <span class="nav-label">${item.label}</span>${badge}
       </a>`;
     });
-    html += '</div>';
+    html += `</div></div>`;
   });
   nav.innerHTML = html;
 })();
+
+function toggleNavSection(head) {
+  const sec = head.closest('.nav-section');
+  const items = sec.querySelector('.nav-section-items');
+  const chev = head.querySelector('.nav-section-chevron');
+  const isHidden = items.style.display === 'none';
+  items.style.display = isHidden ? '' : 'none';
+  chev.textContent = isHidden ? '▾' : '▸';
+}
 
 // ── Sidebar Toggle ────────────────────────────────────────────────
 function toggleSidebar() {

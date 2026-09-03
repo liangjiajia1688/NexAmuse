@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leads — NexAmuse Admin</title>
+<link rel="stylesheet" href="admin.css">
+<style>
+  .lead-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+  .csv-table{border-collapse:collapse;width:100%;font-size:13px}
+  .csv-table th,.csv-table td{border:1px solid var(--border);padding:8px 10px;text-align:left;color:#e2e8f0}
+  .csv-table th{background:rgba(212,175,55,.12);color:var(--gold);font-weight:600;position:sticky;top:0}
+  .lead-item{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,.02)}
+  .lead-item .li-name{font-weight:600;color:#e2e8f0}
+  .lead-item .li-meta{font-size:12px;color:var(--text-muted)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;background:rgba(212,175,55,.15);color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🎮</span><div><div class="logo-text">NexAmuse</div><div class="logo-sub">Global Admin</div></div></div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left"><button class="mobile-toggle" id="mobileToggle">☰</button><div class="breadcrumb">CRM › <span>Leads</span></div></div>
+      <div class="header-right"><div class="header-user-wrap" style="position:relative">
+        <button class="header-user" id="userMenuBtn" onclick="toggleUserMenu()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;transition:.2s" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+          <div class="user-avatar">A</div><span style="color:var(--text-muted);font-size:13px">Admin</span><span style="color:var(--text-muted);font-size:10px">▼</span>
+        </button>
+        <div id="userDropdown" class="user-dropdown">
+          <div class="user-dropdown-info"><div style="font-weight:600;color:#e2e8f0;font-size:13px">Administrator</div><div style="font-size:11px;color:var(--text-muted)">admin@nexamuse.com</div></div>
+          <div class="user-dropdown-divider"></div>
+          <a href="settings.html" class="user-dropdown-item">⚙️ Account Settings</a>
+          <a href="../index.html" target="_blank" class="user-dropdown-item">🌐 View Website</a>
+          <div class="user-dropdown-divider"></div>
+          <a href="#" class="user-dropdown-item user-dropdown-logout" onclick="adminLogout();return false;">🚪 Sign Out</a>
+        </div>
+      </div></div>
+    </header>
+    <div class="admin-content">
+      <div class="page-title"><h1>招商线索 / Lead Import</h1><p>从展会官网抓取的参展商线索，导入为 <code>companies</code> 草稿（status=lead）。当前来源：GTI China 2026。按 email / phone 自动去重。</p></div>
+
+      <div class="lead-card">
+        <h3>导入 CSV</h3>
+        <p style="color:var(--text-muted);font-size:13px;margin:6px 0 12px">CSV 首行为表头，列：<code>company_name, contact_name, phone, email, address, website, source, product</code>。导出的 exhibitors.csv 已含这些列。</p>
+        <input type="file" id="csvFile" accept=".csv" onchange="onCsv(event)">
+        <div id="previewWrap" style="margin-top:16px;display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span id="previewCount" style="color:var(--text-muted);font-size:13px"></span>
+            <button class="btn-primary" id="importBtn" onclick="importLeads()">导入</button>
+          </div>
+          <div style="overflow:auto;max-height:340px;border:1px solid var(--border);border-radius:10px">
+            <table id="previewTable" class="csv-table"></table>
+          </div>
+        </div>
+      </div>
+
+      <div class="lead-card">
+        <h3>已导入线索 <span class="badge" id="leadTotal">0</span></h3>
+        <div id="leadList" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="leadEditOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100000;align-items:center;justify-content:center">
+  <div style="background:var(--secondary);border:1px solid var(--border);border-radius:14px;width:480px;max-width:92vw;max-height:88vh;overflow:auto;padding:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin:0;color:#fff">编辑线索</h3><button onclick="closeLeadEdit()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;line-height:1">×</button></div>
+    <form id="leadEditForm">
+      <input type="hidden" id="leId">
+      <div class="fld"><label>公司名称</label><input id="leName" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:#e2e8f0"></div>
+      <div class="fld"><label>联系人</label><input id="leContact" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:#e2e8f0"></div>
+      <div class="fld"><label>手机</label><input id="lePhone" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:#e2e8f0"></div>
+      <div class="fld"><label>邮箱</label><input id="leEmail" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:#e2e8f0"></div>
+      <div style="display:flex;gap:12px"><div class="fld" style="flex:1"><label>城市</label><input id="leCity" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:#e2e8f0"></div><div class="fld" style="flex:1"><label>国家</label><input id="leCountry" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:#e2e8f0"></div></div>
+      <div class="fld"><label>网站</label><input id="leWebsite" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:#e2e8f0"></div>
+      <div class="fld"><label>来源</label><input id="leSource" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:#e2e8f0"></div>
+      <div class="fld"><label>描述</label><textarea id="leDesc" rows="3" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:#e2e8f0;resize:vertical"></textarea></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px"><button type="button" class="btn-ghost" onclick="closeLeadEdit()">取消</button><button type="submit" class="btn-primary">保存</button></div>
+    </form>
+  </div>
+</div>
+<script src="admin.js"></script>
+<script>
+let currentRows = [];
+
+function splitCSVLine(line){
+  const out=[]; let cur='', q=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(q){ if(c==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else { if(c==='"') q=true; else if(c===','){ out.push(cur); cur=''; } else cur+=c; }
+  }
+  out.push(cur);
+  return out;
+}
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/,'');
+  const lines = text.split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length) return [];
+  const header = splitCSVLine(lines[0]).map(h=>h.trim());
+  const rows = [];
+  for(let i=1;i<lines.length;i++){
+    const cells = splitCSVLine(lines[i]);
+    const row = {};
+    header.forEach((h,idx)=> row[h] = (cells[idx]!==undefined?cells[idx]:'').trim());
+    rows.push(row);
+  }
+  return rows;
+}
+function onCsv(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseCSV(reader.result);
+    currentRows = rows.map(r=>({
+      company_name: r.company_name||'', contact_name: r.contact_name||'',
+      phone: r.phone||'', email: r.email||'', address: r.address||'',
+      website: r.website||'', source: r.source||'GTI China 2026', products: r.product||''
+    })).filter(r=> r.email || r.phone);
+    renderPreview(currentRows);
+  };
+  reader.readAsText(file);
+}
+function renderPreview(rows){
+  const wrap = document.getElementById('previewWrap');
+  const tbl = document.getElementById('previewTable');
+  const cnt = document.getElementById('previewCount');
+  if(!rows.length){ wrap.style.display='none'; showToast('未解析到有效行（需 email 或 phone）','warning'); return; }
+  wrap.style.display='block';
+  cnt.textContent = `共 ${rows.length} 条待导入（按 email/phone 去重）`;
+  const head = '<tr><th>公司</th><th>联系人</th><th>手机</th><th>邮箱</th><th>地址</th><th>来源</th></tr>';
+  const body = rows.slice(0,50).map(r=>`<tr><td>${esc(r.company_name||'(待补)')}</td><td>${esc(r.contact_name)}</td><td>${esc(r.phone)}</td><td>${esc(r.email)}</td><td>${esc(r.address)}</td><td>${esc(r.source)}</td></tr>`).join('');
+  tbl.innerHTML = head + body + (rows.length>50?`<tr><td colspan=6 style="text-align:center;color:var(--text-muted)">…另有 ${rows.length-50} 条</td></tr>`:'');
+}
+async function importLeads(){
+  if(!currentRows.length) return;
+  const btn = document.getElementById('importBtn');
+  btn.disabled = true;
+  try{
+    const res = await fetch('/api/admin/leads',{method:'POST',headers:apiHeaders(),body:JSON.stringify({rows:currentRows})});
+    const d = await res.json();
+    if(d.ok){ showToast(`导入完成：新增 ${d.inserted}，跳过 ${d.skipped}（重复）`,'success'); currentRows=[]; document.getElementById('previewWrap').style.display='none'; loadLeads(); }
+    else showToast('导入失败：'+(d.error||'未知错误'),'error');
+  }catch(err){ showToast('网络错误','error'); }
+  btn.disabled = false;
+}
+async function loadLeads(){
+  try{
+    const res = await fetch('/api/admin/leads',{headers:apiHeaders()});
+    const d = await res.json();
+    const list = document.getElementById('leadList');
+    document.getElementById('leadTotal').textContent = (d.leads||[]).length;
+    if(!d.leads || !d.leads.length){ list.innerHTML = '<p style="color:var(--text-muted);font-size:13px">暂无线索。导入 CSV 后在此显示。</p>'; return; }
+    list.innerHTML = d.leads.slice(0,100).map(l=>`<div class="lead-item"><div><div class="li-name">${esc(l.name)}</div><div class="li-meta">${esc(l.contact_name||'')} · ${esc(l.phone||'')} · ${esc(l.email||'')}</div></div><div style="text-align:right"><div class="li-meta">${esc(l.city||'')} ${esc(l.country||'')}</div><div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end"><button class="btn-ghost" style="padding:6px 12px;font-size:12px" onclick="editLead(${l.id})">Edit</button><button class="btn-danger" style="padding:6px 12px;font-size:12px" onclick="deleteLead(${l.id})">Delete</button><button class="btn-primary" style="padding:6px 14px;font-size:12px" onclick="approveLead(${l.id},this)">Approve</button></div><div class="badge" style="margin-top:6px;">${esc(l.source||'')}</div></div></div>`).join('');
+  }catch(e){}
+}
+async function approveLead(id, btn){
+  if(!confirm('Approve this lead and publish the company profile?')) return;
+  btn.disabled = true;
+  try{
+    const res = await fetch('/api/admin/leads/'+id,{method:'POST',headers:apiHeaders()});
+    const d = await res.json();
+    if(d.ok){ showToast('Lead approved','success'); loadLeads(); }
+    else showToast(d.error||'Approve failed','error');
+  }catch(e){ showToast('Network error','error'); }
+  btn.disabled = false;
+}
+function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+async function editLead(id){
+  const res = await fetch('/api/admin/leads/'+id,{headers:apiHeaders()});
+  const d = await res.json();
+  if(!d.ok){ showToast(d.error||'加载失败','error'); return; }
+  const c=d.company;
+  document.getElementById('leId').value=c.id;
+  document.getElementById('leName').value=c.name||'';
+  document.getElementById('leContact').value=c.contact_name||'';
+  document.getElementById('lePhone').value=c.phone||'';
+  document.getElementById('leEmail').value=c.email||'';
+  document.getElementById('leCity').value=c.city||'';
+  document.getElementById('leCountry').value=c.country||'';
+  document.getElementById('leWebsite').value=c.website||'';
+  document.getElementById('leSource').value=c.source||'';
+  document.getElementById('leDesc').value=c.description||'';
+  document.getElementById('leadEditOverlay').style.display='flex';
+}
+function closeLeadEdit(){ document.getElementById('leadEditOverlay').style.display='none'; }
+document.getElementById('leadEditForm')?.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const id=document.getElementById('leId').value;
+  const payload={
+    name:document.getElementById('leName').value,
+    contact_name:document.getElementById('leContact').value,
+    phone:document.getElementById('lePhone').value,
+    email:document.getElementById('leEmail').value,
+    city:document.getElementById('leCity').value,
+    country:document.getElementById('leCountry').value,
+    website:document.getElementById('leWebsite').value,
+    source:document.getElementById('leSource').value,
+    description:document.getElementById('leDesc').value
+  };
+  const btn=e.submitter; btn.disabled=true;
+  try{
+    const res=await fetch('/api/admin/leads/'+id,{method:'PUT',headers:apiHeaders(),body:JSON.stringify(payload)});
+    const d=await res.json();
+    if(d.ok){ showToast('已保存','success'); closeLeadEdit(); loadLeads(); }
+    else showToast(d.error||'保存失败','error');
+  }catch(err){ showToast('网络错误','error'); }
+  btn.disabled=false;
+});
+async function deleteLead(id){
+  if(!confirm('Delete this lead permanently?')) return;
+  const res=await fetch('/api/admin/leads/'+id,{method:'DELETE',headers:apiHeaders()});
+  const d=await res.json();
+  if(d.ok){ showToast('已删除','success'); loadLeads(); }
+  else showToast(d.error||'删除失败','error');
+}
+document.addEventListener('DOMContentLoaded', loadLeads);
+</script>
+</body>
+</html>

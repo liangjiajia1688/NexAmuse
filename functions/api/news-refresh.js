@@ -42,6 +42,22 @@ function decode(s) {
     .trim();
 }
 
+// Extract a compliant thumbnail from publisher-distributed RSS fields only
+// (enclosure / media:content / media:thumbnail / first <img> in description).
+// We NEVER scrape the publisher's homepage — these are feed-provided images.
+function extractImage(block) {
+  let m;
+  m = block.match(/<enclosure[^>]*url="([^"]+)"/i);
+  if (m && /\.(jpg|jpeg|png|webp|gif|avif)/i.test(m[1])) return m[1];
+  m = block.match(/<media:content[^>]+url="([^"]+)"/i) || block.match(/<media:content[^>]+url='([^']+)'/i);
+  if (m) return m[1];
+  m = block.match(/<media:thumbnail[^>]+url="([^"]+)"/i);
+  if (m) return m[1];
+  m = block.match(/<img[^>]+src="([^"]+)"/i);
+  if (m) return m[1];
+  return '';
+}
+
 function parseFeed(xml, feed) {
   const items = [];
   const blocks = xml.match(/<item[\s\S]*?<\/item>/g) || [];
@@ -55,6 +71,7 @@ function parseFeed(xml, feed) {
         title,
         url: link,
         summary: desc.slice(0, 250),
+        image: extractImage(block),
         source: feed.source,
         category: guessCategory(title, desc, feed.category),
         country: feed.country,
@@ -148,9 +165,15 @@ async function doCrawl(env, request, body) {
       let sourceAdded = 0;
       for (const it of items.slice(0, 15)) {
         const res = await env.DB.prepare(
-          'INSERT OR IGNORE INTO news (title, summary, url, source, category, published_at, status, created_at) VALUES (?,?,?,?,?,?,?,?)'
-        ).bind(it.title, it.summary, it.url, it.source, it.category, it.published_at, 'pending', Date.now()).run();
+          'INSERT OR IGNORE INTO news (title, summary, url, image, source, category, published_at, status, created_at) VALUES (?,?,?,?,?,?,?,?,?)'
+        ).bind(it.title, it.summary, it.url, it.image || null, it.source, it.category, it.published_at, 'pending', Date.now()).run();
         if (res.meta && res.meta.changes) { added++; sourceAdded++; }
+        // Backfill image on any existing row with the same title but no image yet.
+        if (it.image) {
+          try {
+            await env.DB.prepare("UPDATE news SET image = ? WHERE title = ? AND (image IS NULL OR image = '')").bind(it.image, it.title).run();
+          } catch (e) {}
+        }
       }
       bySource[f.source] = sourceAdded;
     } catch (e) {

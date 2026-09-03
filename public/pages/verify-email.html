@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verify Email — NexAmuse Global</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .auth-page { min-height:100vh; background:#0a0e1a; display:flex; flex-direction:column; }
+    .auth-body { flex:1; display:flex; align-items:center; justify-content:center; padding:60px 24px; }
+    .auth-card { background:#111827; border:1px solid rgba(201,162,39,.15); border-radius:20px; padding:40px 36px; max-width:420px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,.4); text-align:center; }
+    .auth-card h3 { font-family:'Playfair Display',serif; font-size:1.5rem; color:#fff; margin-bottom:10px; }
+    .auth-card p { color:#9aa0b4; font-size:.88rem; line-height:1.6; margin-bottom:24px; }
+    .form-group { margin-bottom:18px; text-align:left; }
+    .form-group label { display:block; font-size:.8rem; color:#9aa0b4; margin-bottom:7px; font-weight:500; }
+    .form-input-wrap { position:relative; }
+    .form-input-wrap input { width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:12px 14px; color:#e8eaf0; font-size:.9rem; outline:none; transition:all .25s; font-family:'Inter',sans-serif; }
+    .form-input-wrap input:focus { border-color:#c9a227; background:rgba(201,162,39,.04); }
+    .btn-auth { width:100%; padding:13px; background:linear-gradient(135deg,#c9a227,#f5d06e); border:none; border-radius:10px; color:#0a0e1a; font-size:.95rem; font-weight:700; cursor:pointer; transition:all .25s; font-family:'Inter',sans-serif; letter-spacing:.3px; }
+    .btn-auth:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(201,162,39,.35); }
+    .btn-auth:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+    .auth-msg { display:none; padding:12px 16px; border-radius:8px; font-size:.85rem; margin-bottom:16px; text-align:left; }
+    .auth-msg.success { background:rgba(86,171,47,.12); border:1px solid rgba(86,171,47,.25); color:#86efac; }
+    .auth-msg.error   { background:rgba(238,9,121,.10); border:1px solid rgba(238,9,121,.25); color:#fca5a5; }
+    .auth-footer { margin-top:20px; font-size:.83rem; color:#9aa0b4; }
+    .auth-footer a { color:#c9a227; text-decoration:none; font-weight:600; }
+    .dev-box { background:rgba(247,151,30,.1); border:1px solid rgba(247,151,30,.3); border-radius:10px; padding:14px; margin-bottom:16px; text-align:left; font-size:.85rem; color:#e2e8f0; }
+    .dev-box strong { color:#f7971e; font-size:1.1rem; letter-spacing:2px; }
+  </style>
+</head>
+<body class="auth-page">
+
+<div class="auth-body">
+  <div class="auth-card">
+    <div style="font-size:2.8rem;margin-bottom:12px">✉️</div>
+    <h3>Verify your email</h3>
+    <p>Enter the 6-digit code we sent to your inbox. If you didn't receive it, you can resend below.</p>
+
+    <div class="auth-msg" id="authMsg"></div>
+
+    <div id="devBox" class="dev-box" style="display:none">
+      <div style="font-size:.78rem;color:#f7971e;font-weight:600;margin-bottom:4px">DEV MODE — Email provider not configured</div>
+      Your verification code: <strong id="devCode"></strong>
+    </div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <div class="form-input-wrap">
+        <input type="email" id="vEmail" placeholder="your@company.com"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Verification Code</label>
+      <div class="form-input-wrap">
+        <input type="text" id="vCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" style="text-align:center;letter-spacing:6px;font-size:1.2rem;font-weight:600;"/>
+      </div>
+    </div>
+
+    <button type="button" id="verifyBtn" class="btn-auth" onclick="doVerify()">Verify & Sign In →</button>
+
+    <div style="margin-top:16px; display:flex; justify-content:center; gap:16px;">
+      <a href="#" onclick="doResend();return false;" style="color:#c9a227;font-size:.83rem;text-decoration:none">Resend code</a>
+      <a href="login.html" style="color:#9aa0b4;font-size:.83rem;text-decoration:none">Back to login</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function showMsg(type, text) {
+  const el = document.getElementById('authMsg');
+  el.className = 'auth-msg ' + type;
+  el.innerHTML = text;
+  el.style.display = 'block';
+}
+
+function getEmail() { return document.getElementById('vEmail').value.trim().toLowerCase(); }
+
+async function doResend() {
+  const email = getEmail();
+  if (!email) { showMsg('error','Please enter your email first.'); return; }
+  try {
+    const res = await fetch('/api/auth/send-verify', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg('success', data.devCode ? `Dev code: ${data.devCode}` : 'A new code has been sent.');
+      if (data.devCode) {
+        document.getElementById('devBox').style.display = 'block';
+        document.getElementById('devCode').textContent = data.devCode;
+      }
+    } else {
+      showMsg('error', data.error || 'Failed to resend code.');
+    }
+  } catch(e) { showMsg('error','Network error.'); }
+}
+
+async function doVerify() {
+  const email = getEmail();
+  const code = document.getElementById('vCode').value.trim();
+  const btn = document.getElementById('verifyBtn');
+  if (!email) { showMsg('error','Please enter your email.'); return; }
+  if (!/^\d{6}$/.test(code)) { showMsg('error','Please enter the 6-digit code.'); return; }
+  btn.textContent = 'Verifying…'; btn.disabled = true;
+  try {
+    const res = await fetch('/api/auth/verify-email', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, code })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showMsg('error', data.error || 'Verification failed.');
+      btn.textContent = 'Verify & Sign In →'; btn.disabled = false;
+      return;
+    }
+    const u = data.user;
+    localStorage.setItem('nexamuse_user', JSON.stringify({
+      token: data.token, id: u.id, name: u.username, email: u.email, username: u.username,
+      role: u.role, avatar: u.avatar || null, level: u.level || 'Standard', points: u.points || 0,
+      status: u.status || 'active', is_super: u.is_super || 0, loginTime: Date.now()
+    }));
+    showMsg('success','✅ Verified! Redirecting…');
+    setTimeout(() => { window.location.href = '../index.html'; }, 1000);
+  } catch(e) { showMsg('error','Network error.'); btn.textContent = 'Verify & Sign In →'; btn.disabled = false; }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  const email = params.get('email');
+  if (email) document.getElementById('vEmail').value = email;
+  document.getElementById('vCode').addEventListener('keydown', e => { if(e.key==='Enter') doVerify(); });
+});
+</script>
+</body>
+</html>

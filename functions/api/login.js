@@ -16,6 +16,10 @@ export async function onRequest(context) {
   const ok = await verifyPassword(password, row.password);
   if (!ok) return fail('Invalid credentials', 401);
 
+  if (row.email_verified !== 1) {
+    return fail('Please verify your email before logging in. Check your inbox or request a new code.', 403);
+  }
+
   const token = await makeToken(row.id, env.TOKEN_SECRET);
   return json({
     token,

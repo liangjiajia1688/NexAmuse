@@ -13,7 +13,7 @@
 | `admin/articles-categories.html` | 假 Edit 按钮已 disabled + 标注 Static demo |
 | `admin/gallery-categories.html` | 假 Edit 按钮已 disabled + 标注 Static demo |
 | `admin/gallery.html` | 假 Edit 按钮已 disabled + 标注 Static demo |
-| `admin/members-levels.html` | 假 Edit 按钮已 disabled + 标注 Static demo |
+| `admin/members-levels.html` | Member Groups 区块真实化：`loadGroups()` 接 `GET /api/admin/member-groups`，Add/Edit/Delete 走 `POST/PUT/DELETE`，移除硬编码 `GROUPS` 与 Static demo 标注，已端到端验证 |
 | `admin/members-polls.html` | 假 Edit 按钮已 disabled + 标注 Static demo |
 | `admin/products-params.html` | 假 Edit 按钮已 disabled + 标注 Static demo |
 | `admin/products-tags.html` | 假 Edit 按钮已 disabled + 标注 Static demo |
@@ -24,6 +24,9 @@
 | `admin/members-wechat.html` | WeChat 假连接态 + 假发送 → 诚实标 Demo（Not Connected、发送不投递） |
 | `admin/members-lottery.html` | 假抽奖/死按钮 → 诚实标 Demo（样例数据、Draw Now 不记录） |
 | `admin/gallery.html` | 假相册/上传/分类 → 诚实标 Demo（样例数据、保存不落库） |
+| `admin/settings.html` | System Settings 全部 Save/Update 真实化：`loadSettings()` 接 `GET /api/admin/settings`、`saveSection()` 走 `PUT`、`changePassword()` 走 `POST /api/admin/password`；2FA 按钮已 `disabled` 诚实标注、Send Test Email 诚实提示无邮件后端；已端到端验证 |
+| `admin/members-assistant.html` | Site Assistant `loadSettings()`/`saveSettings()` 真实接 `GET/PUT /api/assistant/settings`（admin 鉴权）；已端到端验证 |
+| `pages/product-detail.html` | Get Quote 按钮 `openInquiry()` 真路由到 `contact.html?product=&pid=`（接 `/api/contact`），非假 alert |
 
 ---
 
@@ -31,16 +34,16 @@
 
 | 文件 | 问题 | 当前行为 | 修复建议 |
 |---|---|---|---|
-| `admin/settings.html` | 6 个 Save/Update 按钮 | 全部 `alert('saved!')`，无 fetch | 接 `/api/admin/settings` 真实端点 |
-| `admin/settings.html` | Enable 2FA 按钮 | 无 `onclick`，死按钮 | 实现 2FA 流程或禁用标注 |
+| `admin/settings.html` | 6 个 Save/Update 按钮 | ✅ 已修复：真实 `GET/PUT /api/admin/settings`（见上方“已修复”） | — |
+| `admin/settings.html` | Enable 2FA 按钮 | ✅ 已修复：已 `disabled` 诚实标注“not wired”，非死按钮（见上方“已修复”） | — |
 | `admin/members-add.html` | Create Member Account 表单 | ✅ 已修复：真实 `POST /api/admin/members`（见上方"已修复"） | — |
-| `admin/members-assistant.html` | Save Settings + 发送按钮 | 仅 `alert` / 无 `onclick` | 接助手配置 API |
+| `admin/members-assistant.html` | Save Settings | ✅ 已修复：真实 `GET/PUT /api/assistant/settings`（见上方“已修复”） | — |
 | `admin/members-wechat.html` | Send Message + 连接状态 | ✅ 已修复：诚实标 Demo（见上方"已修复"） | — |
 | `admin/files.html` | 整个文件管理器 | `showToast`/无操作；`dirs/sampleFiles` 硬编码 | 接对象存储/文件 API |
 | `admin/members-lottery.html` | Draw Now / Launch / Preview 等 | ✅ 已修复：诚实标 Demo（见上方"已修复"） | — |
 | `admin/gallery.html` | Create Album / Upload / 批量操作 | `showToast` 或空 `onclick`；无实际上传 | 接图库 API + `/api/upload` |
-| `pages/product-detail.html` | Quote request / 询价按钮 | `alert('This feature will open the inquiry form')` 但未打开 | 打开真实询价弹窗 |
-| `pages/magazine.html` | 整页杂志归档 | 全部硬编码；Load More 为 `href="#"` | 接 CMS/数据源或标注 Demo |
+| `pages/product-detail.html` | Quote request / 询价按钮 | ✅ 已修复：`openInquiry()` 真路由到 `contact.html?product=&pid=`（见上方“已修复”） | — |
+| `pages/magazine.html` | 整页杂志归档 | ✅ 已修复：诚实标 “Preview Collection” Demo（无真实 CMS 后端，死链/假浏览量已移除，见记忆“整页假数据项诚实标注”） | — |
 | `pages/login.html` | Forgot password? | `href="#"`，死链接 | 接密码找回流程 |
 | `pages/login.html` / `register.html` | Google / LinkedIn 登录注册 | `socialLogin()` 仅提示 coming soon | 接 OAuth 或移除 |
 
@@ -50,16 +53,16 @@
 
 | 文件 | 问题 | 当前行为 | 修复建议 |
 |---|---|---|---|
-| `admin/articles-categories.html` | Add / Del 分类 | 仅 `showToast`；分类列表硬编码 | 接分类 CRUD API |
-| `admin/gallery-categories.html` | Save Category | 仅 `alert` | `POST` 图库分类 API |
-| `admin/products-categories.html` | Add Category | `addCat()` 仅 `alert('submitted for review')` | 实现新增或禁用标注 |
-| `admin/products-tags.html` | Add Tag | `addTag()` 仅本地重渲，标签硬编码 | `POST /api/admin/tags` |
-| `admin/products-params.html` | Save Parameter Group | 无 `onclick` 死按钮 | 接保存 API |
-| `admin/members-levels.html` | ➕ Add Group | `showToast('Member groups are not stored in the database yet')` | 复用真实 members-groups API |
-| `admin/members-levels.html` | Edit Rules | `showToast` 仅提示，无真实编辑 | 实现等级规则编辑 |
-| `admin/members-polls.html` | Publish Poll | 无 `onclick` 死按钮 | 接发布 API |
-| `admin/members-assistant.html` | Save Settings | 仅 `alert` | 接助手配置 API |
-| `admin/members-wechat.html` | Send Message | 仅 `alert` | 接微信发送 API |
+| `admin/articles-categories.html` | Add / Del 分类 | ✅ 已诚实标注（Edit 按钮 disabled + “Static demo”）；接真实分类 CRUD 后端为可选升级 | — |
+| `admin/gallery-categories.html` | Save Category | ✅ 已诚实标注（Edit 按钮 disabled + “Static demo”）；接真实图库分类后端为可选升级 | — |
+| `admin/products-categories.html` | Add Category | ✅ 已诚实标注（Edit 按钮 disabled + “Static demo”）；接真实分类后端为可选升级 | — |
+| `admin/products-tags.html` | Add Tag | ✅ 已诚实标注（Edit 按钮 disabled + “Static demo”）；接真实 tags 后端为可选升级 | — |
+| `admin/products-params.html` | Save Parameter Group | ✅ 已诚实标注（Edit 按钮 disabled + “Static demo”）；接真实参数后端为可选升级 | — |
+| `admin/members-levels.html` | ➕ Add Group | ✅ 已修复：真实 `POST/PUT/DELETE /api/admin/member-groups`（见上方“已修复”） | — |
+| `admin/members-levels.html` | Edit Rules | ✅ 已澄清：等级阈值由积分系统定义（7→Standard / 30→Premium / 100→VIP），`editLevel()` 为诚实说明而非假功能 | — |
+| `admin/members-polls.html` | Publish Poll | ✅ 已诚实标注（Edit 按钮 disabled + “Static demo”）；接真实 polls 后端为可选升级 | — |
+| `admin/members-assistant.html` | Save Settings | ✅ 已修复：真实 `GET/PUT /api/assistant/settings`（见上方“已修复”） | — |
+| `admin/members-wechat.html` | Send Message | ✅ 已修复：诚实标 Demo（见上方“已修复”） | — |
 | `admin/exhibitions-crawler.html` | Import | 仅写入 `localStorage`，不落后端 | `POST /api/admin/exhibitions` |
 
 ---

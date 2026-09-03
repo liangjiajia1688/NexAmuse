@@ -75,7 +75,17 @@
           <div>
             <div class="form-section">
               <h3>Basic Information</h3>
-              <div class="form-group"><label>Product Name (English) *</label><input type="text" id="pName" placeholder="e.g. VR Racing Simulator Pro X9" required></div>
+              <div class="form-group">
+                <label>Product Images <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 5, &gt;10MB auto-compressed to WebP)</span></label>
+                <label class="image-drop" for="pProductImages" style="display:block">
+                  <div style="font-size:28px;margin-bottom:6px">🖼</div>
+                  <div>Click to upload product images</div>
+                  <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP</div>
+                </label>
+                <input type="file" id="pProductImages" multiple accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden" onchange="addFiles(this.files,'product')">
+                <div id="pProductPreview" class="img-preview-grid"></div>
+              </div>
+              <div class="form-group" style="margin-top:16px"><label>Product Name (English) *</label><input type="text" id="pName" placeholder="e.g. VR Racing Simulator Pro X9" required></div>
               <div class="form-group" style="margin-top:12px"><label>Short Description</label><input type="text" id="pShortDesc" placeholder="One-line summary for catalog listing"></div>
               <div class="form-group" style="margin-top:12px"><label>Full Description</label>
                 <div class="editor-toolbar">
@@ -96,16 +106,6 @@
                   <div id="pDetailPreview" class="img-preview-grid"></div>
                 </div>
               </div>
-            </div>
-            <div class="form-section">
-              <h3>Product Images <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 5, &gt;10MB auto-compressed to WebP)</span></h3>
-              <label class="image-drop" for="pProductImages" style="display:block">
-                <div style="font-size:28px;margin-bottom:6px">🖼</div>
-                <div>Click to upload product images</div>
-                <div style="font-size:11px;margin-top:4px">JPG, PNG, WebP</div>
-              </label>
-              <input type="file" id="pProductImages" multiple accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden" onchange="addFiles(this.files,'product')">
-              <div id="pProductPreview" class="img-preview-grid"></div>
             </div>
             <div class="form-section">
               <h3>Technical Specifications</h3>
@@ -238,8 +238,8 @@ async function addFiles(files,type){
   const current=pendingImages.filter(i=>i.image_type===type).length;
   if(current+files.length>maxCount){ alert(`Maximum ${maxCount} ${type} images allowed.`); return; }
   for(const file of files){
-    const id='temp_'+Math.random().toString(36).slice(2);
-    const img={id,image_type:type,status:'reading',file,original_size:file.size,compressed_size:0,mime_type:file.type||'image/jpeg'};
+    const clientId='temp_'+Math.random().toString(36).slice(2);
+    const img={clientId,image_type:type,status:'reading',file,original_size:file.size,compressed_size:0,mime_type:file.type||'image/jpeg'};
     pendingImages.push(img); renderPreviews();
     try{
       const dataUrl=await readFile(file);
@@ -258,7 +258,7 @@ async function addFiles(files,type){
     renderPreviews();
   }
 }
-function removePending(id){ pendingImages=pendingImages.filter(i=>i.id!==id); renderPreviews(); }
+function removePending(clientId){ pendingImages=pendingImages.filter(i=>i.clientId!==clientId); renderPreviews(); }
 function renderPreviews(){
   const render=(items,containerId)=>{
     const el=document.getElementById(containerId);
@@ -272,7 +272,7 @@ function renderPreviews(){
       else if(img.status==='done') badge=`${formatBytes(img.original_size)} → ${formatBytes(img.compressed_size)}`;
       else badge=String(img.status);
       return `<div class="img-preview" ${bg}>
-        <button type="button" class="rm" onclick="removePending('${img.id}')">×</button>
+        <button type="button" class="rm" onclick="removePending('${img.clientId}')">×</button>
         <span class="badge">${badge}</span>
         ${!src?'<div class="spin">?</div>':''}
       </div>`;
@@ -303,7 +303,7 @@ async function init(){
   if(company){
     banner.style.display='block';
     document.getElementById('companyName').textContent=company.name;
-  } else if(!isModal){
+  } else if(!isModal && !(editId && user && (user.role==='admin'||user.is_super))){
     banner.style.display='block'; banner.innerHTML='You need to <a href="../pages/company-profile.html" style="color:var(--gold)">create a company profile</a> first.';
   }
 
@@ -320,10 +320,10 @@ async function loadProduct(id){
     const r=await fetch('/api/company-products',{headers:{'Authorization':'Bearer '+token}});
     const data=await r.json();
     let p=(data.products||[]).find(x=>x.id===id);
-    // Admin fallback: product may belong to another member's company → load via public detail API
-    if(!p&&(user&&(user.role==='admin'||user.is_super))){
+    // Fallback: product may belong to another member's company (admin) or be non-active → load via detail API with auth
+    if(!p){
       try{
-        const r2=await fetch('/api/products?id='+encodeURIComponent(id));
+        const r2=await fetch('/api/products?id='+encodeURIComponent(id),{headers:{'Authorization':'Bearer '+token}});
         const d2=await r2.json();
         if(d2&&d2.ok)p=d2.product;
       }catch(e2){}
@@ -351,14 +351,19 @@ async function loadProduct(id){
     document.getElementById('pMaxPrice').value=p.max_price||'';
     document.getElementById('pMoq').value=p.moq||'';
     document.getElementById('pPrice').value=p.price||'';
-    pendingImages=(p.images||[]).map(i=>({...i,status:'done'}));
+    pendingImages=(p.images||[]).map((i,idx)=> typeof i==='string'
+      ? {clientId:'legacy_'+idx+'_'+Math.random().toString(36).slice(2), image_type:'product', original_url:i, compressed_url:i, status:'done'}
+      : {clientId:'db_'+(i.id||idx)+'_'+Math.random().toString(36).slice(2), dbId:i.id, ...i, status:i.status||'done'});
+    if(p.detail_images && Array.isArray(p.detail_images)){
+      pendingImages=pendingImages.concat(p.detail_images.filter(d=>typeof d==='string').map((d,idx)=>({clientId:'legacy_detail_'+idx+'_'+Math.random().toString(36).slice(2), image_type:'detail', original_url:d, compressed_url:d, status:'done'})));
+    }
     renderPreviews();
   }catch(e){ console.error(e); }
 }
 
 function buildPayload(status){
   const images=pendingImages.filter(i=>i.status==='done').map((i,idx)=>({
-    id: i.id && String(i.id).startsWith('temp_')?undefined:i.id,
+    id: i.dbId,
     image_type:i.image_type, original_url:i.original_url, compressed_url:i.compressed_url,
     original_size:i.original_size, compressed_size:i.compressed_size, mime_type:i.mime_type, sort_order:idx
   }));
@@ -392,7 +397,7 @@ function buildPayload(status){
 }
 
 async function submitForm(status){
-  if(!company) return alert('Create your company profile first.');
+  if(!company && !editId) return alert('Create your company profile first.');
   const btn=document.getElementById('publishBtn'); btn.disabled=true;
   const originalText=btn.textContent;
   btn.textContent='Saving...';

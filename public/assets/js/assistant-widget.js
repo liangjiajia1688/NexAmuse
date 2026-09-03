@@ -49,7 +49,7 @@
   }
 
   const CSS = `
-#nexAw-root{position:fixed;right:20px;bottom:20px;z-index:99999;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+#nexAw-root{position:fixed;right:90px;bottom:30px;left:auto;z-index:99999;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
 #nexAw-bubble{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#b8941e);color:#0a0e1a;border:none;cursor:pointer;font-size:26px;box-shadow:0 10px 30px rgba(201,162,39,.45);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;}
 #nexAw-bubble:hover{transform:scale(1.08);box-shadow:0 14px 38px rgba(201,162,39,.6);}
 #nexAw-panel{position:absolute;right:0;bottom:72px;width:360px;max-width:calc(100vw - 40px);height:520px;max-height:calc(100vh - 120px);background:#0a0e1a;border:1px solid rgba(255,255,255,.1);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;}

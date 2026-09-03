@@ -10,8 +10,9 @@
 <link rel="stylesheet" href="../assets/css/style.css"/>
 <style>
   .cp-hero{background:linear-gradient(135deg,#0a0e1a 0%,#12192e 60%,#1a1208 100%);border-bottom:1px solid rgba(201,162,39,.2);padding:0 0 32px;position:relative;}
-  .cp-banner{height:200px;background:linear-gradient(135deg,#1a1208,#2a1f10);background-size:cover;background-position:center;}
-  .cp-banner.empty{height:8px;background:linear-gradient(90deg,#c9a227,#f5d06e,#c9a227);border-bottom:1px solid rgba(201,162,39,.3);}
+  .cp-banner{min-height:120px;max-height:260px;height:220px;background:linear-gradient(135deg,#1a1208,#2a1f10);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .cp-banner img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;}
+  .cp-banner.empty{height:8px;min-height:8px;background:linear-gradient(90deg,#c9a227,#f5d06e,#c9a227);border-bottom:1px solid rgba(201,162,39,.3);}
   .cp-hero .container{position:relative;}
   .company-head{display:flex;gap:24px;align-items:flex-start;margin:-46px 0 26px;flex-wrap:wrap;}
   .cp-hero.no-banner .company-head{margin-top:18px;}
@@ -75,7 +76,7 @@
 </div></nav>
 
 <div class="cp-hero">
-  <div class="cp-banner" id="cBanner"></div>
+  <div class="cp-banner" id="cBanner"><img id="cBannerImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:contain;object-position:center;"></div>
   <div class="container">
     <div class="breadcrumb"><a href="../index.html">Home</a><span>/</span><a href="suppliers.html">Suppliers</a><span>/</span><span class="current">Company Profile</span></div>
     <h1 id="cName" style="color:#fff;font-family:'Playfair Display',serif;font-size:2.4rem;margin:14px 0 6px;">Loading...</h1>
@@ -111,12 +112,18 @@ async function loadCompany(){
     const products = data.products || [];
     document.getElementById('cName').textContent = c.name;
     document.getElementById('cTagline').textContent = c.primary_category ? c.primary_category + ' supplier' : 'Verified supplier';
+    const cBanner = document.getElementById('cBanner');
+    const cBannerImg = document.getElementById('cBannerImg');
     if(c.banner){
-      document.getElementById('cBanner').style.backgroundImage = `url('${c.banner}')`;
-      document.getElementById('cBanner').classList.remove('empty');
+      cBannerImg.src = c.banner;
+      cBannerImg.style.display = 'block';
+      cBanner.classList.remove('empty');
+      cBannerImg.onerror = () => { cBannerImg.style.display='none'; cBanner.classList.add('empty'); };
       document.querySelector('.cp-hero').classList.remove('no-banner');
     } else {
-      document.getElementById('cBanner').classList.add('empty');
+      cBannerImg.style.display = 'none';
+      cBannerImg.src = '';
+      cBanner.classList.add('empty');
       document.querySelector('.cp-hero').classList.add('no-banner');
     }
     // owner manage button
@@ -155,6 +162,7 @@ async function loadCompany(){
         <button class="active" data-t="products">Products (${products.length})</button>
         <button data-t="articles">Articles</button>
         <button data-t="forum">Forum</button>
+        <button data-t="videos">Videos</button>
         <button data-t="about">About</button>
       </div>
       <div id="tabContent"></div>
@@ -208,10 +216,69 @@ async function renderTab(t){
       ${c.description ? c.description.replace(/\n/g,'<br>') : 'No description provided.'}
       ${c.certifications ? `<p style="margin-top:16px;color:#fff;">Certifications: ${c.certifications}</p>` : ''}
     </div>`;
+  } else if(t==='videos'){
+    const cid = window._company.id;
+    const canAdd = (S && S.id === window._company.owner_id);
+    el.innerHTML = '<div class="not-found">Loading videos…</div>';
+    const v = await fetch('/api/videos?company_id='+cid+'&limit=60').then(r=>r.json());
+    const list = (v && v.videos) || [];
+    window._companyVideos = list;
+    let addUI = '';
+    if(canAdd){
+      addUI = `<div style="margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input id="cpVidUrl" placeholder="Paste a YouTube / Vimeo / TikTok / Instagram link" style="flex:1;min-width:240px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:#fff;font-size:.85rem;font-family:inherit;">
+        <button class="btn btn-primary btn-sm" onclick="addCompanyVideo()">➕ Add Video</button>
+      </div>`;
+    }
+    if(!list.length){
+      el.innerHTML = addUI + '<div class="not-found">No videos yet.'+(canAdd?' Add the first one above.':'')+'</div>';
+      return;
+    }
+    el.innerHTML = addUI + `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;">${list.map(cpVidCard).join('')}</div>`;
   }
 }
 loadCompany();
+
+function escV(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function cpVidCard(x){
+  const cover = x.cover_url ? `background-image:url('${escV(x.cover_url)}')` : '';
+  return `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:.2s" onclick="playCompanyVideo(${x.id})">
+    <div style="aspect-ratio:16/9;background:#0d1530 ${cover};background-size:cover;background-position:center;position:relative;display:flex;align-items:center;justify-content:center;">
+      <span style="width:44px;height:44px;border-radius:50%;background:rgba(201,162,39,.9);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#0a0e1a;">▶</span>
+    </div>
+    <div style="padding:14px;"><div style="font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">${escV(x.platform||'video')}</div><div style="font-size:.88rem;font-weight:600;color:#fff;line-height:1.4;">${escV(x.title||'Untitled')}</div></div>
+  </div>`;
+}
+function playCompanyVideo(id){
+  const v = (window._companyVideos||[]).find(x=>x.id===id);
+  if(!v) return;
+  const box = document.getElementById('cpVideoModalBox');
+  if(v.embed_html){ box.innerHTML = `<div style="aspect-ratio:16/9;width:100%;background:#000;border-radius:12px;overflow:hidden;">${v.embed_html}</div>`; }
+  else { box.innerHTML = `<div style="aspect-ratio:16/9;width:100%;background:linear-gradient(135deg,#0d1530,#1a2540);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;"><div style="font-size:3rem;">▶</div><div style="color:#fff;">${escV(v.title||'Video')}</div><a href="${escV(v.url)}" target="_blank" rel="noopener" class="btn btn-primary">Watch on ${escV(v.platform||'source')} ↗</a></div>`; }
+  document.getElementById('cpVideoModal').style.display='flex'; document.body.style.overflow='hidden';
+}
+function closeCpVideoModal(){ document.getElementById('cpVideoModalBox').innerHTML=''; document.getElementById('cpVideoModal').style.display='none'; document.body.style.overflow=''; }
+async function addCompanyVideo(){
+  const input = document.getElementById('cpVidUrl');
+  const url = (input.value||'').trim();
+  if(!url) return;
+  const token = (S && S.token) || '';
+  try{
+    const r = await fetch('/api/videos', { method:'POST', headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' }, body: JSON.stringify({ url, company_id: window._company.id }) });
+    const d = await r.json();
+    if(!r.ok || !d.ok){ alert((d&&d.error)||'Failed to add video'); }
+    else { input.value=''; renderTab('videos'); }
+  }catch(e){ alert('Network error'); }
+}
+document.getElementById('cpVideoModal').addEventListener('click', function(e){ if(e.target===this) closeCpVideoModal(); });
+
 </script>
 <script src="/assets/js/assistant-widget.js" defer></script>
+<div id="cpVideoModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);align-items:center;justify-content:center;padding:24px;">
+  <div style="max-width:880px;width:100%;position:relative;">
+    <button onclick="closeCpVideoModal()" style="position:absolute;top:-44px;right:0;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;opacity:.7;">✕ Close</button>
+    <div id="cpVideoModalBox"></div>
+  </div>
+</div>
 </body>
 </html>
