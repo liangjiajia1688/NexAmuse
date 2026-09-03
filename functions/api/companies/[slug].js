@@ -15,6 +15,7 @@ function pickCompany(row) {
     phone: row.phone,
     website: row.website,
     logo: row.logo,
+    banner: row.banner,
     primary_category: row.primary_category,
     description: row.description,
     established_year: row.established_year,

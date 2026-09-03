@@ -78,6 +78,7 @@
       <a data-tab="company"><span class="ic">🏢</span> Company</a>
       <a data-tab="products"><span class="ic">📦</span> Products</a>
       <a data-tab="articles"><span class="ic">📝</span> Articles</a>
+      <a data-tab="videos"><span class="ic">🎬</span> Videos</a>
       <a data-tab="forum"><span class="ic">💬</span> Forum Posts</a>
     </nav>
     <div style="margin-top:auto;padding:10px;">
@@ -97,6 +98,7 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn btn-primary btn-sm" onclick="goTab('products')">+ Add Product</button>
           <button class="btn btn-ghost btn-sm" onclick="goTab('articles')">+ Write Article</button>
+          <button class="btn btn-ghost btn-sm" onclick="goTab('videos')">🎬 Videos</button>
           <button class="btn btn-ghost btn-sm" onclick="goTab('company')">Edit Company</button>
           <button class="btn btn-ghost btn-sm" onclick="goTab('products')">⬆️ Bulk Import</button>
         </div>
@@ -196,6 +198,25 @@
       </div>
     </section>
 
+    <!-- VIDEOS -->
+    <section class="section" id="sec-videos">
+      <div class="dash-h">Videos</div>
+      <div class="dash-sub">Manage the videos shown on your public company page.</div>
+      <div class="panel">
+        <h3>My Videos
+          <button class="btn btn-primary btn-sm" onclick="openVideoModal()">+ Add Video</button>
+        </h3>
+        <div class="row-list" id="vidList"></div>
+      </div>
+      <div class="panel">
+        <h3>Add from URL</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <input id="dashVidUrl" placeholder="Paste a YouTube / Vimeo / TikTok / Instagram link" style="flex:1;min-width:240px;background:#0a0e1a;border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:#fff;font-size:.9rem;font-family:inherit;">
+          <button class="btn btn-primary btn-sm" onclick="addDashboardVideo()">➕ Add Video</button>
+        </div>
+      </div>
+    </section>
+
     <!-- FORUM -->
     <section class="section" id="sec-forum">
       <div class="dash-h">Forum Posts</div>
@@ -229,7 +250,7 @@ const TOKEN = S && S.token;
 if(!TOKEN){ location.href='login.html?next=company-dashboard.html'; }
 const api=(p,opt={})=>fetch(p,{...opt,headers:{'Content-Type':'application/json',Authorization:'Bearer '+TOKEN,...(opt.headers||{})}}).then(r=>r.json());
 function toast(m,t='success'){const el=document.getElementById('toast');el.textContent=m;el.className='toast show';setTimeout(()=>el.className='toast',2600);}
-function goTab(t){document.querySelectorAll('.dash-nav a').forEach(a=>a.classList.toggle('active',a.dataset.tab===t));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById('sec-'+t).classList.add('active');if(t==='dashboard')loadDash();if(t==='company')loadCompany();if(t==='products')loadProducts();if(t==='articles')loadArticles();if(t==='forum')loadForum();}
+function goTab(t){document.querySelectorAll('.dash-nav a').forEach(a=>a.classList.toggle('active',a.dataset.tab===t));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById('sec-'+t).classList.add('active');if(t==='dashboard')loadDash();if(t==='company')loadCompany();if(t==='products')loadProducts();if(t==='articles')loadArticles();if(t==='videos')loadVideos();if(t==='forum')loadForum();}
 document.getElementById('nav').addEventListener('click',e=>{const a=e.target.closest('a');if(a)goTab(a.dataset.tab);});
 // Listen for saves coming from the embedded admin add pages (iframe modals)
 window.addEventListener('message',e=>{
@@ -241,17 +262,21 @@ document.querySelectorAll('.imp-tabs button').forEach(b=>b.onclick=()=>{document
 const CATEGORIES=['Arcade Machines','VR / XR Attractions','Kids & Family Rides','Redemption Games','Simulation Rides','Outdoor Attractions','Water Park Equipment','Payment Technology','Accessories & Parts'];
 
 // ---- dashboard ----
+let _companyCache = null;
 async function loadDash(){
   const c=await api('/api/companies?mine=1');
   const p=await api('/api/company-products');
   const a=await api('/api/member/articles');
   const f=await api('/api/member/forum-posts');
+  const v=await api('/api/videos?company_id='+(c.company?.id||'')+'&limit=1');
   const comp=c.company||{};
+  _companyCache = comp;
+  window._company = comp;
   document.getElementById('viewPublic').href='company.html?slug='+encodeURIComponent(comp.slug||'');
   document.getElementById('dashSub').textContent=comp.name?('Managing '+comp.name+' — '+ (comp.products_count||0)+' products live.'):'Complete your company profile to go live.';
   document.getElementById('statGrid').innerHTML=[
     ['Products',(p.products||[]).length],['Articles',(a.articles||[]).length],
-    ['Forum Posts',(f.threads||[]).length],['Company Status',comp.status||'—']
+    ['Forum Posts',(f.threads||[]).length],['Videos',(v.videos||[]).length || 0],['Company Status',comp.status||'—']
   ].map(([l,n])=>`<div class="stat-card"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
 }
 
@@ -313,6 +338,47 @@ async function loadArticles(){
 function openArticleModal(){editingAid=null;document.getElementById('artFrame').src='../admin/articles-add.html?modal=1&member=1';document.getElementById('artModal').classList.add('show');}
 async function editArticle(id){editingAid=id;document.getElementById('artFrame').src='../admin/articles-add.html?modal=1&member=1&id='+id;document.getElementById('artModal').classList.add('show');}
 async function delArticle(id){if(!confirm('Delete this article?'))return;const r=await api('/api/member/articles?id='+id,{method:'DELETE'});toast(r.ok!==false?'Deleted':'Failed');loadArticles();loadDash();}
+
+// ---- videos ----
+function escV(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function platformEmoji(p){ return ({youtube:'▶️',vimeo:'🎬',tiktok:'🎵',instagram:'📸',other:'🎞️'})[p] || '🎞️'; }
+async function loadVideos(){
+  if(!_companyCache || !_companyCache.id){ document.getElementById('vidList').innerHTML='<div class="empty">Create a company first.</div>'; return; }
+  const v=await api('/api/videos?company_id='+_companyCache.id+'&limit=60');
+  const list=v.videos||[];
+  window._companyVideos = list;
+  document.getElementById('vidList').innerHTML=list.length?list.map(vx=>`
+    <div class="row-item">
+      <div class="thumb" style="${vx.cover_url?`background-image:url('${escV(vx.cover_url)}')`:''};display:flex;align-items:center;justify-content:center;font-size:1.4rem;">${vx.cover_url?'':platformEmoji(vx.platform)}</div>
+      <div class="info"><b>${escV(vx.title||'Untitled')}</b><span>${escV(vx.platform||'video')} · <span class="pill ${vx.status==='active'?'pill-pub':'pill-draft'}">${vx.status}</span></span></div>
+      <div class="acts">
+        <button class="btn btn-ghost btn-sm" onclick="playDashVideo(${vx.id})">Play</button>
+        <button class="btn btn-danger btn-sm" onclick="delVideo(${vx.id})">Delete</button>
+      </div>
+    </div>`).join(''):'<div class="empty">No videos yet. Add one from the URL box below.</div>';
+}
+function openVideoModal(){ document.getElementById('dashVidUrl').focus(); }
+async function addDashboardVideo(){
+  const input=document.getElementById('dashVidUrl');
+  const url=(input.value||'').trim();
+  if(!url){toast('Paste a video link','error');return;}
+  if(!_companyCache || !_companyCache.id){toast('Create a company first','error');return;}
+  const r=await api('/api/videos',{method:'POST',body:JSON.stringify({url,company_id:_companyCache.id})});
+  if(r.ok===false){toast(r.error||'Failed','error');return;}
+  input.value='';toast('Video added');loadVideos();loadDash();
+}
+function playDashVideo(id){
+  const v=(window._companyVideos||[]).find(x=>x.id===id);
+  if(!v)return;
+  const html=v.embed_html?`<div style="aspect-ratio:16/9;width:100%;background:#000;border-radius:12px;overflow:hidden;">${v.embed_html}</div>`:`<div style="aspect-ratio:16/9;width:100%;background:linear-gradient(135deg,#0d1530,#1a2540);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;"><div style="font-size:3rem;">${platformEmoji(v.platform)}</div><div style="color:#fff;">${escV(v.title||'Video')}</div><a href="${escV(v.url)}" target="_blank" rel="noopener" class="btn btn-primary">Watch on ${escV(v.platform||'source')} ↗</a></div>`;
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:24px;';
+  modal.innerHTML=`<div style="max-width:900px;width:100%;position:relative;"><button onclick="this.closest('.dash-vid-modal').remove();document.body.style.overflow=''" style="position:absolute;top:-44px;right:0;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">✕ Close</button><div>${html}</div></div>`;
+  modal.className='dash-vid-modal';
+  modal.onclick=e=>{if(e.target===modal){modal.remove();document.body.style.overflow='';}};
+  document.body.appendChild(modal);document.body.style.overflow='hidden';
+}
+async function delVideo(id){if(!confirm('Delete this video from your company page?'))return;const r=await api('/api/videos/'+id,{method:'DELETE'});toast(r.ok!==false?'Deleted':'Failed');loadVideos();loadDash();}
 
 // ---- forum ----
 async function loadForum(){
@@ -412,7 +478,7 @@ async function runCommit(list){
 }
 
 // init
-if(location.hash && ['dashboard','company','products','articles','forum'].includes(location.hash.slice(1))){
+if(location.hash && ['dashboard','company','products','articles','videos','forum'].includes(location.hash.slice(1))){
   goTab(location.hash.slice(1));
 } else {
   loadDash();

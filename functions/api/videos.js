@@ -105,14 +105,27 @@ export async function onRequest(context) {
   if (request.method === 'GET') {
     const company_id = url.searchParams.get('company_id');
     const limit = Math.min(60, parseInt(url.searchParams.get('limit') || '24', 10));
+    const user = await authUser(request, env);
+    const isAdmin = user && (user.role === 'admin' || user.is_super === 1);
     let rows;
     if (company_id) {
-      rows = await env.DB.prepare(
-        "SELECT * FROM videos WHERE status='active' AND company_id=? ORDER BY created_at DESC LIMIT ?"
-      ).bind(company_id, limit).all();
+      const companyId = parseInt(company_id, 10);
+      const c = await env.DB.prepare('SELECT owner_id FROM companies WHERE id=?').bind(companyId).first();
+      const isOwner = user && c && c.owner_id === user.id;
+      if (isAdmin || isOwner) {
+        // company owner/admin sees all videos (active + deleted) for management
+        rows = await env.DB.prepare(
+          "SELECT * FROM videos WHERE company_id=? ORDER BY created_at DESC LIMIT ?"
+        ).bind(companyId, limit).all();
+      } else {
+        rows = await env.DB.prepare(
+          "SELECT * FROM videos WHERE status='active' AND company_id=? ORDER BY created_at DESC LIMIT ?"
+        ).bind(companyId, limit).all();
+      }
     } else {
+      // Global Industry Video Library: only global (company_id IS NULL) active videos
       rows = await env.DB.prepare(
-        "SELECT * FROM videos WHERE status='active' ORDER BY created_at DESC LIMIT ?"
+        "SELECT * FROM videos WHERE status='active' AND company_id IS NULL ORDER BY created_at DESC LIMIT ?"
       ).bind(limit).all();
     }
     return json({ ok: true, videos: rows.results || [] });
@@ -130,6 +143,9 @@ export async function onRequest(context) {
     if (!link || !/^https?:\/\//i.test(link)) return fail('A valid video URL is required');
 
     let companyId = body.company_id ? parseInt(body.company_id, 10) : null;
+    if (!companyId && !isAdmin) {
+      return fail('Only admins can add videos to the global library', 403);
+    }
     if (companyId) {
       const c = await env.DB.prepare('SELECT owner_id FROM companies WHERE id=?').bind(companyId).first();
       if (!c) return fail('Company not found', 404);

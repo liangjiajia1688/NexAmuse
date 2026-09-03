@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS articles (
   user_id INTEGER,
   status TEXT DEFAULT 'published',
   published_at INTEGER,
-  views INTEGER DEFAULT 0
+  views INTEGER DEFAULT 0,
+  updated_at INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS comments (

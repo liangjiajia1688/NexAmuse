@@ -122,7 +122,8 @@
 <script>
 const U = JSON.parse(localStorage.getItem('nexamuse_user') || 'null');
 const TOKEN = U && U.token;
-const CAN_EDIT = !!TOKEN;
+const IS_ADMIN = !!(U && (U.role === 'admin' || U.is_super === 1));
+const CAN_EDIT = IS_ADMIN;
 window._videos = [];
 
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
