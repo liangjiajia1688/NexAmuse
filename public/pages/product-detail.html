@@ -237,10 +237,26 @@
         if (t) updateGallery(parseInt(t.dataset.idx,10));
       });
     }
-    // Optional: click detail images to open in a new tab
+    // Click detail images to open lightbox preview
+    function openLightbox(idx){
+      const box = document.getElementById('imgLightbox');
+      const img = document.getElementById('imgLightboxImg');
+      const counter = document.getElementById('imgLightboxCounter');
+      if(!box || !img) return;
+      let current = idx;
+      function show(i){ img.src = detailImages[i]; if(counter) counter.textContent = (i+1) + ' / ' + detailImages.length; current = i; }
+      show(current);
+      box.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      const close = () => { box.style.display = 'none'; document.body.style.overflow = ''; };
+      document.getElementById('imgLightboxClose').onclick = close;
+      document.getElementById('imgLightboxPrev').onclick = () => show((current - 1 + detailImages.length) % detailImages.length);
+      document.getElementById('imgLightboxNext').onclick = () => show((current + 1) % detailImages.length);
+      box.onclick = (e) => { if(e.target === box) close(); };
+    }
     document.getElementById('detailImgGrid')?.addEventListener('click',(e)=>{
       const t = e.target.closest('.detail-img');
-      if (t) window.open(detailImages[parseInt(t.dataset.idx,10)], '_blank');
+      if (t) openLightbox(parseInt(t.dataset.idx,10));
     });
   }
 
@@ -260,6 +276,16 @@
     .catch(e=>{ console.error(e); renderError('Failed to load product.'); });
 })();
 </script>
+<div id="imgLightbox" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:24px;">
+  <button id="imgLightboxClose" style="position:absolute;top:20px;right:24px;background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer;z-index:10;">✕</button>
+  <button id="imgLightboxPrev" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.4rem;cursor:pointer;">‹</button>
+  <button id="imgLightboxNext" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.4rem;cursor:pointer;">›</button>
+  <div style="max-width:90vw;max-height:90vh;position:relative;">
+    <img id="imgLightboxImg" src="" style="max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);" alt="Preview">
+    <div id="imgLightboxCounter" style="position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);color:#fff;font-size:.85rem;opacity:.8;"></div>
+  </div>
+</div>
+
 <script src="/assets/js/assistant-widget.js" defer></script>
 <script src="/lang-switcher.js"></script>
 </body>
