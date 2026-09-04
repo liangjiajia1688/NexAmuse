@@ -32,6 +32,8 @@
   .batch-bar.show{display:flex}
   .batch-bar span{color:#fff;font-size:.85rem}
   .batch-bar button{background:rgba(220,53,69,.15);color:#ff6b6b;border:1px solid rgba(220,53,69,.35);border-radius:6px;padding:6px 12px;font-size:.8rem;font-weight:600;cursor:pointer}
+  .batch-bar button.batch-approve{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.35)}
+  .batch-bar button.batch-reject{background:rgba(248,113,113,.12);color:#ff6b6b;border:1px solid rgba(248,113,113,.3)}
 
   /* Grid view */
   .vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
@@ -70,6 +72,7 @@
   .status-rejected{background:rgba(248,113,113,.15);color:#ff6b6b}
   .status-deleted{background:rgba(255,107,107,.1);color:#ff6b6b}
   .status-api{background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3)}
+  .status-manual{background:rgba(201,162,39,.15);color:#f5d06e;border:1px solid rgba(201,162,39,.3)}
   .btn-approve{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)!important}
   .btn-reject{background:rgba(248,113,113,.12);color:#ff6b6b;border:1px solid rgba(248,113,113,.3)!important}
   .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
@@ -123,6 +126,11 @@
             <button class="status-tab" data-status="rejected">Rejected</button>
             <button class="status-tab" data-status="deleted">Deleted</button>
           </div>
+          <div class="status-tabs" id="sourceTabs" style="margin-left:6px">
+            <button class="status-tab active" data-source="all">全部来源</button>
+            <button class="status-tab" data-source="manual">✍️ 单条</button>
+            <button class="status-tab" data-source="youtube_api">🤖 批量</button>
+          </div>
           <span id="vidTotal" style="color:var(--text-muted);font-size:13px"></span>
         </div>
         <div class="toolbar-right">
@@ -136,6 +144,8 @@
       <div class="batch-bar" id="batchBar">
         <input type="checkbox" id="checkAllBatch" onchange="toggleAll()" title="Select all visible">
         <span id="batchText">0 selected</span>
+        <button class="batch-approve" onclick="batchApprove()">✅ Batch Approve</button>
+        <button class="batch-reject" onclick="batchReject()">❌ Batch Reject</button>
         <button onclick="batchDelete()">🗑 Batch Delete</button>
       </div>
 
@@ -157,6 +167,7 @@
 let currentOffset = 0;
 const limit = 24;
 let currentStatus = 'all';
+let currentSource = 'all';
 let viewMode = 'grid';
 let selectedIds = new Set();
 let currentVideos = [];
@@ -195,7 +206,13 @@ function setView(mode){
 
 function setStatus(status){
   currentStatus = status;
-  document.querySelectorAll('.status-tab').forEach(b=>b.classList.toggle('active', b.dataset.status===status));
+  document.querySelectorAll('#statusTabs .status-tab').forEach(b=>b.classList.toggle('active', b.dataset.status===status));
+  loadVideos(0);
+}
+
+function setSource(src){
+  currentSource = src;
+  document.querySelectorAll('#sourceTabs .status-tab').forEach(b=>b.classList.toggle('active', b.dataset.source===src));
   loadVideos(0);
 }
 
@@ -206,7 +223,7 @@ async function loadVideos(offset=0){
   const grid = document.getElementById('vidGrid');
   grid.innerHTML = '<div class="empty-state">Loading videos…</div>';
   try{
-    const d = await apiGet('/api/admin/videos?status='+currentStatus+'&limit='+limit+'&offset='+offset);
+    const d = await apiGet('/api/admin/videos?status='+currentStatus+'&source='+currentSource+'&limit='+limit+'&offset='+offset);
     document.getElementById('vidTotal').textContent = `Total: ${d.total || 0}`;
     const list = d.videos || [];
     currentVideos = list;
@@ -222,7 +239,7 @@ async function loadVideos(offset=0){
 
 function vidCard(v){
   const cover = v.cover_url ? `background-image:url('${esc(v.cover_url)}')` : '';
-  const sourceBadge = v.source==='youtube_api' ? ' <span class="status-badge status-api">🤖 Auto</span>' : '';
+  const sourceBadge = v.source==='youtube_api' ? ' <span class="status-badge status-api">🤖 批量</span>' : (v.source==='manual' ? ' <span class="status-badge status-manual">✍️ 单条</span>' : '');
   const checked = selectedIds.has(v.id) ? 'checked' : '';
   const modBtns = v.status==='pending'
     ? `<button class="btn-approve" onclick="moderateVideo(${v.id},'approve',this)">✅ Approve</button>
@@ -247,7 +264,7 @@ function vidCard(v){
 
 function vidRow(v){
   const cover = v.cover_url ? `background-image:url('${esc(v.cover_url)}')` : '';
-  const sourceBadge = v.source==='youtube_api' ? ' <span class="status-badge status-api">🤖 Auto</span>' : '';
+  const sourceBadge = v.source==='youtube_api' ? ' <span class="status-badge status-api">🤖 批量</span>' : (v.source==='manual' ? ' <span class="status-badge status-manual">✍️ 单条</span>' : '');
   const checked = selectedIds.has(v.id) ? 'checked' : '';
   const modBtns = v.status==='pending'
     ? `<button class="btn-approve" onclick="moderateVideo(${v.id},'approve',this)">✅ Approve</button>
@@ -306,6 +323,28 @@ async function batchDelete(){
     const data = await apiSend('/api/admin/videos/batch','POST',{action:'soft_delete',ids});
     if(data.ok){ showToast(`Deleted ${ids.length} videos`,'success'); selectedIds.clear(); loadVideos(currentOffset); }
     else showToast(data.error||'Batch delete failed','error');
+  }catch(e){ showToast(e.message||'Network error','error'); }
+}
+
+async function batchApprove(){
+  const ids = Array.from(selectedIds);
+  if(!ids.length) return;
+  if(!confirm(`Approve & publish ${ids.length} selected videos publicly?`)) return;
+  try{
+    const data = await apiSend('/api/admin/videos/batch','POST',{action:'approve',ids});
+    if(data.ok){ showToast(`Approved ${ids.length} videos`,'success'); selectedIds.clear(); loadVideos(currentOffset); }
+    else showToast(data.error||'Batch approve failed','error');
+  }catch(e){ showToast(e.message||'Network error','error'); }
+}
+
+async function batchReject(){
+  const ids = Array.from(selectedIds);
+  if(!ids.length) return;
+  if(!confirm(`Reject ${ids.length} selected videos (they will not be published)?`)) return;
+  try{
+    const data = await apiSend('/api/admin/videos/batch','POST',{action:'reject',ids});
+    if(data.ok){ showToast(`Rejected ${ids.length} videos`,'success'); selectedIds.clear(); loadVideos(currentOffset); }
+    else showToast(data.error||'Batch reject failed','error');
   }catch(e){ showToast(e.message||'Network error','error'); }
 }
 
@@ -377,6 +416,12 @@ document.getElementById('statusTabs').addEventListener('click', e=>{
   const b = e.target.closest('.status-tab');
   if(!b) return;
   setStatus(b.dataset.status);
+});
+
+document.getElementById('sourceTabs').addEventListener('click', e=>{
+  const b = e.target.closest('.status-tab');
+  if(!b) return;
+  setSource(b.dataset.source);
 });
 
 document.addEventListener('DOMContentLoaded', ()=> loadVideos(0));

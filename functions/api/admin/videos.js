@@ -1,7 +1,7 @@
 import { json, fail } from '../../_lib/db.js';
 import { authUser } from '../../_lib/auth.js';
 
-// GET /api/admin/videos?status=all|active|deleted&limit=&offset=
+// GET /api/admin/videos?status=all|active|deleted|pending|rejected&source=all|manual|youtube_api&limit=&offset=
 export async function onRequest(context) {
   const { request, env } = context;
   const user = await authUser(request, env);
@@ -9,14 +9,19 @@ export async function onRequest(context) {
 
   const url = new URL(request.url);
   const status = url.searchParams.get('status') || 'all';
+  const source = url.searchParams.get('source') || 'all';
   const limit = Math.min(100, parseInt(url.searchParams.get('limit') || '50', 10));
   const offset = parseInt(url.searchParams.get('offset') || '0', 10);
 
-  let where = '1=1';
+  const conditions = [];
   const binds = [];
   if (['active', 'deleted', 'pending', 'rejected'].includes(status)) {
-    where = `videos.status='${status}'`;
+    conditions.push(`videos.status='${status}'`);
   }
+  if (source === 'manual' || source === 'youtube_api') {
+    conditions.push(`videos.source='${source}'`);
+  }
+  const where = conditions.length ? conditions.join(' AND ') : '1=1';
 
   const sql = `
     SELECT videos.*, users.username as creator_name, companies.name as company_name
