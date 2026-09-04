@@ -30,6 +30,8 @@
     .v-body{padding:16px;}
     .v-cat{font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
     .v-title{font-size:.9rem;font-weight:600;color:#fff;line-height:1.4;margin-bottom:8px;}
+    .v-meta{font-size:.72rem;color:var(--text-secondary);display:flex;align-items:center;gap:6px;letter-spacing:.2px;}
+    .v-meta .v-dot{width:3px;height:3px;border-radius:50%;background:var(--accent);opacity:.6;flex-shrink:0;}
     .v-del{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:.9rem;z-index:3;}
     .vid-add-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:32px;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;}
     .vid-add-bar input{flex:1;min-width:240px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:#fff;font-size:.9rem;font-family:inherit;outline:none;}
@@ -129,6 +131,39 @@ window._videos = [];
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function platformEmoji(p){ return ({youtube:'▶️',vimeo:'🎬',tiktok:'🎵',instagram:'📸',other:'🎞️'})[p] || '🎞️'; }
 
+// ── Added-time helpers ──────────────────────────────────────────
+// created_at is stored as an epoch (ms, or s on legacy rows).
+function _ts(ts){
+  const n = Number(ts);
+  if(!n) return 0;
+  return n < 1e12 ? n * 1000 : n;   // seconds → milliseconds
+}
+function fmtAgo(ts){
+  const t = _ts(ts);
+  if(!t) return '';
+  const diff = Date.now() - t;
+  if(diff < 60000) return 'just now';
+  const MIN=60000, HOUR=3600000, DAY=86400000;
+  if(diff < HOUR){ const n=Math.floor(diff/MIN); return n + (n===1?' minute ago':' minutes ago'); }
+  if(diff < DAY){ const n=Math.floor(diff/HOUR); return n + (n===1?' hour ago':' hours ago'); }
+  if(diff < 30*DAY){ const n=Math.floor(diff/DAY); return n + (n===1?' day ago':' days ago'); }
+  if(diff < 365*DAY){ const n=Math.floor(diff/(30*DAY)); return n + (n===1?' month ago':' months ago'); }
+  const n=Math.floor(diff/(365*DAY)); return n + (n===1?' year ago':' years ago');
+}
+function fmtFull(ts){
+  const t = _ts(ts);
+  if(!t) return '';
+  return new Date(t).toLocaleString('en-GB',{ day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+// Renders "🕒 3 days ago" with the exact timestamp on hover.
+function timeHTML(ts, prefix){
+  const rel = fmtAgo(ts);
+  if(!rel) return '';
+  const full = fmtFull(ts);
+  const label = (prefix ? prefix + ' ' : '') + rel;
+  return `<span class="v-meta" title="${esc(full)}">🕒 ${esc(label)}</span>`;
+}
+
 function renderAddBar(){
   const bar = document.getElementById('addBar');
   if(!CAN_EDIT){ bar.innerHTML=''; return; }
@@ -168,7 +203,7 @@ function playVideo(id){
   if(v.embed_html){
     box.innerHTML = `<div class="vm-embed">${v.embed_html}</div>`;
   } else {
-    box.innerHTML = `<div class="vm-link"><div style="font-size:3rem;">${platformEmoji(v.platform)}</div><div style="color:#fff;font-size:1.05rem;font-weight:600;">${esc(v.title||'Video')}</div><a href="${esc(v.url)}" target="_blank" rel="noopener" class="btn btn-primary">Watch on ${esc(v.platform||'source')} ↗</a></div>`;
+    box.innerHTML = `<div class="vm-link"><div style="font-size:3rem;">${platformEmoji(v.platform)}</div><div style="color:#fff;font-size:1.05rem;font-weight:600;">${esc(v.title||'Video')}</div>${fmtAgo(v.created_at)?`<div style="color:rgba(255,255,255,.55);font-size:.82rem;">🕒 Added ${esc(fmtAgo(v.created_at))}</div>`:''}<a href="${esc(v.url)}" target="_blank" rel="noopener" class="btn btn-primary">Watch on ${esc(v.platform||'source')} ↗</a></div>`;
   }
   document.getElementById('videoModal').style.display='flex';
   document.body.style.overflow='hidden';
@@ -186,7 +221,7 @@ function cardHTML(v){
   return `<div class="video-card-full" onclick="playVideo(${v.id})">
     ${del}
     <div class="v-thumb" ${cover}>${cover?'':platformEmoji(v.platform)}<span class="v-play">▶</span><div class="v-overlay"></div></div>
-    <div class="v-body"><div class="v-cat">${esc(v.platform||'video')}</div><div class="v-title">${esc(v.title||'Untitled')}</div></div>
+    <div class="v-body"><div class="v-cat">${esc(v.platform||'video')}</div><div class="v-title">${esc(v.title||'Untitled')}</div>${timeHTML(v.created_at,'Added')}</div>
   </div>`;
 }
 
@@ -210,7 +245,10 @@ function render(){
         <div class="vft-overlay"></div><div class="vft-label">▶ FEATURED</div><div class="vft-play">▶</div>
       </div>
       <div class="vid-featured-info">
-        <div class="v-cat">${esc(first.platform||'video')}</div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div class="v-cat" style="margin-bottom:0;">${esc(first.platform||'video')}</div>
+          ${timeHTML(first.created_at,'Added')}
+        </div>
         <h2>${esc(first.title||'Untitled')}</h2>
         <div style="display:flex;gap:12px;flex-wrap:wrap;"><button class="btn btn-primary" onclick="playVideo(${first.id})">▶ Watch Now</button></div>
       </div>

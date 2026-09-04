@@ -240,13 +240,31 @@ async function renderTab(t){
 loadCompany();
 
 function escV(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// ── Added-time helpers (created_at = epoch ms, or s on legacy rows) ──
+function _tsV(ts){ const n = Number(ts); if(!n) return 0; return n < 1e12 ? n * 1000 : n; }
+function fmtAgoV(ts){
+  const t = _tsV(ts);
+  if(!t) return '';
+  const diff = Date.now() - t;
+  if(diff < 60000) return 'just now';
+  const MIN=60000, HOUR=3600000, DAY=86400000;
+  if(diff < HOUR){ const n=Math.floor(diff/MIN); return n + (n===1?' minute ago':' minutes ago'); }
+  if(diff < DAY){ const n=Math.floor(diff/HOUR); return n + (n===1?' hour ago':' hours ago'); }
+  if(diff < 30*DAY){ const n=Math.floor(diff/DAY); return n + (n===1?' day ago':' days ago'); }
+  if(diff < 365*DAY){ const n=Math.floor(diff/(30*DAY)); return n + (n===1?' month ago':' months ago'); }
+  const n=Math.floor(diff/(365*DAY)); return n + (n===1?' year ago':' years ago');
+}
 function cpVidCard(x){
   const coverStyle = x.cover_url ? `background-image:url('${escV(x.cover_url)}');background-size:cover;background-position:center;` : '';
+  const ago = fmtAgoV(x.created_at);
+  const t = _tsV(x.created_at);
+  const full = t ? new Date(t).toLocaleString('en-GB',{ day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+  const timeEl = ago ? `<div style="font-size:.7rem;color:var(--text-secondary);margin-top:6px;" title="${full}">🕒 Added ${escV(ago)}</div>` : '';
   return `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:.2s" onclick="playCompanyVideo(${x.id})">
     <div style="aspect-ratio:16/9;background-color:#0d1530;${coverStyle}position:relative;display:flex;align-items:center;justify-content:center;">
       <span style="width:44px;height:44px;border-radius:50%;background:rgba(201,162,39,.9);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#0a0e1a;">▶</span>
     </div>
-    <div style="padding:14px;"><div style="font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">${escV(x.platform||'video')}</div><div style="font-size:.88rem;font-weight:600;color:#fff;line-height:1.4;">${escV(x.title||'Untitled')}</div></div>
+    <div style="padding:14px;"><div style="font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">${escV(x.platform||'video')}</div><div style="font-size:.88rem;font-weight:600;color:#fff;line-height:1.4;">${escV(x.title||'Untitled')}</div>${timeEl}</div>
   </div>`;
 }
 function playCompanyVideo(id){
