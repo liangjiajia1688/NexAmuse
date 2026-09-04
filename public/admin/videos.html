@@ -35,6 +35,12 @@
   .batch-bar button.batch-approve{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.35)}
   .batch-bar button.batch-reject{background:rgba(248,113,113,.12);color:#ff6b6b;border:1px solid rgba(248,113,113,.3)}
 
+  /* Quick batch review (pending only) */
+  .quick-bar{display:flex;gap:10px;margin-bottom:14px}
+  .quick-bar button{padding:8px 16px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;border:none}
+  .quick-bar .q-approve{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.35)!important}
+  .quick-bar .q-reject{background:rgba(248,113,113,.12);color:#ff6b6b;border:1px solid rgba(248,113,113,.3)!important}
+
   /* Grid view */
   .vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
   .vid-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:.2s;position:relative}
@@ -141,6 +147,11 @@
         </div>
       </div>
 
+      <div class="quick-bar" id="quickBar" style="display:none">
+        <button class="q-approve" onclick="approveAllPending()">✅ 一键过审全部待审</button>
+        <button class="q-reject" onclick="rejectAllPending()">❌ 一键拒绝全部待审</button>
+      </div>
+
       <div class="batch-bar" id="batchBar">
         <input type="checkbox" id="checkAllBatch" onchange="toggleAll()" title="Select all visible">
         <span id="batchText">0 selected</span>
@@ -220,6 +231,7 @@ async function loadVideos(offset=0){
   currentOffset = offset;
   selectedIds.clear();
   updateBatchBar();
+  toggleQuickBar();
   const grid = document.getElementById('vidGrid');
   grid.innerHTML = '<div class="empty-state">Loading videos…</div>';
   try{
@@ -345,6 +357,47 @@ async function batchReject(){
     const data = await apiSend('/api/admin/videos/batch','POST',{action:'reject',ids});
     if(data.ok){ showToast(`Rejected ${ids.length} videos`,'success'); selectedIds.clear(); loadVideos(currentOffset); }
     else showToast(data.error||'Batch reject failed','error');
+  }catch(e){ showToast(e.message||'Network error','error'); }
+}
+
+function toggleQuickBar(){
+  const bar = document.getElementById('quickBar');
+  if(bar) bar.style.display = (currentStatus==='pending') ? 'flex' : 'none';
+}
+
+async function fetchAllPendingIds(){
+  const ids = [];
+  const L = 100;
+  let off = 0;
+  while(true){
+    const d = await apiGet('/api/admin/videos?status=pending&source='+currentSource+'&limit='+L+'&offset='+off);
+    const list = (d && d.videos) || [];
+    list.forEach(v=>ids.push(v.id));
+    if(list.length < L) break;
+    off += L;
+  }
+  return ids;
+}
+
+async function approveAllPending(){
+  const ids = await fetchAllPendingIds();
+  if(!ids.length) return showToast('No pending videos','error');
+  if(!confirm(`Approve & publish ALL ${ids.length} pending videos publicly?`)) return;
+  try{
+    const data = await apiSend('/api/admin/videos/batch','POST',{action:'approve',ids});
+    if(data.ok){ showToast(`Approved ${ids.length} videos`,'success'); selectedIds.clear(); loadVideos(0); }
+    else showToast(data.error||'Failed','error');
+  }catch(e){ showToast(e.message||'Network error','error'); }
+}
+
+async function rejectAllPending(){
+  const ids = await fetchAllPendingIds();
+  if(!ids.length) return showToast('No pending videos','error');
+  if(!confirm(`Reject ALL ${ids.length} pending videos (they will not be published)?`)) return;
+  try{
+    const data = await apiSend('/api/admin/videos/batch','POST',{action:'reject',ids});
+    if(data.ok){ showToast(`Rejected ${ids.length} videos`,'success'); selectedIds.clear(); loadVideos(0); }
+    else showToast(data.error||'Failed','error');
   }catch(e){ showToast(e.message||'Network error','error'); }
 }
 

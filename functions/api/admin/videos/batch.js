@@ -22,7 +22,8 @@ export async function onRequest(context) {
   if (action === 'soft_delete' || action === 'delete') newStatus = 'deleted';
   else if (action === 'approve') newStatus = 'active';
   else if (action === 'reject') newStatus = 'rejected';
-  else return fail('action must be soft_delete|approve|reject', 400);
+  else if (action === 'pending') newStatus = 'pending';
+  else return fail('action must be soft_delete|approve|reject|pending', 400);
 
   const placeholders = ids.map(() => '?').join(',');
   const ts = Date.now();
