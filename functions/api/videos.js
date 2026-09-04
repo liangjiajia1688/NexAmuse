@@ -101,10 +101,13 @@ export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
 
-  // GET /api/videos?company_id=&limit=  (public)
+  // GET /api/videos?company_id=&limit=&status=  (public)
+  // Default: only active videos (public company page / global library).
+  // status=all lets company owner/admin manage active+pending+deleted.
   if (request.method === 'GET') {
     const company_id = url.searchParams.get('company_id');
     const limit = Math.min(60, parseInt(url.searchParams.get('limit') || '24', 10));
+    const statusParam = url.searchParams.get('status') || 'active';
     const user = await authUser(request, env);
     const isAdmin = user && (user.role === 'admin' || user.is_super === 1);
     let rows;
@@ -112,12 +115,14 @@ export async function onRequest(context) {
       const companyId = parseInt(company_id, 10);
       const c = await env.DB.prepare('SELECT owner_id FROM companies WHERE id=?').bind(companyId).first();
       const isOwner = user && c && c.owner_id === user.id;
-      if (isAdmin || isOwner) {
-        // company owner/admin sees all videos (active + deleted) for management
+      const canManage = isAdmin || isOwner;
+      if (canManage && statusParam === 'all') {
+        // management view: company owner/admin sees all videos for this company
         rows = await env.DB.prepare(
           "SELECT * FROM videos WHERE company_id=? ORDER BY created_at DESC LIMIT ?"
         ).bind(companyId, limit).all();
       } else {
+        // public view: only active company videos
         rows = await env.DB.prepare(
           "SELECT * FROM videos WHERE status='active' AND company_id=? ORDER BY created_at DESC LIMIT ?"
         ).bind(companyId, limit).all();

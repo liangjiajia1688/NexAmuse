@@ -94,6 +94,10 @@
       <div class="dash-sub" id="dashSub">Welcome back. Here is your storefront at a glance.</div>
       <div class="stat-grid" id="statGrid"></div>
       <div class="panel">
+        <h3>Latest Video</h3>
+        <div id="dashLatestVideo"><div class="empty">Loading latest video…</div></div>
+      </div>
+      <div class="panel">
         <h3>Quick actions</h3>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn btn-primary btn-sm" onclick="goTab('products')">+ Add Product</button>
@@ -206,6 +210,12 @@
         <h3>My Videos
           <button class="btn btn-primary btn-sm" onclick="openVideoModal()">+ Add Video</button>
         </h3>
+        <div class="imp-tabs" style="margin-bottom:14px;" id="vidStatusTabs">
+          <button class="active" data-vstatus="active">Active</button>
+          <button data-vstatus="pending">Pending</button>
+          <button data-vstatus="all">All</button>
+          <button data-vstatus="deleted">Deleted</button>
+        </div>
         <div class="row-list" id="vidList"></div>
       </div>
       <div class="panel">
@@ -278,6 +288,26 @@ async function loadDash(){
     ['Products',(p.products||[]).length],['Articles',(a.articles||[]).length],
     ['Forum Posts',(f.threads||[]).length],['Videos',(v.videos||[]).length || 0],['Company Status',comp.status||'—']
   ].map(([l,n])=>`<div class="stat-card"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+
+  const latest = (v.videos||[])[0];
+  const lvEl = document.getElementById('dashLatestVideo');
+  if(latest){
+    lvEl.innerHTML = `<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;">
+      <div style="width:200px;aspect-ratio:16/9;border-radius:10px;background:#0d1530;background-size:cover;background-position:center;${latest.cover_url?`background-image:url('${escV(latest.cover_url)}')`:''};display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="playDashVideo(${latest.id})">
+        ${latest.cover_url?'':platformEmoji(latest.platform)}
+      </div>
+      <div style="flex:1;min-width:220px;">
+        <div style="font-size:.75rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">${escV(latest.platform||'video')}</div>
+        <div style="color:#fff;font-weight:600;margin-bottom:8px;line-height:1.4;">${escV(latest.title||'Untitled')}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="playDashVideo(${latest.id})">▶ Play</button>
+          <button class="btn btn-ghost btn-sm" onclick="goTab('videos')">Manage Videos</button>
+        </div>
+      </div>
+    </div>`;
+  } else {
+    lvEl.innerHTML = `<div class="empty">No public videos yet. <button class="btn btn-primary btn-sm" onclick="goTab('videos')" style="margin-left:8px;">+ Add Video</button></div>`;
+  }
 }
 
 // ---- company ----
@@ -340,22 +370,25 @@ async function editArticle(id){editingAid=id;document.getElementById('artFrame')
 async function delArticle(id){if(!confirm('Delete this article?'))return;const r=await api('/api/member/articles?id='+id,{method:'DELETE'});toast(r.ok!==false?'Deleted':'Failed');loadArticles();loadDash();}
 
 // ---- videos ----
+let _vidStatusFilter = 'active';
 function escV(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function platformEmoji(p){ return ({youtube:'▶️',vimeo:'🎬',tiktok:'🎵',instagram:'📸',other:'🎞️'})[p] || '🎞️'; }
 async function loadVideos(){
   if(!_companyCache || !_companyCache.id){ document.getElementById('vidList').innerHTML='<div class="empty">Create a company first.</div>'; return; }
-  const v=await api('/api/videos?company_id='+_companyCache.id+'&limit=60');
-  const list=v.videos||[];
+  const statusQ = _vidStatusFilter === 'active' ? 'active' : 'all';
+  const v=await api('/api/videos?company_id='+_companyCache.id+'&status='+statusQ+'&limit=60');
+  let list=v.videos||[];
+  if(_vidStatusFilter !== 'all') list = list.filter(vx => vx.status === _vidStatusFilter);
   window._companyVideos = list;
   document.getElementById('vidList').innerHTML=list.length?list.map(vx=>`
     <div class="row-item">
       <div class="thumb" style="${vx.cover_url?`background-image:url('${escV(vx.cover_url)}')`:''};display:flex;align-items:center;justify-content:center;font-size:1.4rem;">${vx.cover_url?'':platformEmoji(vx.platform)}</div>
-      <div class="info"><b>${escV(vx.title||'Untitled')}</b><span>${escV(vx.platform||'video')} · <span class="pill ${vx.status==='active'?'pill-pub':'pill-draft'}">${vx.status}</span></span></div>
+      <div class="info"><b>${escV(vx.title||'Untitled')}</b><span>${escV(vx.platform||'video')} · <span class="pill ${vx.status==='active'?'pill-pub':(vx.status==='pending'?'pill-pend':'pill-draft')}">${vx.status}</span></span></div>
       <div class="acts">
         <button class="btn btn-ghost btn-sm" onclick="playDashVideo(${vx.id})">Play</button>
-        <button class="btn btn-danger btn-sm" onclick="delVideo(${vx.id})">Delete</button>
+        ${vx.status==='deleted' ? `<button class="btn btn-primary btn-sm" onclick="restoreVideo(${vx.id})">Restore</button>` : `<button class="btn btn-danger btn-sm" onclick="delVideo(${vx.id})">Delete</button>`}
       </div>
-    </div>`).join(''):'<div class="empty">No videos yet. Add one from the URL box below.</div>';
+    </div>`).join(''):'<div class="empty">No videos in this view. Add one from the URL box below.</div>';
 }
 function openVideoModal(){ document.getElementById('dashVidUrl').focus(); }
 async function addDashboardVideo(){
@@ -378,7 +411,15 @@ function playDashVideo(id){
   modal.onclick=e=>{if(e.target===modal){modal.remove();document.body.style.overflow='';}};
   document.body.appendChild(modal);document.body.style.overflow='hidden';
 }
-async function delVideo(id){if(!confirm('Delete this video from your company page?'))return;const r=await api('/api/videos/'+id,{method:'DELETE'});toast(r.ok!==false?'Deleted':'Failed');loadVideos();loadDash();}
+async function delVideo(id){if(!confirm('Delete this video from your company page?'))return;const r=await api('/api/videos/'+id,{method:'DELETE'});toast(r.ok===true?'Deleted':'Failed: '+(r.error||'unknown'));loadVideos();loadDash();}
+async function restoreVideo(id){const r=await api('/api/videos/'+id,{method:'PATCH',body:JSON.stringify({action:'restore'})});toast(r.ok===true?'Restored':'Failed: '+(r.error||'unknown'));loadVideos();loadDash();}
+
+document.getElementById('vidStatusTabs').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  _vidStatusFilter=b.dataset.vstatus;
+  document.querySelectorAll('#vidStatusTabs button').forEach(x=>x.classList.toggle('active',x.dataset.vstatus===_vidStatusFilter));
+  loadVideos();
+});
 
 // ---- forum ----
 async function loadForum(){
