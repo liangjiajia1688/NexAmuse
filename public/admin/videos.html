@@ -5,10 +5,39 @@
 <title>Videos — NexAmuse Admin</title>
 <link rel="stylesheet" href="admin.css">
 <style>
-  .vid-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .vid-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .toolbar-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .toolbar-right{display:flex;align-items:center;gap:10px}
+
+  /* Add video input */
+  .vid-addbar{display:flex;align-items:center;gap:10px;flex:1;min-width:280px;max-width:720px;margin-bottom:12px}
+  .vid-addbar input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:#fff;font-size:.85rem;font-family:inherit}
+  .vid-addbar input::placeholder{color:var(--text-muted)}
+  .vid-addbar button{background:linear-gradient(135deg,#d4af37,#b8941e);color:#0a0e1a;border:none;border-radius:8px;padding:10px 18px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap}
+  .vid-addbar button:disabled{opacity:.6;cursor:default}
+
+  /* Status tabs */
+  .status-tabs{display:flex;gap:6px;flex-wrap:wrap;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:4px}
+  .status-tab{background:transparent;border:none;border-radius:6px;padding:7px 12px;color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;transition:.15s}
+  .status-tab:hover{color:#fff}
+  .status-tab.active{background:rgba(201,162,39,.18);color:#f5d06e;border:1px solid rgba(201,162,39,.35)}
+
+  /* View toggle */
+  .view-toggle{display:flex;gap:4px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:4px}
+  .view-btn{background:transparent;border:none;border-radius:6px;padding:6px 10px;color:var(--text-muted);font-size:.85rem;cursor:pointer}
+  .view-btn.active{background:rgba(201,162,39,.18);color:#f5d06e}
+
+  /* Batch bar */
+  .batch-bar{display:none;align-items:center;gap:12px;margin-bottom:16px;padding:10px 14px;background:rgba(220,53,69,.08);border:1px solid rgba(220,53,69,.25);border-radius:10px}
+  .batch-bar.show{display:flex}
+  .batch-bar span{color:#fff;font-size:.85rem}
+  .batch-bar button{background:rgba(220,53,69,.15);color:#ff6b6b;border:1px solid rgba(220,53,69,.35);border-radius:6px;padding:6px 12px;font-size:.8rem;font-weight:600;cursor:pointer}
+
+  /* Grid view */
   .vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-  .vid-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:.2s}
+  .vid-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:.2s;position:relative}
   .vid-card:hover{border-color:rgba(212,175,55,.4)}
+  .vid-card.selected{border-color:rgba(201,162,39,.7);box-shadow:0 0 0 1px rgba(201,162,39,.35)}
   .vid-thumb{aspect-ratio:16/9;background:#0d1530;background-size:cover;background-position:center;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .vid-thumb span{width:44px;height:44px;border-radius:50%;background:rgba(201,162,39,.9);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#0a0e1a}
   .vid-body{padding:14px}
@@ -17,6 +46,22 @@
   .vid-meta a{color:var(--gold);word-break:break-all}
   .vid-actions{display:flex;gap:8px;margin-top:12px}
   .vid-actions button{flex:1;padding:7px 0;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer}
+  .vid-check{position:absolute;top:10px;left:10px;z-index:2;width:18px;height:18px;accent-color:#c9a227;cursor:pointer}
+
+  /* List view */
+  .vid-list{display:flex;flex-direction:column;gap:10px}
+  .vid-row{display:grid;grid-template-columns:44px 160px 1fr 160px 140px;align-items:center;gap:14px;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px;transition:.2s}
+  .vid-row:hover{border-color:rgba(212,175,55,.3)}
+  .vid-row.selected{border-color:rgba(201,162,39,.7);box-shadow:0 0 0 1px rgba(201,162,39,.35)}
+  .vid-row .row-thumb{width:160px;height:90px;border-radius:8px;background:#0d1530;background-size:cover;background-position:center;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .vid-row .row-thumb span{width:34px;height:34px;border-radius:50%;background:rgba(201,162,39,.9);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#0a0e1a}
+  .vid-row .row-title{font-weight:600;color:#fff;font-size:.9rem;line-height:1.3;margin-bottom:4px}
+  .vid-row .row-meta{font-size:12px;color:var(--text-muted);margin-bottom:2px}
+  .vid-row .row-meta a{color:var(--gold)}
+  .vid-row .row-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+  .vid-row .row-actions button{padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer}
+  .vid-row .row-check{width:18px;height:18px;accent-color:#c9a227;cursor:pointer;justify-self:center}
+
   .btn-play{background:linear-gradient(135deg,#d4af37,#b8941e);color:#0a0e1a}
   .btn-del{background:rgba(220,53,69,.1);color:#ff6b6b;border:1px solid rgba(220,53,69,.3)!important}
   .status-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
@@ -30,6 +75,12 @@
   .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
   .modal-box{max-width:900px;width:100%}
   .modal-body{padding:0}
+
+  @media(max-width:900px){
+    .vid-row{grid-template-columns:44px 120px 1fr;gap:10px}
+    .vid-row .row-actions{grid-column:1/-1;justify-content:flex-start;margin-top:6px}
+    .vid-row .row-status{grid-column:2/3}
+  }
 </style>
 </head>
 <body>
@@ -58,17 +109,34 @@
     <div class="admin-content">
       <div class="page-title"><h1>视频管理 / Video Management</h1><p>管理平台所有社媒视频链接。支持播放、删除（软删）。</p></div>
 
+      <div class="vid-addbar">
+        <input id="addUrl" placeholder="Paste a YouTube / Vimeo / TikTok / Instagram link…" onkeydown="if(event.key==='Enter')addVideo()">
+        <button id="addBtn" onclick="addVideo()">➕ ADD VIDEO</button>
+      </div>
+
       <div class="vid-toolbar">
         <div class="toolbar-left">
-          <select id="statusFilter" class="filter-select" onchange="loadVideos()">
-            <option value="all">All Status</option>
-            <option value="pending">⏳ Pending Review</option>
-            <option value="active">Active</option>
-            <option value="rejected">Rejected</option>
-            <option value="deleted">Deleted</option>
-          </select>
+          <div class="status-tabs" id="statusTabs">
+            <button class="status-tab active" data-status="all">All Status</button>
+            <button class="status-tab" data-status="pending">⏳ Pending Review</button>
+            <button class="status-tab" data-status="active">Active</button>
+            <button class="status-tab" data-status="rejected">Rejected</button>
+            <button class="status-tab" data-status="deleted">Deleted</button>
+          </div>
           <span id="vidTotal" style="color:var(--text-muted);font-size:13px"></span>
         </div>
+        <div class="toolbar-right">
+          <div class="view-toggle">
+            <button class="view-btn active" data-view="grid" title="Grid" onclick="setView('grid')">▦</button>
+            <button class="view-btn" data-view="list" title="List" onclick="setView('list')">☰</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="batch-bar" id="batchBar">
+        <input type="checkbox" id="checkAllBatch" onchange="toggleAll()" title="Select all visible">
+        <span id="batchText">0 selected</span>
+        <button onclick="batchDelete()">🗑 Batch Delete</button>
       </div>
 
       <div id="vidGrid"></div>
@@ -88,38 +156,84 @@
 <script>
 let currentOffset = 0;
 const limit = 24;
+let currentStatus = 'all';
+let viewMode = 'grid';
+let selectedIds = new Set();
+let currentVideos = [];
 
 function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function fmtDate(ts){ if(!ts) return '-'; const d=new Date(ts); return d.toLocaleString(); }
 
+function statusClass(status){
+  return status==='active'?'status-active':(status==='pending'?'status-pending':(status==='rejected'?'status-rejected':'status-deleted'));
+}
+function statusLabel(status){
+  const map={active:'Active',pending:'Pending Review',rejected:'Rejected',deleted:'Deleted'};
+  return map[status]||status;
+}
+
+async function addVideo(){
+  const input = document.getElementById('addUrl');
+  const btn = document.getElementById('addBtn');
+  const url = (input.value||'').trim();
+  if(!url) return showToast('Please paste a video link','error');
+  if(!/^https?:\/\//i.test(url)) return showToast('Please enter a valid URL','error');
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try{
+    const data = await apiSend('/api/videos','POST',{url});
+    if(data.ok){ showToast('Video added','success'); input.value=''; loadVideos(0); }
+    else showToast(data.error||'Failed','error');
+  }catch(e){ showToast(e.message||'Network error','error'); }
+  btn.disabled = false; btn.textContent = '➕ ADD VIDEO';
+}
+
+function setView(mode){
+  viewMode = mode;
+  document.querySelectorAll('.view-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===mode));
+  loadVideos(currentOffset);
+}
+
+function setStatus(status){
+  currentStatus = status;
+  document.querySelectorAll('.status-tab').forEach(b=>b.classList.toggle('active', b.dataset.status===status));
+  loadVideos(0);
+}
+
 async function loadVideos(offset=0){
   currentOffset = offset;
-  const status = document.getElementById('statusFilter').value;
+  selectedIds.clear();
+  updateBatchBar();
   const grid = document.getElementById('vidGrid');
   grid.innerHTML = '<div class="empty-state">Loading videos…</div>';
   try{
-    const d = await apiGet('/api/admin/videos?status='+status+'&limit='+limit+'&offset='+offset);
+    const d = await apiGet('/api/admin/videos?status='+currentStatus+'&limit='+limit+'&offset='+offset);
     document.getElementById('vidTotal').textContent = `Total: ${d.total || 0}`;
     const list = d.videos || [];
+    currentVideos = list;
     if(!list.length){ grid.innerHTML = '<div class="empty-state">No videos found.</div>'; renderPager(0); return; }
-    grid.innerHTML = `<div class="vid-grid">${list.map(v=>vidCard(v)).join('')}</div>`;
+    if(viewMode==='grid'){
+      grid.innerHTML = `<div class="vid-grid">${list.map(v=>vidCard(v)).join('')}</div>`;
+    }else{
+      grid.innerHTML = `<div class="vid-list">${list.map(v=>vidRow(v)).join('')}</div>`;
+    }
     renderPager(d.total||0);
   }catch(e){ grid.innerHTML = '<div class="empty-state">Failed to load videos.</div>'; }
 }
 
 function vidCard(v){
   const cover = v.cover_url ? `background-image:url('${esc(v.cover_url)}')` : '';
-  const sc = v.status==='active'?'status-active':(v.status==='pending'?'status-pending':(v.status==='rejected'?'status-rejected':'status-deleted'));
   const sourceBadge = v.source==='youtube_api' ? ' <span class="status-badge status-api">🤖 Auto</span>' : '';
+  const checked = selectedIds.has(v.id) ? 'checked' : '';
   const modBtns = v.status==='pending'
     ? `<button class="btn-approve" onclick="moderateVideo(${v.id},'approve',this)">✅ Approve</button>
        <button class="btn-reject" onclick="moderateVideo(${v.id},'reject',this)">❌ Reject</button>`
     : (v.status!=='deleted' ? `<button class="btn-del" onclick="deleteVideo(${v.id},this)">🗑 Delete</button>` : `<button class="btn-del" onclick="hardDeleteVideo(${v.id},this)">⚠ Permanently Delete</button>`);
-  return `<div class="vid-card">
+  return `<div class="vid-card ${checked?'selected':''}" data-id="${v.id}">
+    <input type="checkbox" class="vid-check" ${checked} onchange="toggleSelect(${v.id})" onclick="event.stopPropagation()">
     <div class="vid-thumb" style="${cover}" onclick="playVideo(${v.id})"><span>▶</span></div>
     <div class="vid-body">
       <div class="vid-title">${esc(v.title||'Untitled')}</div>
-      <div class="vid-meta"><span class="status-badge ${sc}">${esc(v.status||'active')}</span> · ${esc(v.platform||'video')}${sourceBadge}</div>
+      <div class="vid-meta"><span class="status-badge ${statusClass(v.status)}">${esc(statusLabel(v.status))}</span> · ${esc(v.platform||'video')}${sourceBadge}</div>
       <div class="vid-meta">${v.company_name ? '🏢 '+esc(v.company_name) : '👤 '+esc(v.creator_name||'Unknown')}</div>
       <div class="vid-meta">URL: <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url).slice(0,40)}${v.url.length>40?'…':''}</a></div>
       <div class="vid-meta">${fmtDate(v.created_at)}</div>
@@ -129,6 +243,70 @@ function vidCard(v){
       </div>
     </div>
   </div>`;
+}
+
+function vidRow(v){
+  const cover = v.cover_url ? `background-image:url('${esc(v.cover_url)}')` : '';
+  const sourceBadge = v.source==='youtube_api' ? ' <span class="status-badge status-api">🤖 Auto</span>' : '';
+  const checked = selectedIds.has(v.id) ? 'checked' : '';
+  const modBtns = v.status==='pending'
+    ? `<button class="btn-approve" onclick="moderateVideo(${v.id},'approve',this)">✅ Approve</button>
+       <button class="btn-reject" onclick="moderateVideo(${v.id},'reject',this)">❌ Reject</button>`
+    : (v.status!=='deleted' ? `<button class="btn-del" onclick="deleteVideo(${v.id},this)">🗑 Delete</button>` : `<button class="btn-del" onclick="hardDeleteVideo(${v.id},this)">⚠ Permanently Delete</button>`);
+  return `<div class="vid-row ${checked?'selected':''}" data-id="${v.id}">
+    <input type="checkbox" class="row-check" ${checked} onchange="toggleSelect(${v.id})" onclick="event.stopPropagation()">
+    <div class="row-thumb" style="${cover}" onclick="playVideo(${v.id})"><span>▶</span></div>
+    <div>
+      <div class="row-title">${esc(v.title||'Untitled')}</div>
+      <div class="row-meta"><span class="status-badge ${statusClass(v.status)}">${esc(statusLabel(v.status))}</span> · ${esc(v.platform||'video')}${sourceBadge}</div>
+      <div class="row-meta">${v.company_name ? '🏢 '+esc(v.company_name) : '👤 '+esc(v.creator_name||'Unknown')} · ${fmtDate(v.created_at)}</div>
+      <div class="row-meta">URL: <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.url).slice(0,40)}${v.url.length>40?'…':''}</a></div>
+    </div>
+    <div class="row-status"></div>
+    <div class="row-actions">
+      <button class="btn-play" onclick="playVideo(${v.id})">▶ Play</button>
+      ${modBtns}
+    </div>
+  </div>`;
+}
+
+function toggleSelect(id){
+  if(selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  updateBatchBar();
+  document.querySelectorAll(`[data-id="${id}"]`).forEach(el=>el.classList.toggle('selected', selectedIds.has(id)));
+  document.querySelectorAll(`[data-id="${id}"] input[type="checkbox"]`).forEach(cb=>cb.checked = selectedIds.has(id));
+}
+
+function toggleAll(){
+  const checked = document.getElementById('checkAllBatch').checked;
+  currentVideos.forEach(v=>{
+    if(checked) selectedIds.add(v.id);
+    else selectedIds.delete(v.id);
+  });
+  updateBatchBar();
+  loadVideos(currentOffset);
+}
+
+function updateBatchBar(){
+  const bar = document.getElementById('batchBar');
+  const n = selectedIds.size;
+  document.getElementById('batchText').textContent = `${n} selected`;
+  bar.classList.toggle('show', n>0);
+  if(n>0 && n<currentVideos.length) document.getElementById('checkAllBatch').checked = false;
+  else if(n===currentVideos.length && currentVideos.length>0) document.getElementById('checkAllBatch').checked = true;
+  else document.getElementById('checkAllBatch').checked = false;
+}
+
+async function batchDelete(){
+  const ids = Array.from(selectedIds);
+  if(!ids.length) return;
+  if(!confirm(`Soft-delete ${ids.length} selected videos? They will no longer be public.`)) return;
+  try{
+    const data = await apiSend('/api/admin/videos/batch','POST',{action:'soft_delete',ids});
+    if(data.ok){ showToast(`Deleted ${ids.length} videos`,'success'); selectedIds.clear(); loadVideos(currentOffset); }
+    else showToast(data.error||'Batch delete failed','error');
+  }catch(e){ showToast(e.message||'Network error','error'); }
 }
 
 function playVideo(id){
@@ -181,7 +359,6 @@ function renderPager(total){
   pager.innerHTML = html;
 }
 
-document.getElementById('playModal').addEventListener('click', e=>{ if(e.target===document.getElementById('playModal')) closeModal(); });
 async function moderateVideo(id, action, btn){
   if(!confirm(action==='approve'?'Approve and publish this video publicly?':'Reject this video (it will not be published)?')) return;
   btn.disabled = true;
@@ -194,8 +371,16 @@ async function moderateVideo(id, action, btn){
   btn.disabled = false;
 }
 
+document.getElementById('playModal').addEventListener('click', e=>{ if(e.target===document.getElementById('playModal')) closeModal(); });
+
+document.getElementById('statusTabs').addEventListener('click', e=>{
+  const b = e.target.closest('.status-tab');
+  if(!b) return;
+  setStatus(b.dataset.status);
+});
+
 document.addEventListener('DOMContentLoaded', ()=> loadVideos(0));
 </script>
-<!-- video-moderation-ui-deployed -->
+<!-- admin-videos-grid-list-batch -->
 </body>
 </html>
