@@ -1,0 +1,21 @@
+# ── Security headers ─────────────────────────────────────────────
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# Admin console: never indexed, never cached, never framed
+/admin/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Cache-Control: no-store, no-cache, must-revalidate, private
+
+# Admin JS/CSS are fetched by the login screen; keep them out of caches too
+/admin/admin.js
+  Cache-Control: no-store
+/admin/admin.css
+  Cache-Control: no-store

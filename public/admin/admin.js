@@ -1,5 +1,29 @@
 /* NexAmuse Global Admin — Shared JS */
 
+// ── Client-side auth guard (defence in depth) ─────────────────────
+// The real gate is the server middleware, which refuses to serve /admin/*
+// without a valid session cookie. This guard only prevents a flash of admin
+// UI if the page somehow renders without a usable session.
+(function guardAdmin(){
+  var s = null;
+  try { s = JSON.parse(localStorage.getItem('nexamuse_user') || 'null'); } catch(e) {}
+  var isAdmin = !!(s && s.token && (s.role === 'admin' || s.is_super === 1));
+  if (!isAdmin) {
+    try { document.documentElement.style.visibility = 'hidden'; } catch(e) {}
+    window.location.replace('login.html');
+    return;
+  }
+  // Re-hide then reveal on load to avoid flashing restricted UI.
+  try { document.documentElement.style.visibility = 'hidden'; } catch(e) {}
+  // Reveal as soon as the DOM is ready (the server already authorised us).
+  document.addEventListener('DOMContentLoaded', function(){
+    document.documentElement.style.visibility = '';
+  });
+  window.addEventListener('load', function(){
+    document.documentElement.style.visibility = '';
+  });
+})();
+
 // ── Session Management ────────────────────────────────────────────
 const SESSION_KEY = 'nexamuse_user';
 
@@ -40,9 +64,15 @@ async function apiSend(url, method, body) {
   return data;
 }
 function adminLogout() {
+  // Clear the server session cookie too, otherwise /admin/* stays accessible.
+  try { fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }).catch(function(){}); } catch(e) {}
   clearSession();
+  try {
+    localStorage.removeItem('ng_admin_logged');
+    localStorage.removeItem('ng_admin_user');
+  } catch(e) {}
   showToast('You have been signed out.', 'info');
-  setTimeout(() => { window.location.href = 'login.html'; }, 800);
+  setTimeout(() => { window.location.href = 'login.html'; }, 500);
 }
 
 // ── Sidebar Navigation Data ──────────────────────────────────────

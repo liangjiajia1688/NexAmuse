@@ -57,6 +57,6 @@ export async function onRequest(context) {
   const userId = res.meta && res.meta.last_row_id;
   await env.DB.prepare('DELETE FROM email_codes WHERE email=?').bind(email).run();
   const row = await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(userId).first();
-  const token = await makeToken(row.id, env.TOKEN_SECRET);
+  const token = await makeToken(row.id, env.TOKEN_SECRET, row.token_version || 0);
   return json({ ok: true, verified: true, token, user: pickUser(row) }, 201);
 }

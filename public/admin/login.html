@@ -111,60 +111,100 @@ function togglePwd(){
   const inp=document.getElementById('password');
   inp.type=inp.type==='password'?'text':'password';
 }
-function doLogin(){
+function showError(msg){
+  const err=document.getElementById('errorMsg');
+  err.textContent = msg || 'Invalid username or password. Please try again.';
+  err.style.display='block';
+}
+function resetBtn(){
+  const btn=document.getElementById('loginBtn');
+  document.getElementById('spinner').style.display='none';
+  document.getElementById('btnText').style.display='block';
+  btn.classList.remove('loading');
+}
+
+async function doLogin(){
   const u=document.getElementById('username').value.trim();
   const p=document.getElementById('password').value;
   const btn=document.getElementById('loginBtn');
-  const txt=document.getElementById('btnText');
-  const spin=document.getElementById('spinner');
   const err=document.getElementById('errorMsg');
   err.style.display='none';
-  txt.style.display='none';
-  spin.style.display='block';
+
+  if(!u || !p){ showError('Please enter your username and password.'); return; }
+
   btn.classList.add('loading');
-  setTimeout(async ()=>{
-    spin.style.display='none';
-    txt.style.display='block';
-    btn.classList.remove('loading');
-    if(u==='dinice'&&p==='dinice123'){
-      localStorage.setItem('ng_admin_logged','1');
-      localStorage.setItem('ng_admin_user', u);
-      // Also obtain a real API token so admin pages/crawlers can call authenticated endpoints.
-      try {
-        const r = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ identifier:'dinice', password:'dinice123' }) });
-        if (r.ok) {
-          const data = await r.json();
-          const u = data.user;
-          localStorage.setItem('nexamuse_user', JSON.stringify({
-            token: data.token,
-            id: u.id,
-            name: u.username || u.name || u.email,
-            email: u.email,
-            username: u.username,
-            role: u.role,
-            avatar: u.avatar || null,
-            loginTime: Date.now()
-          }));
-        }
-      } catch (e) { console.warn('Admin token fetch failed', e); }
-      window.location.href='index.html';
-    } else {
-      err.style.display='block';
+  document.getElementById('btnText').style.display='none';
+  document.getElementById('spinner').style.display='block';
+
+  try{
+    // Real authentication — credentials are validated server-side only.
+    const r = await fetch('/api/login', {
+      method:'POST',
+      credentials:'same-origin',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ identifier:u, password:p })
+    });
+    const data = await r.json().catch(()=>({}));
+
+    if(!r.ok){
+      showError(r.status===429 ? (data.error || 'Too many attempts. Please try again later.')
+                               : 'Invalid username or password. Please try again.');
+      resetBtn();
+      return;
     }
-  },1200);
+
+    const user = data.user || {};
+    const isAdmin = (user.role === 'admin' || user.is_super === 1);
+
+    // Authentication succeeded but this account may not use the console.
+    if(!isAdmin){
+      await fetch('/api/logout', { method:'POST', credentials:'same-origin' }).catch(()=>{});
+      showError('This account does not have admin access.');
+      resetBtn();
+      return;
+    }
+
+    // Keep the API token for Authorization headers; the HttpOnly session
+    // cookie (set by /api/login) is what actually gates /admin/* server-side.
+    localStorage.setItem('nexamuse_user', JSON.stringify({
+      token: data.token,
+      id: user.id,
+      name: user.username || user.name || user.email,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      is_super: user.is_super,
+      avatar: user.avatar || null,
+      loginTime: Date.now()
+    }));
+    window.location.replace('index.html');
+  }catch(e){
+    showError('Network error — please check your connection and try again.');
+    resetBtn();
+  }
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-// Auto-redirect only if both admin flag and a real API token exist.
-(function checkSession(){
-  try {
-    const logged = localStorage.getItem('ng_admin_logged') === '1';
-    const s = JSON.parse(localStorage.getItem('nexamuse_user') || 'null');
-    if (logged && s && s.token) return;
-    // Clear stale partial session and stay on login page.
-    localStorage.removeItem('ng_admin_logged');
-    localStorage.removeItem('ng_admin_user');
+
+// If a valid server session already exists, skip the login form.
+(async function checkSession(){
+  try{
+    let s=null;
+    try{ s=JSON.parse(localStorage.getItem('nexamuse_user')||'null'); }catch(e){}
+    if(!s || !s.token){ return; }
+    // Validate against the server using the session COOKIE only (no bearer),
+    // so we never bounce between login.html and index.html when the cookie
+    // is gone but an old localStorage token remains.
+    const r = await fetch('/api/me', { credentials:'same-origin' });
+    if(r.ok){
+      const d = await r.json().catch(()=>({}));
+      const u = d.user || {};
+      if(u.role === 'admin' || u.is_super === 1){
+        window.location.replace('index.html');
+        return;
+      }
+    }
     localStorage.removeItem('nexamuse_user');
-  } catch(e) {}
+  }catch(e){}
 })();
 </script>
 </body>

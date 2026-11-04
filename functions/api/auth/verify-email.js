@@ -35,7 +35,7 @@ export async function onRequest(context) {
 
   // Already verified — just issue a token (useful for "resend not needed" flows).
   if (row.email_verified === 1) {
-    const token = await makeToken(row.id, env.TOKEN_SECRET);
+    const token = await makeToken(row.id, env.TOKEN_SECRET, row.token_version || 0);
     return json({ ok: true, token, user: pickUser(row) });
   }
 
@@ -51,6 +51,6 @@ export async function onRequest(context) {
   await env.DB.prepare('UPDATE users SET email_verified=1, verify_code=NULL, verify_expires=NULL WHERE id=?')
     .bind(row.id).run();
 
-  const token = await makeToken(row.id, env.TOKEN_SECRET);
+  const token = await makeToken(row.id, env.TOKEN_SECRET, row.token_version || 0);
   return json({ ok: true, token, user: pickUser(row) });
 }

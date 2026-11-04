@@ -4,3 +4,10 @@ node_modules/
 .DS_Store
 *.log
 .workbuddy/
+
+# Local secrets / generated credentials — never commit
+_admin_new_password.txt
+_setpw.sql
+_secret.txt
+_newpw.json
+_wlogin.log
